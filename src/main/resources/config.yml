@@ -1,0 +1,9 @@
+notify:
+  enabled: true
+  sound: "BLOCK_NOTE_BLOCK_PLING"
+  pattern: "@{p}"
+  #saniye
+  cooldown: 3
+  action_bar:
+    sender_message: "&8[&6Prefix&8] &e{p} &fadlı oyuncuyu etiketledin."
+    receiver_message: "&8[&6Prefix&8] &e{p} &fadlı oyuncu seni etiketledi."
