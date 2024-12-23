@@ -16,14 +16,15 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
-        if(sender instanceof Player p) {
-            if(!p.hasPermission("oyuncuetiket.reload")) {
-                p.sendMessage(color("&cYou cannot use this command."));
-            }
-        }
         if(args.length == 1 && args[0].equalsIgnoreCase("reload")) {
+            if(!sender.hasPermission("dmentions.reload")) {
+                sender.sendMessage(color("&cBu komudu kullanmaya yetkin yok."));
+                return true;
+            }
             Main.config = new Config();
-            sender.sendMessage(color("&aConfig dosyası yenilendi."));
+            sender.sendMessage(color("&aKonfigurasyon dosyası yenilendi."));
+        }else {
+            sender.sendMessage(color("&cBilinmeyen komut."));
         }
         return true;
     }

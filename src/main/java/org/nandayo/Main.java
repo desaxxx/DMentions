@@ -34,7 +34,7 @@ public final class Main extends JavaPlugin implements Listener {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(this, this);
 
-        getCommand("oyuncuetiket").setExecutor(new MainCommand());
+        getCommand("dmentions").setExecutor(new MainCommand());
 
         config = new Config();
         updatePlayerNamesPattern();

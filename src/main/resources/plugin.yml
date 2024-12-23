@@ -4,13 +4,13 @@ main: org.nandayo.Main
 api-version: '1.20'
 authors: [ yoshii01 ]
 commands:
-  oyuncuetiket:
-    aliases: oet
-    usage: /oet
+  dmentions:
+    aliases: dms
+    usage: /dms
 permissions:
-  oyuncuetiket.admin:
+  dmentions.admin:
     default: op
     children:
-      oyuncuetiket.reload: true
-  oyuncuetiket.reload:
+      dmentions.reload: true
+  dmentions.reload:
     default: op

@@ -1,7 +1,7 @@
 notify:
   enabled: true
   sound: "BLOCK_NOTE_BLOCK_PLING"
-  pattern: "@{p}"
+  pattern: "&a@{p}&f"
   #saniye
   cooldown: 3
   action_bar:
