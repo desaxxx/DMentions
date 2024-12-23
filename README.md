@@ -1,2 +1,2 @@
-# Oyuncu-Etiket
+# NMentions
 Basit sohbette oyuncu etiketleme sistemi.
