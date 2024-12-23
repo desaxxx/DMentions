@@ -1,4 +1,4 @@
-name: OyuncuEtiket
+name: DMentions
 version: '1.0-BETA'
 main: org.nandayo.Main
 api-version: '1.20'
