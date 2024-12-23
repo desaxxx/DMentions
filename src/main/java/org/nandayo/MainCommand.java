@@ -21,7 +21,10 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 p.sendMessage(color("&cYou cannot use this command."));
             }
         }
-        if(args.length == 1 && args[0].equalsIgnoreCase("reload"));
+        if(args.length == 1 && args[0].equalsIgnoreCase("reload")) {
+            Main.config = new Config();
+            sender.sendMessage(color("&aConfig dosyası yenilendi."));
+        }
         return true;
     }
 
