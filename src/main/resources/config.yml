@@ -1,9 +1,24 @@
-notify:
+prefix: "&8[&6Prefix&8]&r"
+#
+player:
   enabled: true
+  permission: "dmentions.mention.player"
   sound: "BLOCK_NOTE_BLOCK_PLING"
-  pattern: "&a@{p}&f"
-  #saniye
+  display: "&a@{p}&f"
+  #seconds
   cooldown: 3
   action_bar:
-    sender_message: "&8[&6Prefix&8] &e{p} &fadlı oyuncuyu etiketledin."
-    receiver_message: "&8[&6Prefix&8] &e{p} &fadlı oyuncu seni etiketledi."
+    sender_message: "{PREFIX} &fYou mentioned player &e{p}&f."
+    target_message: "{PREFIX} &fPlayer &e{p}&f mentioned you in chat."
+#
+everyone:
+  enabled: true
+  permission: "dmentions.mention.everyone"
+  sound: "BLOCK_NOTE_BLOCK_PLING"
+  keyword: "@everyone"
+  display: "&2@everyone&f"
+  #seconds
+  cooldown: 3
+  action_bar:
+    sender_message: "{PREFIX} &fYou mentioned everyone."
+    target_message: "{PREFIX} &fPlayer &e{p}&f mentioned everyone."

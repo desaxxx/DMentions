@@ -18,13 +18,13 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
         if(args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             if(!sender.hasPermission("dmentions.reload")) {
-                sender.sendMessage(color("&cBu komudu kullanmaya yetkin yok."));
+                sender.sendMessage(color("&cNo permission to use this command."));
                 return true;
             }
             Main.config = new Config();
-            sender.sendMessage(color("&aKonfigurasyon dosyası yenilendi."));
+            sender.sendMessage(color("&aReloaded configuration."));
         }else {
-            sender.sendMessage(color("&cBilinmeyen komut."));
+            sender.sendMessage(color("&cUnknown command."));
         }
         return true;
     }

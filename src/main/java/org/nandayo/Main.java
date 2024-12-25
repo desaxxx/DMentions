@@ -3,7 +3,6 @@ package org.nandayo;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,6 +11,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.nandayo.Events.MentionEveryoneEvent;
 import org.nandayo.Events.MentionPlayerEvent;
 
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import static org.nandayo.HexUtil.color;
 
 public final class Main extends JavaPlugin implements Listener {
 
-    public static Main plugin;
+    private static Main plugin;
     public static Main inst() {
         return plugin;
     }
@@ -39,6 +39,7 @@ public final class Main extends JavaPlugin implements Listener {
         getCommand("dmentions").setExecutor(new MainCommand());
 
         config = new Config();
+        config.updateFileKeys();
         updatePlayerNamesPattern();
     }
 
@@ -46,22 +47,26 @@ public final class Main extends JavaPlugin implements Listener {
     public void onDisable() {
     }
 
+    //COOLDOWNS
     private static final HashMap<String, Long> cooldown = new HashMap<>();
+    private static Long everyoneCooldown = 0L;
 
+    //PATTERNS
     private Pattern playerNamesPattern = Pattern.compile("");
-
     private void updatePlayerNamesPattern() {
         String pattern = Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
                 .reduce((a, b) -> a + "|" + b)
-                .orElse(""); // If no players are online, the pattern is empty
+                .orElse("");
 
-        if (!pattern.isEmpty()) {
-            playerNamesPattern = Pattern.compile("\\b(" + pattern + ")\\b");
-        } else {
-            playerNamesPattern = null; // No players online
+        //EVERYONE KEYWORD
+        String everyoneKw = config.get().getString("everyone.keyword", "@everyone");
+        if (!pattern.contains(everyoneKw)) {
+            pattern = everyoneKw + "|" + pattern;
         }
+        playerNamesPattern = Pattern.compile("(?<!\\S)(" + pattern + ")(?!\\S)");
     }
+
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         updatePlayerNamesPattern();
@@ -77,33 +82,63 @@ public final class Main extends JavaPlugin implements Listener {
         String msg = e.getMessage();
         Player sender = e.getPlayer();
 
-        if(!config.get().getBoolean("notify.enabled",true)) {
-            return;
-        }
         if(playerNamesPattern == null) {
             return;
         }
-
-        e.setMessage(getUpdatedMessage(sender, msg, playerNamesPattern.toString()));
+        if(config.get().getBoolean("player.enabled",true) ||
+                config.get().getBoolean("everyone.enabled", true)) {
+            msg = getUpdatedMessage(sender, msg, playerNamesPattern.toString());
+            e.setMessage(msg);
+        }
     }
 
+    //UPDATED CHAT MESSAGE
     private String getUpdatedMessage(Player sender, String msg, String namesPattern) {
-        Pattern pattern = Pattern.compile("\\b(" + namesPattern + ")\\b");
-        Matcher matcher = pattern.matcher(msg);
+        //OTHER KEYWORDS
+        String everyoneKw = config.get().getString("everyone.keyword", "@everyone");
 
+        //DISPLAY
+        String everyoneDisplay = config.get().getString("everyone.display", "&2@everyone&f");
+        String playerDisplay = config.get().getString("player.display", "&a@{p}&f");
+
+        //PERMISSIONS
+        String playerPerm = getPermission(config.get().getString("player.permission"));
+        String everyonePerm = getPermission(config.get().getString("everyone.permission"));
+
+        //PATTERN
+        Pattern pattern = Pattern.compile("(?<!\\S)(" + namesPattern + ")(?!\\S)");
+        Matcher matcher = pattern.matcher(msg);
         StringBuilder updatedMessage = new StringBuilder();
         int lastMatchEnd = 0;
 
+        //WORD CHECK
         while (matcher.find()) {
             String word = matcher.group(1);
+
+            //EVERYONE MENTION
+            if(word.equalsIgnoreCase(everyoneKw) && !everyoneIsOnCooldown() && sender.hasPermission(everyonePerm)) {
+                everyoneCooldown = System.currentTimeMillis();
+
+                updatedMessage.append(msg, lastMatchEnd, matcher.start());
+                updatedMessage.append(color(everyoneDisplay));
+
+                Bukkit.getScheduler().runTask(this, () -> {
+                    Player[] targets = Bukkit.getOnlinePlayers().toArray(new Player[0]);
+                    MentionEveryoneEvent mentionEvent = new MentionEveryoneEvent(sender, targets);
+                    Bukkit.getPluginManager().callEvent(mentionEvent);
+                });
+                lastMatchEnd = matcher.end();
+                continue;
+            }
+
+            //PLAYER MENTION
             Player target = Bukkit.getPlayerExact(word);
-            if(target == null || isOnCooldown(word)) continue;
+            if(target == null || playerIsOnCooldown(word) || !sender.hasPermission(playerPerm)) continue;
 
             cooldown.put(word, System.currentTimeMillis());
-
             updatedMessage.append(msg, lastMatchEnd, matcher.start());
 
-            String formattedMention = config.get().getString("notify.pattern", "@{p}").replaceFirst("\\{p}",word);
+            String formattedMention = playerDisplay.replaceFirst("\\{p}", word);
             updatedMessage.append(color(formattedMention));
 
             Bukkit.getScheduler().runTask(this, () -> {
@@ -117,18 +152,44 @@ public final class Main extends JavaPlugin implements Listener {
         return updatedMessage.toString();
     }
 
-    public static long getLastMention(String target) {
+
+    //LAST MENTION
+    private long getLastPlayerMention(String target) {
         return cooldown.getOrDefault(target, 0L);
     }
+    private long getLastEveryoneMention() {
+        return everyoneCooldown;
+    }
 
-    public static boolean isOnCooldown(String target) {
-        long lastMention = getLastMention(target);
-        long cooldown = config.get().getLong("notify.cooldown", 0) * 1000;
+    //COOLDOWN CHECK
+    private boolean playerIsOnCooldown(String target) {
+        long lastMention = getLastPlayerMention(target);
+        long cooldown = config.get().getLong("player.cooldown", 0) * 1000;
         return System.currentTimeMillis() - lastMention < cooldown;
     }
+    private boolean everyoneIsOnCooldown() {
+        long lastMention = getLastEveryoneMention();
+        long cooldown = config.get().getLong("everyone.cooldown", 0) * 1000;
+        return System.currentTimeMillis() - lastMention < cooldown;
+    }
+    
+    //GET PERMISSION
+    private String getPermission(String str) {
+        return (str == null || str.isEmpty()) ? "" : str;
+    }
 
+    //ACTION BAR
     public static void sendActionBar(Player player, String msg) {
         if(msg == null || msg.isEmpty()) return;
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(color(msg)));
+        String formattedText = color(prefixedString(msg));
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(formattedText));
     }
+
+    //PREFIX REPLACE
+    private static String prefixedString(String str) {
+        if(str == null || str.isEmpty()) return "";
+        String prefix = config.get().getString("prefix", "");
+        return str.replaceAll("\\{PREFIX}", prefix);
+    }
+    
 }
