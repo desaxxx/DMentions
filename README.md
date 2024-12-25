@@ -1,2 +1,2 @@
 # NMentions
-Basit sohbette oyuncu etiketleme sistemi.
+Simple chat plugin for mentioning players.
