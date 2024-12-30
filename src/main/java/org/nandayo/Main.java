@@ -124,6 +124,7 @@ public final class Main extends JavaPlugin implements Listener {
         }
     }
     public static void clearAfterLoadPermissions() {
+        if(afterLoadPermissions.isEmpty()) return;
         for(String perm : afterLoadPermissions) {
             Permission permission = Bukkit.getPluginManager().getPermission(perm);
             if(permission != null) {

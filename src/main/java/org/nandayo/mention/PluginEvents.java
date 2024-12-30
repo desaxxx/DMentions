@@ -18,21 +18,24 @@ public class PluginEvents implements Listener {
         Player target = e.getTarget();
 
         //SOUND
+        Sound sound;
         try {
-            Sound sound = Sound.valueOf(Main.configManager.getString("player.sound", ""));
-            target.playSound(target, sound, 0.6f, 1.0f);
+            sound = Sound.valueOf(Main.configManager.getString("everyone.sound", ""));
         }catch (IllegalArgumentException exc) {
+            sound = null;
         }
 
         //TARGET BAR
         String targetBar = Main.configManager.getString("player.action_bar.target_message", "");
         if(targetBar != null) targetBar = targetBar.replace("{p}", sender.getName());
         Main.sendActionBar(target, targetBar);
+        if(sound != null) target.playSound(target, sound, 0.6f, 1f);
 
         //SENDER BAR
         String senderBar = Main.configManager.getString("player.action_bar.sender_message", "");
         if(senderBar != null) senderBar = senderBar.replace("{p}",target.getName());
         Main.sendActionBar(sender, senderBar);
+        if(sound != null) sender.playSound(sender, sound, 0.6f, 1f);
     }
 
     @EventHandler

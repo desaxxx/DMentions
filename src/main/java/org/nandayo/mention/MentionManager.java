@@ -24,17 +24,19 @@ public class MentionManager {
     }
 
     public void removePlayer(Player player) {
-        if(validKeywords.contains(player.getName())) {
-            validKeywords.remove(player.getName());
-            mentionHolders.remove(player.getName());
-        }
+        if(!validKeywords.contains(player.getName())) return;
+
+        validKeywords.remove(player.getName());
+        mentionHolders.remove(player.getName());
+        updateKeywordPattern();
     }
     public void addPlayer(Player player) {
-        if(!validKeywords.contains(player.getName())) {
-            validKeywords.add(player.getName());
-            String perm = Main.getPermission(configManager.getString("player.permission", "dmentions.mention.player"));
-            mentionHolders.put(player.getName(), new MentionHolder(MentionType.PLAYER, perm, player.getName()));
-        }
+        if(validKeywords.contains(player.getName())) return;
+
+        validKeywords.add(player.getName());
+        String perm = Main.getPermission(configManager.getString("player.permission", "dmentions.mention.player"));
+        mentionHolders.put(player.getName(), new MentionHolder(MentionType.PLAYER, perm, player.getName()));
+        updateKeywordPattern();
     }
 
     public void reload() {
