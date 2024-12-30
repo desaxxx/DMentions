@@ -1,8 +1,10 @@
 name: DMentions
-version: '1.0-BETA4'
+version: '1.0-BETA5'
 main: org.nandayo.Main
 api-version: '1.20'
 authors: [ yoshii01 ]
+softdepend:
+  - LuckPerms
 commands:
   dmentions:
     aliases: dms
@@ -12,11 +14,5 @@ permissions:
     default: op
     children:
       dmentions.reload: true
-      dmentions.mention.player: true
-      dmentions.mention.everyone: true
   dmentions.reload:
-    default: op
-  dmentions.mention.player:
-    default: op
-  dmentions.mention.everyone:
     default: op

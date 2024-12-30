@@ -4,13 +4,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
+import org.nandayo.mention.MentionManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.nandayo.HexUtil.color;
+import static org.nandayo.utils.HexUtil.color;
 
 public class MainCommand implements CommandExecutor, TabCompleter {
 
@@ -21,7 +21,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(color("&cNo permission to use this command."));
                 return true;
             }
-            Main.config = new Config();
+            Main.updateVariables();
             sender.sendMessage(color("&aReloaded configuration."));
         }else {
             sender.sendMessage(color("&cUnknown command."));

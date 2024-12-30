@@ -1,12 +1,16 @@
-prefix: "&8[&6Prefix&8]&r"
+# Happy editting! I may add language directory for notification messages on latter versions?
+# Also if you have any suggestions or bug reports, you can find me on Discord with nick desaxx
+#
+# (!) All the 'cooldown' values are representing in seconds.
+#
+prefix: "&8[&6DMentions&8]&r"
 #
 player:
   enabled: true
   permission: "dmentions.mention.player"
   sound: "BLOCK_NOTE_BLOCK_PLING"
   display: "&a@{p}&f"
-  #seconds
-  cooldown: 3
+  cooldown: 5
   action_bar:
     sender_message: "{PREFIX} &fYou mentioned player &e{p}&f."
     target_message: "{PREFIX} &fPlayer &e{p}&f mentioned you in chat."
@@ -17,8 +21,35 @@ everyone:
   sound: "BLOCK_NOTE_BLOCK_PLING"
   keyword: "@everyone"
   display: "&2@everyone&f"
-  #seconds
-  cooldown: 3
+  cooldown: 10
   action_bar:
     sender_message: "{PREFIX} &fYou mentioned everyone."
     target_message: "{PREFIX} &fPlayer &e{p}&f mentioned everyone."
+#
+group:
+  # Requires LuckPerms, otherwise it will not work.
+  enabled: true
+  disabled_groups:
+    - "admin"
+    - "owner"
+  keyword: "@{group}"
+  permission: "dmentions.mention.group.{group}"
+  list:
+    # Example group named 'default'
+    default:
+      sound: "BLOCK_NOTE_BLOCK_PLING"
+      display: "&7@{group}&f"
+      cooldown: 5
+      action_bar:
+       sender_message: "{PREFIX} &fYou mentioned &e{group}&f members."
+       target_message: "{PREFIX} &fPlayer &e{p}&f mentioned your group members."
+    # For other not-specified groups which are not disabled.
+    __OTHER__:
+      sound: "BLOCK_NOTE_BLOCK_PLING"
+      display: "&b@{group}&f"
+      cooldown: 5
+      action_bar:
+        sender_message: "{PREFIX} &fYou mentioned &e{group}&f members."
+        target_message: "{PREFIX} &fPlayer &e{p}&f mentioned your group members."
+#
+config_version: "{version}" # DO NOT CHANGE.
