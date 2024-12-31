@@ -64,6 +64,16 @@ public class ConfigManager {
         }
     }
 
+    public int getInt(String key, int defaultValue) {
+        Object value = cachedValues.get(key);
+        if(value instanceof Integer) {
+            return (Integer) value;
+        }else if(value instanceof Long) {
+            return ((Long) value).intValue();
+        }
+        return defaultValue;
+    }
+
     public List<String> getStringList(String key) {
         return config.isList(key) ? config.getStringList(key) : new ArrayList<>();
     }

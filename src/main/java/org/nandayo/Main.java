@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -14,6 +15,7 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.nandayo.data.UserManager;
 import org.nandayo.integration.LP;
 import org.nandayo.mention.Events.MentionEveryoneEvent;
 import org.nandayo.mention.Events.MentionGroupEvent;
@@ -41,6 +43,7 @@ public final class Main extends JavaPlugin implements Listener {
     //MANAGERS
     public static ConfigManager configManager;
     public static MentionManager mentionManager;
+    public static UserManager userManager;
 
     //SPIGOT RESOURCE ID
     private final int resourceId = 121452;
@@ -81,6 +84,7 @@ public final class Main extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        userManager.saveChanges();
     }
 
     public static void updateVariables() {
@@ -88,6 +92,7 @@ public final class Main extends JavaPlugin implements Listener {
         Config config = new Config();
         configManager = new ConfigManager(config.get());
         mentionManager = new MentionManager(configManager);
+        userManager = new UserManager();
         //PERMISSION
         clearAfterLoadPermissions();
         setupPermissions();
@@ -147,12 +152,14 @@ public final class Main extends JavaPlugin implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         mentionManager.removePlayer(event.getPlayer());
+        CooldownManager.playerCooldown.remove(event.getPlayer().getName());
     }
 
-    @EventHandler
+    @EventHandler (priority = EventPriority.HIGH)
     public void onChat(AsyncPlayerChatEvent e) {
         Player sender = e.getPlayer();
         String message = e.getMessage();
+        if(e.isCancelled()) return;
 
         Pattern mentionPattern = mentionManager.getMentionPattern();
         Matcher matcher = mentionPattern.matcher(message);
@@ -160,7 +167,13 @@ public final class Main extends JavaPlugin implements Listener {
         StringBuilder updatedMessage = new StringBuilder();
         int lastAppendPosition = 0;
 
+        int mentionLimit = configManager.getInt("mention_limit", 2);
+        int mentionCounter = 0;
+
         while (matcher.find()) {
+            if(mentionCounter >= mentionLimit) {
+                break;
+            }
             String keyword = matcher.group(1);
             MentionHolder mh = mentionManager.getMentionHolder(keyword);
 
@@ -173,9 +186,10 @@ public final class Main extends JavaPlugin implements Listener {
 
                 if (mh.getType() == MentionType.PLAYER) {
                     Player target = Bukkit.getPlayerExact(mh.getTarget());
-                    if (target != null && !CooldownManager.playerIsOnCooldown(keyword) && sender.hasPermission(mh.getPerm())) {
+                    if (target != null && userManager.getMentionMode(target) && !CooldownManager.playerIsOnCooldown(keyword) && sender.hasPermission(mh.getPerm())) {
                         CooldownManager.playerCooldown.put(target.getName(), System.currentTimeMillis());
                         displayText = configManager.getString("player.display", "&a{p}&f").replace("{p}", target.getName());
+                        mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
                             MentionPlayerEvent event = new MentionPlayerEvent(sender, target);
@@ -186,6 +200,7 @@ public final class Main extends JavaPlugin implements Listener {
                     if (!CooldownManager.everyoneIsOnCooldown() && sender.hasPermission(mh.getPerm())) {
                         CooldownManager.everyoneCooldown = System.currentTimeMillis();
                         displayText = configManager.getString("everyone.display", "&2@everyone&f");
+                        mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
                             MentionEveryoneEvent event = new MentionEveryoneEvent(sender, Bukkit.getOnlinePlayers().toArray(new Player[0]));
@@ -199,6 +214,7 @@ public final class Main extends JavaPlugin implements Listener {
                         CooldownManager.groupCooldown.put(group, System.currentTimeMillis());
                         //Getting from group section
                         displayText = section.getString("display", "&b{group}&f").replace("{group}", group);
+                        mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
                             MentionGroupEvent event = new MentionGroupEvent(sender, group, LP.getOnlinePlayersInGroup(group));

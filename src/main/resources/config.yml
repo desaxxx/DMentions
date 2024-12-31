@@ -1,9 +1,11 @@
-# Happy editting! I may add language directory for notification messages on latter versions?
+# Happy editing! I may add language directory for notification messages on latter versions?
 # Also if you have any suggestions or bug reports, you can find me on Discord with nick desaxx
 #
 # (!) All the 'cooldown' values are representing in seconds.
 #
 prefix: "&8[&6DMentions&8]&r"
+# How many mentions in single message.
+mention_limit: 2
 #
 player:
   enabled: true
@@ -43,7 +45,7 @@ group:
       action_bar:
        sender_message: "{PREFIX} &fYou mentioned &e{group}&f members."
        target_message: "{PREFIX} &fPlayer &e{p}&f mentioned your group members."
-    # For other not-specified groups which are not disabled.
+    # For other unspecified groups which are not disabled.
     __OTHER__:
       sound: "BLOCK_NOTE_BLOCK_PLING"
       display: "&b@{group}&f"
