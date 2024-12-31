@@ -92,6 +92,9 @@ public final class Main extends JavaPlugin implements Listener {
         Config config = new Config();
         configManager = new ConfigManager(config.get());
         mentionManager = new MentionManager(configManager);
+        if(userManager != null) {
+            userManager.saveChanges();
+        }
         userManager = new UserManager();
         //PERMISSION
         clearAfterLoadPermissions();
