@@ -4,7 +4,7 @@ public class MentionHolder {
 
     private final MentionType type;
     private final String perm;
-    private final String target; // Could be a player name or a group name
+    private final String target; // Could be a player name or a group name (null in cases its everyone and nearby)
 
     public MentionHolder(MentionType type, String perm, String target) {
         this.type = type;

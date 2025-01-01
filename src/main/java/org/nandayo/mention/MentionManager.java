@@ -23,6 +23,10 @@ public class MentionManager {
         reload();
     }
 
+    public Set<String> getValidKeywords() {
+        return validKeywords;
+    }
+
     public void removePlayer(Player player) {
         if(!validKeywords.contains(player.getName())) return;
 
@@ -45,32 +49,40 @@ public class MentionManager {
         // LOAD PLAYER KEYWORDS
         if (configManager.getBoolean("player.enabled", false)) {
             Bukkit.getOnlinePlayers().forEach(player -> {
-                String playerName = player.getName();
+                String keyword = player.getName();
                 String perm = Main.getPermission(configManager.getString("player.permission", "dmentions.mention.player"));
-                validKeywords.add(playerName);
-                mentionHolders.put(playerName, new MentionHolder(MentionType.PLAYER, perm, playerName));
+                validKeywords.add(keyword);
+                mentionHolders.put(keyword, new MentionHolder(MentionType.PLAYER, perm, keyword));
             });
+        }
+
+        // LOAD NEARBY KEYWORD
+        if(configManager.getBoolean("nearby.enabled", false)) {
+            String keyword = configManager.getString("nearby.keyword", "@nearby");
+            String perm = Main.getPermission(configManager.getString("nearby.permission", "dmentions.mention.nearby"));
+            validKeywords.add(keyword);
+            mentionHolders.put(keyword, new MentionHolder(MentionType.NEARBY, perm,null));
         }
 
         // LOAD EVERYONE KEYWORD
         if (configManager.getBoolean("everyone.enabled", false)) {
-            String everyoneKeyword = configManager.getString("everyone.keyword", "@everyone");
+            String keyword = configManager.getString("everyone.keyword", "@everyone");
             String perm = Main.getPermission(configManager.getString("everyone.permission", "dmentions.mention.everyone"));
-            validKeywords.add(everyoneKeyword);
-            mentionHolders.put(everyoneKeyword, new MentionHolder(MentionType.EVERYONE, perm,null));
+            validKeywords.add(keyword);
+            mentionHolders.put(keyword, new MentionHolder(MentionType.EVERYONE, perm,null));
         }
 
         //LOAD GROUP KEYWORDS
         if (configManager.getBoolean("group.enabled", false) && LP.isConnected()) {
             List<String> disabledGroups = configManager.getStringList("group.disabled_groups");
-            String groupKeywordTemplate = configManager.getString("group.keyword", "@{group}");
+            String keywordTemplate = configManager.getString("group.keyword", "@{group}");
             LP.getGroups().stream()
                     .filter(group -> !disabledGroups.contains(group))
                     .forEach(group -> {
-                        String groupKeyword = groupKeywordTemplate.replace("{group}", group);
+                        String keyword = keywordTemplate.replace("{group}", group);
                         String perm = Main.getPermission(configManager.getString("group.permission", "dmentions.mention.group.{group}")).replace("{group}", group);
-                        validKeywords.add(groupKeyword);
-                        mentionHolders.put(groupKeyword, new MentionHolder(MentionType.GROUP, perm, group));
+                        validKeywords.add(keyword);
+                        mentionHolders.put(keyword, new MentionHolder(MentionType.GROUP, perm, group));
                     });
         }
 

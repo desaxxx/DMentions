@@ -1,5 +1,6 @@
 package org.nandayo.mention;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -8,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.nandayo.Main;
 import org.nandayo.mention.Events.MentionEveryoneEvent;
 import org.nandayo.mention.Events.MentionGroupEvent;
+import org.nandayo.mention.Events.MentionNearbyEvent;
 import org.nandayo.mention.Events.MentionPlayerEvent;
 
 public class PluginEvents implements Listener {
@@ -17,25 +19,31 @@ public class PluginEvents implements Listener {
         Player sender = e.getSender();
         Player target = e.getTarget();
 
-        //SOUND
-        Sound sound;
-        try {
-            sound = Sound.valueOf(Main.configManager.getString("everyone.sound", ""));
-        }catch (IllegalArgumentException exc) {
-            sound = null;
-        }
+        String soundName = Main.configManager.getString("player.sound", "");
 
-        //TARGET BAR
-        String targetBar = Main.configManager.getString("player.action_bar.target_message", "");
-        if(targetBar != null) targetBar = targetBar.replace("{p}", sender.getName());
-        Main.sendActionBar(target, targetBar);
-        if(sound != null) target.playSound(target, sound, 0.6f, 1f);
+        String targetBar = Main.configManager.getString("player.action_bar.target_message", "").replace("{p}", sender.getName());
+        String targetTitle = Main.configManager.getString("player.title.target_message", "").replace("{p}", sender.getName());
 
-        //SENDER BAR
-        String senderBar = Main.configManager.getString("player.action_bar.sender_message", "");
-        if(senderBar != null) senderBar = senderBar.replace("{p}",target.getName());
-        Main.sendActionBar(sender, senderBar);
-        if(sound != null) sender.playSound(sender, sound, 0.6f, 1f);
+        String senderBar = Main.configManager.getString("player.action_bar.sender_message", "").replace("{p}", target.getName());
+        String senderTitle = Main.configManager.getString("player.title.sender_message", "").replace("{p}", target.getName());
+
+        mention(sender, new Player[]{target}, soundName, targetBar, targetTitle, senderBar, senderTitle);
+    }
+
+    @EventHandler
+    public void onNearbyMention(MentionNearbyEvent e) {
+        Player sender = e.getSender();
+        Player[] targets = e.getTargets();
+
+        String soundName = Main.configManager.getString("nearby.sound", "");
+
+        String targetBar = Main.configManager.getString("nearby.action_bar.target_message", "").replace("{p}", sender.getName());
+        String targetTitle = Main.configManager.getString("nearby.title.target_message", "").replace("{p}", sender.getName());
+
+        String senderBar = Main.configManager.getString("nearby.action_bar.sender_message", "");
+        String senderTitle = Main.configManager.getString("nearby.title.sender_message", "");
+
+        mention(sender, targets, soundName, targetBar, targetTitle, senderBar, senderTitle);
     }
 
     @EventHandler
@@ -43,30 +51,15 @@ public class PluginEvents implements Listener {
         Player sender = e.getSender();
         Player[] targets = e.getTargets();
 
-        //SOUND
-        Sound sound;
-        try {
-            sound = Sound.valueOf(Main.configManager.getString("everyone.sound", ""));
-        }catch (IllegalArgumentException exc) {
-            sound = null;
-        }
+        String soundName = Main.configManager.getString("everyone.sound", "");
 
-        //TARGET BAR
-        String targetBar = Main.configManager.getString("everyone.action_bar.target_message", "");
-        if(targetBar != null) targetBar = targetBar.replaceFirst("\\{p}", sender.getName());
+        String targetBar = Main.configManager.getString("everyone.action_bar.target_message", "").replace("{p}", sender.getName());
+        String targetTitle = Main.configManager.getString("everyone.title.target_message", "").replace("{p}", sender.getName());
 
-        //SENDER BAR
         String senderBar = Main.configManager.getString("everyone.action_bar.sender_message", "");
-        Main.sendActionBar(sender, senderBar);
-        if(sound != null) sender.playSound(sender, sound, 0.6f, 1.0f);
+        String senderTitle = Main.configManager.getString("everyone.title.sender_message", "");
 
-        for(Player target : targets) {
-            if(target == sender) continue;
-            if(sound != null) {
-                target.playSound(target, sound, 0.6f, 1.0f);
-            }
-            Main.sendActionBar(target, targetBar);
-        }
+        mention(sender, targets, soundName, targetBar, targetTitle, senderBar, senderTitle);
     }
 
     @EventHandler
@@ -79,31 +72,44 @@ public class PluginEvents implements Listener {
         ConfigurationSection section = Main.getGroupSection(group);
         if(section == null) return;
 
-        //SOUND
+        String soundName = section.getString("sound", "");
+
+        String targetBar = section.getString("action_bar.target_message", "").replace("{p}", sender.getName()).replace("{group}", group);
+        String targetTitle = section.getString("title.target_message", "").replace("{p}", sender.getName()).replace("{group}", group);
+
+        String senderBar = section.getString("action_bar.sender_message","").replace("{group}", group);
+        String senderTitle = section.getString("title.sender_message", "").replace("{group}", group);
+
+        mention(sender, targets, soundName, targetBar, targetTitle, senderBar, senderTitle);
+    }
+
+    //GENERAL MENTION METHOD
+    private void mention(Player sender, Player[] targets, String soundName, String targetBar, String targetTitle, String senderBar, String senderTitle) {
         Sound sound;
         try {
-            sound = Sound.valueOf(section.getString("sound", ""));
-        }catch (IllegalArgumentException exc) {
+            sound = Sound.valueOf(soundName);
+        } catch (IllegalArgumentException exc) {
             sound = null;
         }
 
-        //TARGET BAR
-        String targetBar = section.getString("action_bar.target_message");
-        if(targetBar != null) targetBar = targetBar.replace("{p}", sender.getName())
-                .replace("{group}", group);
-
-        //SENDER BAR
-        String senderBar = section.getString("action_bar.sender_message");
-        if(senderBar != null) senderBar = senderBar.replace("{group}",group);
+        //SENDER
         Main.sendActionBar(sender, senderBar);
+        Main.sendTitle(sender, senderTitle);
         if(sound != null) sender.playSound(sender, sound, 0.6f, 1.0f);
 
+        //TARGET
+        int counter = 0;
         for(Player target : targets) {
             if(target == sender) continue;
             if(sound != null) {
                 target.playSound(target, sound, 0.6f, 1.0f);
             }
             Main.sendActionBar(target, targetBar);
+            Main.sendTitle(target, targetTitle);
+
+            if(++counter % 15 == 0) {
+                Bukkit.getScheduler().runTaskLater(Main.inst(), () -> {}, 10L);
+            }
         }
     }
 }

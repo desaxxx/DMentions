@@ -4,6 +4,7 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -19,6 +20,7 @@ import org.nandayo.data.UserManager;
 import org.nandayo.integration.LP;
 import org.nandayo.mention.Events.MentionEveryoneEvent;
 import org.nandayo.mention.Events.MentionGroupEvent;
+import org.nandayo.mention.Events.MentionNearbyEvent;
 import org.nandayo.mention.Events.MentionPlayerEvent;
 import org.nandayo.mention.MentionHolder;
 import org.nandayo.mention.MentionManager;
@@ -105,10 +107,13 @@ public final class Main extends JavaPlugin implements Listener {
     public static void setupPermissions() {
         String playerPermission = getPermission(configManager.getString("player.permission", "dmentions.mention.player"));
         String everyonePermission = getPermission(configManager.getString("everyone.permission", "dmentions.mention.everyone"));
+        String nearbyPermission = getPermission(configManager.getString("nearby.permission", "dmentions.mention.nearby"));
 
         Bukkit.getPluginManager().addPermission(new Permission(playerPermission, PermissionDefault.OP));
+        Bukkit.getPluginManager().addPermission(new Permission(nearbyPermission, PermissionDefault.OP));
         Bukkit.getPluginManager().addPermission(new Permission(everyonePermission, PermissionDefault.OP));
         afterLoadPermissions.add(playerPermission);
+        afterLoadPermissions.add(nearbyPermission);
         afterLoadPermissions.add(everyonePermission);
 
         if (LP.isConnected()) {
@@ -189,9 +194,9 @@ public final class Main extends JavaPlugin implements Listener {
 
                 if (mh.getType() == MentionType.PLAYER) {
                     Player target = Bukkit.getPlayerExact(mh.getTarget());
-                    if (target != null && userManager.getMentionMode(target) && !CooldownManager.playerIsOnCooldown(keyword) && sender.hasPermission(mh.getPerm())) {
+                    if (target != null && userManager.getMentionMode(target) && !CooldownManager.playerIsOnCooldown(sender,keyword) && sender.hasPermission(mh.getPerm())) {
                         CooldownManager.playerCooldown.put(target.getName(), System.currentTimeMillis());
-                        displayText = configManager.getString("player.display", "&a{p}&f").replace("{p}", target.getName());
+                        displayText = configManager.getString("player.display", "<#a9e871>{p}&f").replace("{p}", target.getName());
                         mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
@@ -199,10 +204,21 @@ public final class Main extends JavaPlugin implements Listener {
                             Bukkit.getPluginManager().callEvent(event);
                         });
                     }
+                } else if (mh.getType() == MentionType.NEARBY) {
+                    if (!CooldownManager.nearbyIsOnCooldown(sender) && sender.hasPermission(mh.getPerm())) {
+                        CooldownManager.nearbyCooldown.put(sender.getName(), System.currentTimeMillis());
+                        displayText = configManager.getString("nearby.display", "<#ea79b8>@nearby&f");
+                        mentionCounter++;
+
+                        Bukkit.getScheduler().runTask(this, () -> {
+                            MentionNearbyEvent event = new MentionNearbyEvent(sender, getNearbyPlayers(sender));
+                            Bukkit.getPluginManager().callEvent(event);
+                        });
+                    }
                 } else if (mh.getType() == MentionType.EVERYONE) {
-                    if (!CooldownManager.everyoneIsOnCooldown() && sender.hasPermission(mh.getPerm())) {
+                    if (!CooldownManager.everyoneIsOnCooldown(sender) && sender.hasPermission(mh.getPerm())) {
                         CooldownManager.everyoneCooldown = System.currentTimeMillis();
-                        displayText = configManager.getString("everyone.display", "&2@everyone&f");
+                        displayText = configManager.getString("everyone.display", "<#8fb56c>@everyone&f");
                         mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
@@ -213,10 +229,10 @@ public final class Main extends JavaPlugin implements Listener {
                 } else if (mh.getType() == MentionType.GROUP && LP.isConnected()) {
                     String group = mh.getTarget();
                     ConfigurationSection section = getGroupSection(group);
-                    if (!CooldownManager.groupIsOnCooldown(mh.getTarget()) && section != null && sender.hasPermission(mh.getPerm())) {
+                    if (!CooldownManager.groupIsOnCooldown(sender,mh.getTarget()) && section != null && sender.hasPermission(mh.getPerm())) {
                         CooldownManager.groupCooldown.put(group, System.currentTimeMillis());
                         //Getting from group section
-                        displayText = section.getString("display", "&b{group}&f").replace("{group}", group);
+                        displayText = section.getString("display", "<#73c7dc>{group}&f").replace("{group}", group);
                         mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
@@ -236,11 +252,26 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
 
+    //CHAT MESSAGE
+    public static void sendMessage(Player player, String msg) {
+        if(msg == null || msg.isEmpty()) return;
+        String formattedText = color(prefixedString(msg));
+        player.sendMessage(formattedText);
+    }
     //ACTION BAR
     public static void sendActionBar(Player player, String msg) {
         if(msg == null || msg.isEmpty()) return;
         String formattedText = color(prefixedString(msg));
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(formattedText));
+    }
+    //TITLE
+    public static void sendTitle(Player player, String msg) {
+        if(msg == null || msg.isEmpty()) return;
+        String[] lines = msg.split("\\|\\|");
+        String title = color(prefixedString(lines[0]));
+        String subtitle = lines.length > 1 ? color(prefixedString(lines[1])) : "";
+
+        player.sendTitle(title, subtitle, 10, 30, 20);
     }
 
     //PREFIX REPLACE
@@ -263,8 +294,39 @@ public final class Main extends JavaPlugin implements Listener {
         }
     }
 
+    //GET NEARBY PLAYERS
+    public static Player[] getNearbyPlayers(Player player) {
+        int radius = configManager.getInt("nearby.radius", 20);
+        if(radius <= 0) return new Player[0];
+
+        Set<Player> nearbyPlayers = new HashSet<>();
+        for (Entity entity : player.getNearbyEntities(radius, radius, radius)) {
+            if (entity instanceof Player nearbyPlayer) {
+                nearbyPlayers.add(nearbyPlayer);
+            }
+        }
+        return nearbyPlayers.toArray(new Player[0]);
+    }
+
     //GET PERMISSION
     public static String getPermission(String str) {
         return (str == null || str.isEmpty()) ? "" : str;
+    }
+
+    //FORMATTED TIME
+    public static String formattedTime(long millisecond) {
+        long seconds = millisecond / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        long days = hours / 24;
+
+        seconds %= 60;
+        minutes %= 60;
+        hours %= 24;
+
+        if (days > 0) return String.format("%d d, %d h", days, hours);
+        if (hours > 0) return String.format("%d h, %d m", hours, minutes);
+        if (minutes > 0) return String.format("%d m, %d s", minutes, seconds);
+        return String.format("%d s", seconds);
     }
 }

@@ -32,6 +32,22 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             }
         }
         /*
+         * Send Mention via Command
+         * /dms send <keyword>
+         */
+        else if(args.length >= 2 && args[0].equalsIgnoreCase("send") && sender.hasPermission("dmentions.send")) {
+            if(sender instanceof Player p) {
+                String keyword = args[1];
+                if(Main.mentionManager.getValidKeywords().contains(keyword)) {
+                    p.chat(keyword);
+                }else {
+                    p.sendMessage(color("&cInvalid keyword."));
+                }
+            }else {
+                sender.sendMessage(color("&cYou must be a player to use this command!"));
+            }
+        }
+        /*
          * Config Reload
          */
         else if(args.length >= 1 && args[0].equalsIgnoreCase("reload")  && sender.hasPermission("dmentions.reload")) {
@@ -83,9 +99,15 @@ public class MainCommand implements CommandExecutor, TabCompleter {
          */
         if(args.length == 1) {
             if(sender.hasPermission("dmentions.admin")) {
-                return Arrays.asList("toggle","reload","help","user");
+                return Arrays.asList("toggle","reload","help","user","send");
             }
             return Arrays.asList("toggle");
+        }
+        /*
+         * /dms send
+         */
+        else if(args.length == 2 && args[0].equalsIgnoreCase("send") && sender.hasPermission("dmentions.send")) {
+            return Main.mentionManager.getValidKeywords().stream().toList();
         }
         /*
          * /dms user
