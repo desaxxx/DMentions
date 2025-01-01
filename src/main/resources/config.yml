@@ -22,7 +22,7 @@ player:
     sender_message: "{PREFIX} &fYou mentioned player &e{p}&f."
     target_message: "{PREFIX} &fPlayer &e{p}&f mentioned you in chat."
   title:
-    # You can use '||' to use both title and subtitle
+    # You should use '||' for splitting message to title and subtitle
     sender_message: ""
     target_message: "{PREFIX}||&fYou have been mentioned in chat."
 #
