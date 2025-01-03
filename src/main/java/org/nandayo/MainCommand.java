@@ -20,8 +20,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
         if(args.length >= 1 && args[0].equalsIgnoreCase("toggle") && sender.hasPermission("dmentions.toggle")) {
             if(sender instanceof Player p) {
-                boolean value = Main.userManager.getMentionMode(p);
-                Main.userManager.setMentionMode(p, !value);
+                boolean value = Main.inst().userManager.getMentionMode(p);
+                Main.inst().userManager.setMentionMode(p, !value);
                 if(value) {
                     p.sendMessage(color("&eYou will no longer be mentioned."));
                 }else {
@@ -38,7 +38,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         else if(args.length >= 2 && args[0].equalsIgnoreCase("send") && sender.hasPermission("dmentions.send")) {
             if(sender instanceof Player p) {
                 String keyword = args[1];
-                if(Main.mentionManager.getValidKeywords().contains(keyword)) {
+                if(Main.inst().mentionManager.getValidKeywords().contains(keyword)) {
                     p.chat(keyword);
                 }else {
                     p.sendMessage(color("&cInvalid keyword."));
@@ -51,7 +51,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
          * Config Reload
          */
         else if(args.length >= 1 && args[0].equalsIgnoreCase("reload")  && sender.hasPermission("dmentions.reload")) {
-            Main.updateVariables();
+            Main.inst().updateVariables();
             sender.sendMessage(color("&aReloaded configuration."));
         }
         /*
@@ -68,7 +68,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             String value = args[3];
             if(var.equalsIgnoreCase("mentions")) {
                 boolean val = Boolean.parseBoolean(value);
-                Main.userManager.setMentionMode(player, val);
+                Main.inst().userManager.setMentionMode(player, val);
                 sender.sendMessage(color("&eMention mode of &f" + player.getName() + "&e set to " + val + "."));
             }else {
                 sender.sendMessage(color("&cUnknown argument."));
@@ -79,6 +79,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
          */
         else if(args.length >= 1 && args[0].equalsIgnoreCase("help") && sender.hasPermission("dmentions.help")) {
             sender.sendMessage(color("&6Here is command list."),
+                    color("&7/dms toggle"),
+                    color("&7/dms send <keyword>"),
                     color("&7/dms help"),
                     color("&7/dms reload"),
                     color("&7/dms user <player> <mentions> <true|false>"));
@@ -107,7 +109,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
          * /dms send
          */
         else if(args.length == 2 && args[0].equalsIgnoreCase("send") && sender.hasPermission("dmentions.send")) {
-            return Main.mentionManager.getValidKeywords().stream().toList();
+            return Main.inst().mentionManager.getValidKeywords().stream().toList();
         }
         /*
          * /dms user

@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@SuppressWarnings("CallToPrintStackTrace")
 public class Config {
 
     public FileConfiguration get() {
@@ -18,44 +19,47 @@ public class Config {
     private static File file;
     private static FileConfiguration config;
 
-    public Config() {
-        file = new File(Main.inst().getDataFolder(), "config.yml");
+    private final Main plugin;
+
+    public Config(Main plugin) {
+        this.plugin = plugin;
+        file = new File(this.plugin.getDataFolder(), "config.yml");
         if(!file.exists()) {
-            Main.inst().saveResource("config.yml", false);
+            this.plugin.saveResource("config.yml", false);
         }
         config = YamlConfiguration.loadConfiguration(file);
         updateFileKeys();
     }
 
     //UPDATE KEYS
-    public static void updateFileKeys() {
-        String version = Main.inst().getDescription().getVersion();
+    private void updateFileKeys() {
+        String version = plugin.getDescription().getVersion();
         String configVersion = config.getString("config_version");
 
         if(version.equals(configVersion)) {
             return;
         }
-        InputStream defStream = Main.inst().getResource("config.yml");
+        InputStream defStream = plugin.getResource("config.yml");
         if(defStream == null) {
-            Main.inst().getLogger().warning("Default config.yml not found in plugin resources.");
+            plugin.getLogger().warning("Default config.yml not found in plugin resources.");
             return;
         }
 
         // BACKUP OF OLD CONFIG.YML
-        File backupDir = new File(Main.inst().getDataFolder(), "backups");
+        File backupDir = new File(plugin.getDataFolder(), "backups");
         if (!backupDir.exists()) {
             backupDir.mkdirs();
         }
         String date = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
-        File backupFile = new File(Main.inst().getDataFolder(), "backups/config_" + date + ".yml");
+        File backupFile = new File(plugin.getDataFolder(), "backups/config_" + date + ".yml");
         saveBackupConfig(backupFile, config);
         FileConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupFile);
 
         // CLEAR CONFIG
         file.delete();
-        file = new File(Main.inst().getDataFolder(), "config.yml");
+        file = new File(plugin.getDataFolder(), "config.yml");
         if(!file.exists()) {
-            Main.inst().saveResource("config.yml", false);
+            plugin.saveResource("config.yml", false);
         }
         config = YamlConfiguration.loadConfiguration(file);
 
@@ -70,20 +74,20 @@ public class Config {
         try {
             config.set("config_version", version);
             config.save(file);
-            Main.updateVariables();
-            Main.inst().getLogger().info("Updated config file.");
+            plugin.updateVariables();
+            plugin.getLogger().info("Updated config file.");
         }catch (Exception e) {
-            Main.inst().getLogger().warning("Failed to save updated config file.");
+            plugin.getLogger().warning("Failed to save updated config file.");
             e.printStackTrace();
         }
     }
 
-    private static void saveBackupConfig(File backupFile, FileConfiguration backupConfig) {
+    private void saveBackupConfig(File backupFile, FileConfiguration backupConfig) {
         try {
             backupConfig.save(backupFile);
-            Main.inst().getLogger().info("Backed up old config file.");
+            plugin.getLogger().info("Backed up old config file.");
         } catch (Exception e) {
-            Main.inst().getLogger().warning("Failed to save backup file.");
+            plugin.getLogger().warning("Failed to save backup file.");
             e.printStackTrace();
         }
     }

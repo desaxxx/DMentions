@@ -14,8 +14,11 @@ public class UserManager implements IUser{
     private final File file;
     private final FileConfiguration config;
 
-    public UserManager() {
-        this.file = new File(Main.inst().getDataFolder(), "players.yml");
+    private final Main plugin;
+
+    public UserManager(Main plugin) {
+        this.plugin = plugin;
+        this.file = new File(this.plugin.getDataFolder(), "players.yml");
         this.config = YamlConfiguration.loadConfiguration(file);
     }
 
@@ -23,7 +26,7 @@ public class UserManager implements IUser{
         try {
             config.save(file);
         } catch (IOException e) {
-            Main.inst().getLogger().warning("Could not save players.yml");
+            plugin.getLogger().warning("Could not save players.yml");
             e.printStackTrace();
         }
     }

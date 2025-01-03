@@ -2,35 +2,63 @@ package org.nandayo.utils;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.nandayo.ConfigManager;
 import org.nandayo.Main;
 
 import java.util.HashMap;
 
 public class CooldownManager {
 
-    public static final HashMap<String, Long> playerCooldown = new HashMap<>(); //PLAYER_NAME, LONG
-    public static final HashMap<String, Long> nearbyCooldown = new HashMap<>(); //PLAYER_NAME, LONG
-    public static Long everyoneCooldown = 0L;
-    public static final HashMap<String, Long> groupCooldown = new HashMap<>(); //GROUP_NAME, LONG
+    private final HashMap<String, Long> playerCooldown = new HashMap<>(); //PLAYER_NAME, LONG
+    private final HashMap<String, Long> nearbyCooldown = new HashMap<>(); //PLAYER_NAME, LONG
+    private Long everyoneCooldown = 0L;
+    private final HashMap<String, Long> groupCooldown = new HashMap<>(); //GROUP_NAME, LONG
+
+    private final ConfigManager configManager;
+    private final Main plugin;
+    public CooldownManager(Main plugin, ConfigManager configManager) {
+        this.plugin = plugin;
+        this.configManager = configManager;
+    }
+
 
     //LAST MENTION
-    public static long getLastPlayerMention(String target) {
+    public long getLastPlayerMention(String target) {
         return playerCooldown.getOrDefault(target, 0L);
     }
-    public static long getLastNearbyMention(String sender) {
+    public long getLastNearbyMention(String sender) {
         return nearbyCooldown.getOrDefault(sender, 0L);
     }
-    public static long getLastEveryoneMention() {
+    public long getLastEveryoneMention() {
         return everyoneCooldown;
     }
-    public static long getLastGroupMention(String group) {
+    public long getLastGroupMention(String group) {
         return groupCooldown.getOrDefault(group, 0L);
     }
 
+    //SET
+    public void setLastPlayerMention(String target, long time) {
+        playerCooldown.put(target, time);
+    }
+    public void setLastNearbyMention(String sender, long time) {
+        nearbyCooldown.put(sender, time);
+    }
+    public void setLastEveryoneMention(long time) {
+        everyoneCooldown = time;
+    }
+    public void setLastGroupMention(String group, long time) {
+        groupCooldown.put(group, time);
+    }
+
+    //REMOVE PLAYER COOLDOWN
+    public void removeLastPlayerMention(String target) {
+        playerCooldown.remove(target);
+    }
+
     //COOLDOWN CHECK
-    public static boolean playerIsOnCooldown(Player sender, String target) {
+    public boolean playerIsOnCooldown(Player sender, String target) {
         long lastMention = getLastPlayerMention(target);
-        long cooldown = Main.configManager.getLong("player.cooldown", 0) * 1000;
+        long cooldown = configManager.getLong("player.cooldown", 0) * 1000;
         long elapsed = System.currentTimeMillis() - lastMention;
 
         if(elapsed >= cooldown) {
@@ -40,9 +68,9 @@ public class CooldownManager {
         cooldownWarn(sender, cooldown-elapsed);
         return true;
     }
-    public static boolean nearbyIsOnCooldown(Player sender) {
+    public boolean nearbyIsOnCooldown(Player sender) {
         long lastMention = getLastNearbyMention(sender.getName());
-        long cooldown = Main.configManager.getLong("nearby.cooldown", 0) * 1000;
+        long cooldown = configManager.getLong("nearby.cooldown", 0) * 1000;
         long elapsed = System.currentTimeMillis() - lastMention;
 
         if(elapsed >= cooldown) {
@@ -52,9 +80,9 @@ public class CooldownManager {
         cooldownWarn(sender, cooldown-elapsed);
         return true;
     }
-    public static boolean everyoneIsOnCooldown(Player sender) {
+    public boolean everyoneIsOnCooldown(Player sender) {
         long lastMention = getLastEveryoneMention();
-        long cooldown = Main.configManager.getLong("everyone.cooldown", 0) * 1000;
+        long cooldown = configManager.getLong("everyone.cooldown", 0) * 1000;
         long elapsed = System.currentTimeMillis() - lastMention;
 
         if(elapsed >= cooldown) {
@@ -64,8 +92,8 @@ public class CooldownManager {
         cooldownWarn(sender, cooldown-elapsed);
         return true;
     }
-    public static boolean groupIsOnCooldown(Player sender, String group) {
-        ConfigurationSection section = Main.getGroupSection(group);
+    public boolean groupIsOnCooldown(Player sender, String group) {
+        ConfigurationSection section = plugin.getGroupSection(group);
         if(section == null) return true;
 
         long lastMention = getLastGroupMention(group);
@@ -80,16 +108,17 @@ public class CooldownManager {
         return true;
     }
 
-    public static void cooldownWarn(Player sender, long remained) {
-        String type = Main.configManager.getString("cooldown_warn.type", "");
-        String message = Main.configManager.getString("cooldown_warn.message", "");
+    private void cooldownWarn(Player sender, long remained) {
+        String type = configManager.getString("cooldown_warn.type", "");
+        String message = configManager.getString("cooldown_warn.message", "");
         if(type.isEmpty() || message.isEmpty()) return;
 
-        String formattedMessage = message.replace("{REMAINED}", Main.formattedTime(remained));
+        String formattedMessage = message.replace("{REMAINED}", plugin.formattedTime(remained));
+        MessageManager messageManager = new MessageManager(configManager);
         switch (type) {
-            case "CHAT" -> Main.sendMessage(sender, formattedMessage);
-            case "ACTION_BAR" -> Main.sendActionBar(sender, formattedMessage);
-            case "TITLE" -> Main.sendTitle(sender, formattedMessage);
+            case "CHAT" -> messageManager.sendMessage(sender, formattedMessage);
+            case "ACTION_BAR" -> messageManager.sendActionBar(sender, formattedMessage);
+            case "TITLE" -> messageManager.sendTitle(sender, formattedMessage);
         }
     }
 }

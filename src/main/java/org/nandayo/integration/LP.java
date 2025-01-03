@@ -6,7 +6,6 @@ import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.types.InheritanceNode;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.nandayo.Main;
 
@@ -17,9 +16,9 @@ import java.util.stream.Collectors;
 public class LP {
 
     private static LuckPerms api = null;
-    private final Plugin plugin;
+    private final Main plugin;
 
-    public LP(Plugin plugin) {
+    public LP(Main plugin) {
         this.plugin = plugin;
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {

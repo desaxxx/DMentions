@@ -2,6 +2,7 @@ package org.nandayo.mention;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.nandayo.ConfigManager;
 import org.nandayo.Main;
 import org.nandayo.integration.LP;
@@ -17,8 +18,10 @@ public class MentionManager {
 
     private String keywordPattern = "";
     private final ConfigManager configManager;
+    private final Main plugin;
 
-    public MentionManager(ConfigManager configManager) {
+    public MentionManager(Main plugin, ConfigManager configManager) {
+        this.plugin = plugin;
         this.configManager = configManager;
         reload();
     }
@@ -38,7 +41,7 @@ public class MentionManager {
         if(validKeywords.contains(player.getName())) return;
 
         validKeywords.add(player.getName());
-        String perm = Main.getPermission(configManager.getString("player.permission", "dmentions.mention.player"));
+        String perm = plugin.getPermission(configManager.getString("player.permission", "dmentions.mention.player"));
         mentionHolders.put(player.getName(), new MentionHolder(MentionType.PLAYER, perm, player.getName()));
         updateKeywordPattern();
     }
@@ -50,7 +53,7 @@ public class MentionManager {
         if (configManager.getBoolean("player.enabled", false)) {
             Bukkit.getOnlinePlayers().forEach(player -> {
                 String keyword = player.getName();
-                String perm = Main.getPermission(configManager.getString("player.permission", "dmentions.mention.player"));
+                String perm = plugin.getPermission(configManager.getString("player.permission", "dmentions.mention.player"));
                 validKeywords.add(keyword);
                 mentionHolders.put(keyword, new MentionHolder(MentionType.PLAYER, perm, keyword));
             });
@@ -59,7 +62,7 @@ public class MentionManager {
         // LOAD NEARBY KEYWORD
         if(configManager.getBoolean("nearby.enabled", false)) {
             String keyword = configManager.getString("nearby.keyword", "@nearby");
-            String perm = Main.getPermission(configManager.getString("nearby.permission", "dmentions.mention.nearby"));
+            String perm = plugin.getPermission(configManager.getString("nearby.permission", "dmentions.mention.nearby"));
             validKeywords.add(keyword);
             mentionHolders.put(keyword, new MentionHolder(MentionType.NEARBY, perm,null));
         }
@@ -67,7 +70,7 @@ public class MentionManager {
         // LOAD EVERYONE KEYWORD
         if (configManager.getBoolean("everyone.enabled", false)) {
             String keyword = configManager.getString("everyone.keyword", "@everyone");
-            String perm = Main.getPermission(configManager.getString("everyone.permission", "dmentions.mention.everyone"));
+            String perm = plugin.getPermission(configManager.getString("everyone.permission", "dmentions.mention.everyone"));
             validKeywords.add(keyword);
             mentionHolders.put(keyword, new MentionHolder(MentionType.EVERYONE, perm,null));
         }
@@ -80,7 +83,7 @@ public class MentionManager {
                     .filter(group -> !disabledGroups.contains(group))
                     .forEach(group -> {
                         String keyword = keywordTemplate.replace("{group}", group);
-                        String perm = Main.getPermission(configManager.getString("group.permission", "dmentions.mention.group.{group}")).replace("{group}", group);
+                        String perm = plugin.getPermission(configManager.getString("group.permission", "dmentions.mention.group.{group}")).replace("{group}", group);
                         validKeywords.add(keyword);
                         mentionHolders.put(keyword, new MentionHolder(MentionType.GROUP, perm, group));
                     });

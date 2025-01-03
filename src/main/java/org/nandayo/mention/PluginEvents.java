@@ -6,11 +6,13 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.nandayo.ConfigManager;
 import org.nandayo.Main;
 import org.nandayo.mention.Events.MentionEveryoneEvent;
 import org.nandayo.mention.Events.MentionGroupEvent;
 import org.nandayo.mention.Events.MentionNearbyEvent;
 import org.nandayo.mention.Events.MentionPlayerEvent;
+import org.nandayo.utils.MessageManager;
 
 public class PluginEvents implements Listener {
 
@@ -18,14 +20,15 @@ public class PluginEvents implements Listener {
     public void onPlayerMention(MentionPlayerEvent e) {
         Player sender = e.getSender();
         Player target = e.getTarget();
+        ConfigManager configManager = Main.inst().configManager;
 
-        String soundName = Main.configManager.getString("player.sound", "");
+        String soundName = configManager.getString("player.sound", "");
 
-        String targetBar = Main.configManager.getString("player.action_bar.target_message", "").replace("{p}", sender.getName());
-        String targetTitle = Main.configManager.getString("player.title.target_message", "").replace("{p}", sender.getName());
+        String targetBar = configManager.getString("player.action_bar.target_message", "").replace("{p}", sender.getName());
+        String targetTitle = configManager.getString("player.title.target_message", "").replace("{p}", sender.getName());
 
-        String senderBar = Main.configManager.getString("player.action_bar.sender_message", "").replace("{p}", target.getName());
-        String senderTitle = Main.configManager.getString("player.title.sender_message", "").replace("{p}", target.getName());
+        String senderBar = configManager.getString("player.action_bar.sender_message", "").replace("{p}", target.getName());
+        String senderTitle = configManager.getString("player.title.sender_message", "").replace("{p}", target.getName());
 
         mention(sender, new Player[]{target}, soundName, targetBar, targetTitle, senderBar, senderTitle);
     }
@@ -34,14 +37,15 @@ public class PluginEvents implements Listener {
     public void onNearbyMention(MentionNearbyEvent e) {
         Player sender = e.getSender();
         Player[] targets = e.getTargets();
+        ConfigManager configManager = Main.inst().configManager;
 
-        String soundName = Main.configManager.getString("nearby.sound", "");
+        String soundName = configManager.getString("nearby.sound", "");
 
-        String targetBar = Main.configManager.getString("nearby.action_bar.target_message", "").replace("{p}", sender.getName());
-        String targetTitle = Main.configManager.getString("nearby.title.target_message", "").replace("{p}", sender.getName());
+        String targetBar = configManager.getString("nearby.action_bar.target_message", "").replace("{p}", sender.getName());
+        String targetTitle = configManager.getString("nearby.title.target_message", "").replace("{p}", sender.getName());
 
-        String senderBar = Main.configManager.getString("nearby.action_bar.sender_message", "");
-        String senderTitle = Main.configManager.getString("nearby.title.sender_message", "");
+        String senderBar = configManager.getString("nearby.action_bar.sender_message", "");
+        String senderTitle = configManager.getString("nearby.title.sender_message", "");
 
         mention(sender, targets, soundName, targetBar, targetTitle, senderBar, senderTitle);
     }
@@ -50,14 +54,15 @@ public class PluginEvents implements Listener {
     public void onEveryoneMention(MentionEveryoneEvent e) {
         Player sender = e.getSender();
         Player[] targets = e.getTargets();
+        ConfigManager configManager = Main.inst().configManager;
 
-        String soundName = Main.configManager.getString("everyone.sound", "");
+        String soundName = configManager.getString("everyone.sound", "");
 
-        String targetBar = Main.configManager.getString("everyone.action_bar.target_message", "").replace("{p}", sender.getName());
-        String targetTitle = Main.configManager.getString("everyone.title.target_message", "").replace("{p}", sender.getName());
+        String targetBar = configManager.getString("everyone.action_bar.target_message", "").replace("{p}", sender.getName());
+        String targetTitle = configManager.getString("everyone.title.target_message", "").replace("{p}", sender.getName());
 
-        String senderBar = Main.configManager.getString("everyone.action_bar.sender_message", "");
-        String senderTitle = Main.configManager.getString("everyone.title.sender_message", "");
+        String senderBar = configManager.getString("everyone.action_bar.sender_message", "");
+        String senderTitle = configManager.getString("everyone.title.sender_message", "");
 
         mention(sender, targets, soundName, targetBar, targetTitle, senderBar, senderTitle);
     }
@@ -69,7 +74,7 @@ public class PluginEvents implements Listener {
         Player[] targets = e.getTargets();
 
         //GROUP CONFIG SECTION
-        ConfigurationSection section = Main.getGroupSection(group);
+        ConfigurationSection section = Main.inst().getGroupSection(group);
         if(section == null) return;
 
         String soundName = section.getString("sound", "");
@@ -92,9 +97,10 @@ public class PluginEvents implements Listener {
             sound = null;
         }
 
+        MessageManager messageManager = new MessageManager(Main.inst().configManager);
         //SENDER
-        Main.sendActionBar(sender, senderBar);
-        Main.sendTitle(sender, senderTitle);
+        messageManager.sendActionBar(sender, senderBar);
+        messageManager.sendTitle(sender, senderTitle);
         if(sound != null) sender.playSound(sender, sound, 0.6f, 1.0f);
 
         //TARGET
@@ -104,8 +110,8 @@ public class PluginEvents implements Listener {
             if(sound != null) {
                 target.playSound(target, sound, 0.6f, 1.0f);
             }
-            Main.sendActionBar(target, targetBar);
-            Main.sendTitle(target, targetTitle);
+            messageManager.sendActionBar(target, targetBar);
+            messageManager.sendTitle(target, targetTitle);
 
             if(++counter % 15 == 0) {
                 Bukkit.getScheduler().runTaskLater(Main.inst(), () -> {}, 10L);

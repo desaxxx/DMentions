@@ -30,7 +30,7 @@ nearby:
   enabled: true
   permission: "dmentions.mention.nearby"
   sound: "BLOCK_NOTE_BLOCK_PLING"
-  keywords: "@nearby"
+  keyword: "@nearby"
   display: "<#ea79b8>@nearby&f"
   cooldown: 10
   # You should keep this low if you treasure your server.

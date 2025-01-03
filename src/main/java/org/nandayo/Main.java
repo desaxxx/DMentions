@@ -1,7 +1,5 @@
 package org.nandayo;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -42,17 +40,11 @@ public final class Main extends JavaPlugin implements Listener {
         return plugin;
     }
 
-    //MANAGERS
-    public static ConfigManager configManager;
-    public static MentionManager mentionManager;
-    public static UserManager userManager;
-
     //SPIGOT RESOURCE ID
     private final int resourceId = 121452;
-    private final UpdateChecker updateChecker = new UpdateChecker(this, resourceId);
 
     //AFTER LOAD PERMISSIONS
-    private static final List<String> afterLoadPermissions = new ArrayList<>();
+    private final List<String> afterLoadPermissions = new ArrayList<>();
 
     @Override
     public void onEnable() {
@@ -60,7 +52,6 @@ public final class Main extends JavaPlugin implements Listener {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(this, this);
         pm.registerEvents(new PluginEvents(), this);
-
         getCommand("dmentions").setExecutor(new MainCommand());
 
         //APIS
@@ -89,22 +80,29 @@ public final class Main extends JavaPlugin implements Listener {
         userManager.saveChanges();
     }
 
-    public static void updateVariables() {
+    //MANAGERS
+    public ConfigManager configManager;
+    public MentionManager mentionManager;
+    public UserManager userManager;
+    public CooldownManager cooldownManager;
+
+    public void updateVariables() {
         //MANAGERS
-        Config config = new Config();
+        Config config = new Config(this);
         configManager = new ConfigManager(config.get());
-        mentionManager = new MentionManager(configManager);
+        mentionManager = new MentionManager(this, configManager);
         if(userManager != null) {
             userManager.saveChanges();
         }
-        userManager = new UserManager();
+        userManager = new UserManager(this);
+        cooldownManager = new CooldownManager(this, configManager);
         //PERMISSION
         clearAfterLoadPermissions();
         setupPermissions();
     }
 
     //PERMISSION SETUP
-    public static void setupPermissions() {
+    public void setupPermissions() {
         String playerPermission = getPermission(configManager.getString("player.permission", "dmentions.mention.player"));
         String everyonePermission = getPermission(configManager.getString("everyone.permission", "dmentions.mention.everyone"));
         String nearbyPermission = getPermission(configManager.getString("nearby.permission", "dmentions.mention.nearby"));
@@ -136,7 +134,7 @@ public final class Main extends JavaPlugin implements Listener {
             adminPermission.recalculatePermissibles();
         }
     }
-    public static void clearAfterLoadPermissions() {
+    public void clearAfterLoadPermissions() {
         if(afterLoadPermissions.isEmpty()) return;
         for(String perm : afterLoadPermissions) {
             Permission permission = Bukkit.getPluginManager().getPermission(perm);
@@ -160,7 +158,7 @@ public final class Main extends JavaPlugin implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         mentionManager.removePlayer(event.getPlayer());
-        CooldownManager.playerCooldown.remove(event.getPlayer().getName());
+        cooldownManager.removeLastPlayerMention(event.getPlayer().getName());
     }
 
     @EventHandler (priority = EventPriority.HIGH)
@@ -194,8 +192,8 @@ public final class Main extends JavaPlugin implements Listener {
 
                 if (mh.getType() == MentionType.PLAYER) {
                     Player target = Bukkit.getPlayerExact(mh.getTarget());
-                    if (target != null && userManager.getMentionMode(target) && !CooldownManager.playerIsOnCooldown(sender,keyword) && sender.hasPermission(mh.getPerm())) {
-                        CooldownManager.playerCooldown.put(target.getName(), System.currentTimeMillis());
+                    if (target != null && userManager.getMentionMode(target) && !cooldownManager.playerIsOnCooldown(sender,keyword) && sender.hasPermission(mh.getPerm())) {
+                        cooldownManager.setLastPlayerMention(target.getName(), System.currentTimeMillis());
                         displayText = configManager.getString("player.display", "<#a9e871>{p}&f").replace("{p}", target.getName());
                         mentionCounter++;
 
@@ -205,8 +203,8 @@ public final class Main extends JavaPlugin implements Listener {
                         });
                     }
                 } else if (mh.getType() == MentionType.NEARBY) {
-                    if (!CooldownManager.nearbyIsOnCooldown(sender) && sender.hasPermission(mh.getPerm())) {
-                        CooldownManager.nearbyCooldown.put(sender.getName(), System.currentTimeMillis());
+                    if (!cooldownManager.nearbyIsOnCooldown(sender) && sender.hasPermission(mh.getPerm())) {
+                        cooldownManager.setLastNearbyMention(sender.getName(), System.currentTimeMillis());
                         displayText = configManager.getString("nearby.display", "<#ea79b8>@nearby&f");
                         mentionCounter++;
 
@@ -216,8 +214,8 @@ public final class Main extends JavaPlugin implements Listener {
                         });
                     }
                 } else if (mh.getType() == MentionType.EVERYONE) {
-                    if (!CooldownManager.everyoneIsOnCooldown(sender) && sender.hasPermission(mh.getPerm())) {
-                        CooldownManager.everyoneCooldown = System.currentTimeMillis();
+                    if (!cooldownManager.everyoneIsOnCooldown(sender) && sender.hasPermission(mh.getPerm())) {
+                        cooldownManager.setLastEveryoneMention(System.currentTimeMillis());
                         displayText = configManager.getString("everyone.display", "<#8fb56c>@everyone&f");
                         mentionCounter++;
 
@@ -229,8 +227,8 @@ public final class Main extends JavaPlugin implements Listener {
                 } else if (mh.getType() == MentionType.GROUP && LP.isConnected()) {
                     String group = mh.getTarget();
                     ConfigurationSection section = getGroupSection(group);
-                    if (!CooldownManager.groupIsOnCooldown(sender,mh.getTarget()) && section != null && sender.hasPermission(mh.getPerm())) {
-                        CooldownManager.groupCooldown.put(group, System.currentTimeMillis());
+                    if (!cooldownManager.groupIsOnCooldown(sender,mh.getTarget()) && section != null && sender.hasPermission(mh.getPerm())) {
+                        cooldownManager.setLastGroupMention(group, System.currentTimeMillis());
                         //Getting from group section
                         displayText = section.getString("display", "<#73c7dc>{group}&f").replace("{group}", group);
                         mentionCounter++;
@@ -251,38 +249,8 @@ public final class Main extends JavaPlugin implements Listener {
         e.setMessage(updatedMessage.toString());
     }
 
-
-    //CHAT MESSAGE
-    public static void sendMessage(Player player, String msg) {
-        if(msg == null || msg.isEmpty()) return;
-        String formattedText = color(prefixedString(msg));
-        player.sendMessage(formattedText);
-    }
-    //ACTION BAR
-    public static void sendActionBar(Player player, String msg) {
-        if(msg == null || msg.isEmpty()) return;
-        String formattedText = color(prefixedString(msg));
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(formattedText));
-    }
-    //TITLE
-    public static void sendTitle(Player player, String msg) {
-        if(msg == null || msg.isEmpty()) return;
-        String[] lines = msg.split("\\|\\|");
-        String title = color(prefixedString(lines[0]));
-        String subtitle = lines.length > 1 ? color(prefixedString(lines[1])) : "";
-
-        player.sendTitle(title, subtitle, 10, 30, 20);
-    }
-
-    //PREFIX REPLACE
-    public static String prefixedString(String str) {
-        if(str == null || str.isEmpty()) return "";
-        String prefix = configManager.getString("prefix", "");
-        return str.replaceAll("\\{PREFIX}", prefix);
-    }
-
     //GROUP CONFIG SECTION
-    public static ConfigurationSection getGroupSection(String groupName) {
+    public ConfigurationSection getGroupSection(String groupName) {
         if(groupName == null || groupName.isEmpty()) return null;
         if(configManager.getStringList("group.disabled_groups").contains(groupName)) return null;
 
@@ -295,7 +263,7 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
     //GET NEARBY PLAYERS
-    public static Player[] getNearbyPlayers(Player player) {
+    private Player[] getNearbyPlayers(Player player) {
         int radius = configManager.getInt("nearby.radius", 20);
         if(radius <= 0) return new Player[0];
 
@@ -309,12 +277,12 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
     //GET PERMISSION
-    public static String getPermission(String str) {
+    public String getPermission(String str) {
         return (str == null || str.isEmpty()) ? "" : str;
     }
 
     //FORMATTED TIME
-    public static String formattedTime(long millisecond) {
+    public String formattedTime(long millisecond) {
         long seconds = millisecond / 1000;
         long minutes = seconds / 60;
         long hours = minutes / 60;
