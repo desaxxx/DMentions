@@ -55,4 +55,19 @@ public class LP {
                 })
                 .toArray(Player[]::new);
     }
+
+    //GET PLAYER GROUP
+    public static String getGroup(Player player) {
+        if (api == null) return "";
+
+        User user = api.getUserManager().getUser(player.getUniqueId());
+        if (user == null) return "";
+
+        return user.getNodes().stream()
+                .filter(InheritanceNode.class::isInstance)
+                .map(InheritanceNode.class::cast)
+                .map(InheritanceNode::getGroupName)
+                .findFirst()
+                .orElse("");
+    }
 }

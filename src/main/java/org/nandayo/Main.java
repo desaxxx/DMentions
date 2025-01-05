@@ -25,6 +25,7 @@ import org.nandayo.mention.MentionManager;
 import org.nandayo.mention.MentionType;
 import org.nandayo.mention.PluginEvents;
 import org.nandayo.utils.CooldownManager;
+import org.nandayo.utils.LangManager;
 import org.nandayo.utils.UpdateChecker;
 
 import java.util.*;
@@ -85,6 +86,7 @@ public final class Main extends JavaPlugin implements Listener {
     public MentionManager mentionManager;
     public UserManager userManager;
     public CooldownManager cooldownManager;
+    public LangManager langManager;
 
     public void updateVariables() {
         //MANAGERS
@@ -96,6 +98,7 @@ public final class Main extends JavaPlugin implements Listener {
         }
         userManager = new UserManager(this);
         cooldownManager = new CooldownManager(this, configManager);
+        langManager = new LangManager(this, configManager.getString("lang_file", "en-US"));
         //PERMISSION
         clearAfterLoadPermissions();
         setupPermissions();
@@ -189,12 +192,13 @@ public final class Main extends JavaPlugin implements Listener {
 
                 updatedMessage.append(message, lastAppendPosition, matchStart);
                 String displayText = keyword;
+                String suffix = getSuffixColor(LP.getGroup(sender));
 
                 if (mh.getType() == MentionType.PLAYER) {
                     Player target = Bukkit.getPlayerExact(mh.getTarget());
                     if (target != null && userManager.getMentionMode(target) && !cooldownManager.playerIsOnCooldown(sender,keyword) && sender.hasPermission(mh.getPerm())) {
                         cooldownManager.setLastPlayerMention(target.getName(), System.currentTimeMillis());
-                        displayText = configManager.getString("player.display", "<#a9e871>{p}&f").replace("{p}", target.getName());
+                        displayText = configManager.getString("player.display", "<#a9e871>{p}&f").replace("{p}", target.getName()) + suffix;
                         mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
@@ -205,7 +209,7 @@ public final class Main extends JavaPlugin implements Listener {
                 } else if (mh.getType() == MentionType.NEARBY) {
                     if (!cooldownManager.nearbyIsOnCooldown(sender) && sender.hasPermission(mh.getPerm())) {
                         cooldownManager.setLastNearbyMention(sender.getName(), System.currentTimeMillis());
-                        displayText = configManager.getString("nearby.display", "<#ea79b8>@nearby&f");
+                        displayText = configManager.getString("nearby.display", "<#ea79b8>@nearby&f") + suffix;
                         mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
@@ -216,7 +220,7 @@ public final class Main extends JavaPlugin implements Listener {
                 } else if (mh.getType() == MentionType.EVERYONE) {
                     if (!cooldownManager.everyoneIsOnCooldown(sender) && sender.hasPermission(mh.getPerm())) {
                         cooldownManager.setLastEveryoneMention(System.currentTimeMillis());
-                        displayText = configManager.getString("everyone.display", "<#8fb56c>@everyone&f");
+                        displayText = configManager.getString("everyone.display", "<#8fb56c>@everyone&f") + suffix;
                         mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
@@ -226,11 +230,11 @@ public final class Main extends JavaPlugin implements Listener {
                     }
                 } else if (mh.getType() == MentionType.GROUP && LP.isConnected()) {
                     String group = mh.getTarget();
-                    ConfigurationSection section = getGroupSection(group);
-                    if (!cooldownManager.groupIsOnCooldown(sender,mh.getTarget()) && section != null && sender.hasPermission(mh.getPerm())) {
+                    ConfigurationSection section = getConfigGroupSection(group);
+                    if (!cooldownManager.groupIsOnCooldown(sender, mh.getTarget()) && section != null && sender.hasPermission(mh.getPerm())) {
                         cooldownManager.setLastGroupMention(group, System.currentTimeMillis());
                         //Getting from group section
-                        displayText = section.getString("display", "<#73c7dc>{group}&f").replace("{group}", group);
+                        displayText = section.getString("display", "<#73c7dc>{group}&f").replace("{group}", group) + suffix;
                         mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
@@ -249,8 +253,17 @@ public final class Main extends JavaPlugin implements Listener {
         e.setMessage(updatedMessage.toString());
     }
 
-    //GROUP CONFIG SECTION
-    public ConfigurationSection getGroupSection(String groupName) {
+    //SUFFIX COLOR
+    public String getSuffixColor(String groupName) {
+        ConfigurationSection section = configManager.getConfigurationSection("suffix_color.group");
+        if(section.contains(groupName)) {
+            return section.getString(groupName, "");
+        }
+        return configManager.getString("suffix_color.group.__OTHER__", "&f");
+    }
+
+    //CONFIG GROUP SECTION
+    public ConfigurationSection getConfigGroupSection(String groupName) {
         if(groupName == null || groupName.isEmpty()) return null;
         if(configManager.getStringList("group.disabled_groups").contains(groupName)) return null;
 
@@ -259,6 +272,18 @@ public final class Main extends JavaPlugin implements Listener {
             return section;
         }else {
             return configManager.getConfigurationSection("group.list.__OTHER__");
+        }
+    }
+
+    //LANG GROUP SECTION
+    public ConfigurationSection getLangGroupSection(String groupName) {
+        if(groupName == null || groupName.isEmpty()) return null;
+
+        ConfigurationSection section = langManager.getConfig().getConfigurationSection("group." + groupName);
+        if(section != null) {
+            return section;
+        }else {
+            return langManager.getConfig().getConfigurationSection("group.__OTHER__");
         }
     }
 

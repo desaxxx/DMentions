@@ -1,0 +1,41 @@
+# (!) Hex color desteklemektedir. Kullanım: <#RRGGBB>
+#
+player:
+  action_bar:
+    sender_message: "{PREFIX} <#ddf7a6>{p}<#f4e4c0> adlı oyuncudan bahsettin."
+    target_message: "{PREFIX} <#ddf7a6>{p}<#f4e4c0> adlı oyuncu sohbette senden bahsetti."
+  title:
+    sender_message: ""
+    target_message: "{PREFIX}||<#f4e4c0>Sohbette biri senden bahsetti."
+#
+nearby:
+  action_bar:
+    sender_message: "{PREFIX} <#f4e4c0>Yakındaki oyunculardan bahsettin."
+    target_message: "{PREFIX} <#ddf7a6>{p}<#f4e4c0> adlı oyuncu yakındaki oyunculardan bahsetti."
+  title:
+    sender_message: ""
+    target_message: "{PREFIX}||<#f4e4c0>Sohbette biri senden bahsetti."
+#
+everyone:
+  action_bar:
+    sender_message: "{PREFIX} <#f4e4c0>Herkesten bahsettin."
+    target_message: "{PREFIX} <#ddf7a6>{p}<#f4e4c0> adlı oyuncu herkesten bahsetti."
+  title:
+    sender_message: ""
+    target_message: "{PREFIX}||<#f4e4c0>Sohbette biri senden bahsetti."
+#
+group:
+  default:
+    action_bar:
+      sender_message: "{PREFIX} <#ddf7a6>{group}<#f4e4c0> üyelerinden bahsettin."
+      target_message: "{PREFIX} <#ddf7a6>{p}<#f4e4c0> adlı oyuncu grup üyelerinden bahsetti."
+    title:
+      sender_message: ""
+      target_message: "{PREFIX}||<#f4e4c0>Sohbette biri senden bahsetti."
+  __OTHER__:
+    action_bar:
+      sender_message: "{PREFIX} <#ddf7a6>{group}<#f4e4c0> üyelerinden bahsettin."
+      target_message: "{PREFIX} <#ddf7a6>{p}<#f4e4c0> adlı oyuncu grup üyelerinden bahsetti."
+    title:
+      sender_message: ""
+      target_message: "{PREFIX}||<#f4e4c0>Sohbette biri senden bahsetti."

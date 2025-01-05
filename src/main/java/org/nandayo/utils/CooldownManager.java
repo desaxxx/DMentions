@@ -93,7 +93,7 @@ public class CooldownManager {
         return true;
     }
     public boolean groupIsOnCooldown(Player sender, String group) {
-        ConfigurationSection section = plugin.getGroupSection(group);
+        ConfigurationSection section = plugin.getConfigGroupSection(group);
         if(section == null) return true;
 
         long lastMention = getLastGroupMention(group);

@@ -1,60 +1,51 @@
 # Happy editing!
-# You can find me on Discord with nick desaxx if you have any suggestions or bug reports, thank you!
+# You can find me on Discord with username desaxx if you have any suggestions or bug reports, thank you!
 #
 # (!) All the 'cooldown' values are representing in seconds.
 # (!) Includes hex color support for messages and display. Usage: <#RRGGBB>
+# (!) Messages are in lang directory since v1.3
 #
-prefix: "&8[&6DMentions&8]&r"
+# This file should exist within lang directory.
+lang_file: "en-US"
+prefix: "&8[<#ffd16d>DMentions&8]&r"
 # How many mentions in single message.
 mention_limit: 2
 cooldown_warn:
     # Available types: CHAT, ACTION_BAR, TITLE
     type: ACTION_BAR
     message: "&cYou should wait {REMAINED} before mentioning."
-#
+# Chat colors of groups to match colors after mentioning.
+suffix_color:
+  group:
+    # Example group named 'default'
+    default: "&7"
+    # For other unspecified groups.
+    __OTHER__: "&f"
+}
 player:
   enabled: true
   permission: "dmentions.mention.player"
   sound: "BLOCK_NOTE_BLOCK_PLING"
-  display: "<#a9e871>@{p}&f"
+  display: "<#a9e871>@{p}"
   cooldown: 5
-  action_bar:
-    sender_message: "{PREFIX} &fYou mentioned player &e{p}&f."
-    target_message: "{PREFIX} &fPlayer &e{p}&f mentioned you in chat."
-  title:
-    # You should use '||' for splitting message to title and subtitle
-    sender_message: ""
-    target_message: "{PREFIX}||&fYou have been mentioned in chat."
 #
 nearby:
   enabled: true
   permission: "dmentions.mention.nearby"
   sound: "BLOCK_NOTE_BLOCK_PLING"
   keyword: "@nearby"
-  display: "<#ea79b8>@nearby&f"
+  display: "<#ea79b8>@nearby"
   cooldown: 10
   # You should keep this low if you treasure your server.
   radius: 20
-  action_bar:
-    sender_message: "{PREFIX} &fYou mentioned nearby players."
-    target_message: "{PREFIX} &fPlayer &e{p}&f mentioned nearby players."
-  title:
-    sender_message: ""
-    target_message: "{PREFIX}||&fYou have been mentioned in chat."
 #
 everyone:
   enabled: true
   permission: "dmentions.mention.everyone"
   sound: "BLOCK_NOTE_BLOCK_PLING"
   keyword: "@everyone"
-  display: "<#8fb56c>@everyone&f"
+  display: "<#8fb56c>@everyone"
   cooldown: 10
-  action_bar:
-    sender_message: "{PREFIX} &fYou mentioned everyone."
-    target_message: "{PREFIX} &fPlayer &e{p}&f mentioned everyone."
-  title:
-    sender_message: ""
-    target_message: "{PREFIX}||&fYou have been mentioned in chat."
 #
 group:
   # Requires LuckPerms, otherwise it will not work.
@@ -68,24 +59,12 @@ group:
     # Example group named 'default'
     default:
       sound: "BLOCK_NOTE_BLOCK_PLING"
-      display: "<#c0dee6>@{group}&f"
+      display: "<#c0dee6>@{group}"
       cooldown: 5
-      action_bar:
-       sender_message: "{PREFIX} &fYou mentioned &e{group}&f members."
-       target_message: "{PREFIX} &fPlayer &e{p}&f mentioned your group members."
-      title:
-        sender_message: ""
-        target_message: "{PREFIX}||&fYou have been mentioned in chat."
     # For other unspecified groups which are not disabled.
     __OTHER__:
       sound: "BLOCK_NOTE_BLOCK_PLING"
-      display: "<#73c7dc>@{group}&f"
+      display: "<#73c7dc>@{group}"
       cooldown: 5
-      action_bar:
-        sender_message: "{PREFIX} &fYou mentioned &e{group}&f members."
-        target_message: "{PREFIX} &fPlayer &e{p}&f mentioned your group members."
-      title:
-        sender_message: ""
-        target_message: "{PREFIX}||&fYou have been mentioned in chat."
 #
 config_version: "{version}" # DO NOT CHANGE.

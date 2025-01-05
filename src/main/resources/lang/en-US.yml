@@ -1,0 +1,41 @@
+# (!) Includes hex color support for messages. Usage: <#RRGGBB>
+#
+player:
+  action_bar:
+    sender_message: "{PREFIX} <#f4e4c0>You mentioned player &e{p}<#f4e4c0>."
+    target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned you in chat."
+  title:
+    sender_message: ""
+    target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
+#
+nearby:
+  action_bar:
+    sender_message: "{PREFIX} <#f4e4c0>You mentioned nearby players."
+    target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned nearby players."
+  title:
+    sender_message: ""
+    target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
+#
+everyone:
+  action_bar:
+    sender_message: "{PREFIX} <#f4e4c0>You mentioned everyone."
+    target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned everyone."
+  title:
+    sender_message: ""
+    target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
+#
+group:
+  default:
+    action_bar:
+      sender_message: "{PREFIX} <#f4e4c0>You mentioned <#ddf7a6>{group}<#f4e4c0> members."
+      target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned your group members."
+    title:
+      sender_message: ""
+      target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
+  __OTHER__:
+    action_bar:
+      sender_message: "{PREFIX} <#f4e4c0>You mentioned <#ddf7a6>{group}<#f4e4c0> members."
+      target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned your group members."
+    title:
+      sender_message: ""
+      target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
