@@ -38,7 +38,6 @@ body:
     attributes:
       label: Error Log Output or Screenshots
       description: You can paste your logs or screenshots here.
-      render: shell
   - type: checkboxes
     id: terms
     attributes:
