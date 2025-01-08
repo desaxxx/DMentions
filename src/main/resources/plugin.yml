@@ -1,5 +1,5 @@
 name: DMentions
-version: '1.3'
+version: '1.4'
 main: org.nandayo.Main
 api-version: '1.19'
 authors: [ yoshii01 ]
@@ -17,6 +17,7 @@ permissions:
       dmentions.help: true
       dmentions.toggle: true
       dmentions.send: true
+      dmentions.mention.restricted.bypass: true
   dmentions.reload:
     default: op
   dmentions.help:
@@ -24,4 +25,8 @@ permissions:
   dmentions.toggle:
     default: op
   dmentions.send:
+    default: op
+  dmentions.mention.restricted:
+    default: false
+  dmentions.mention.restricted.bypass:
     default: op

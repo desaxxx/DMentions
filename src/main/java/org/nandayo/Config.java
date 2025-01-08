@@ -28,17 +28,16 @@ public class Config {
             this.plugin.saveResource("config.yml", false);
         }
         config = YamlConfiguration.loadConfiguration(file);
-        updateFileKeys();
+        updateConfig();
     }
 
-    //UPDATE KEYS
-    private void updateFileKeys() {
+    //UPDATE CONFIG
+    private void updateConfig() {
         String version = plugin.getDescription().getVersion();
-        String configVersion = config.getString("config_version");
+        String configVersion = config.getString("config_version", "0");
 
-        if(version.equals(configVersion)) {
-            return;
-        }
+        if(version.equals(configVersion)) return;
+
         InputStream defStream = plugin.getResource("config.yml");
         if(defStream == null) {
             plugin.getLogger().warning("Default config.yml not found in plugin resources.");
@@ -55,25 +54,18 @@ public class Config {
         saveBackupConfig(backupFile, config);
         FileConfiguration backupConfig = YamlConfiguration.loadConfiguration(backupFile);
 
-        // CLEAR CONFIG
-        file.delete();
-        file = new File(plugin.getDataFolder(), "config.yml");
-        if(!file.exists()) {
-            plugin.saveResource("config.yml", false);
-        }
-        config = YamlConfiguration.loadConfiguration(file);
-
         // NEW CONFIG ADAPTER
         FileConfiguration defConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defStream));
         for(String key : defConfig.getKeys(true)) {
             if(backupConfig.contains(key)) {
-                config.set(key, backupConfig.get(key));
+                defConfig.set(key, backupConfig.get(key));
             }
         }
 
         try {
-            config.set("config_version", version);
-            config.save(file);
+            defConfig.set("config_version", version);
+            defConfig.save(file);
+            config = defConfig;
             plugin.updateVariables();
             plugin.getLogger().info("Updated config file.");
         }catch (Exception e) {

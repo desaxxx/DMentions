@@ -113,7 +113,7 @@ public class PluginEvents implements Listener {
         //TARGET
         int counter = 0;
         for(Player target : targets) {
-            if(target == sender) continue;
+            if(target == sender || !Main.inst().getRestrictConditions(sender,target)) continue;
             if(sound != null) {
                 target.playSound(target, sound, 0.6f, 1.0f);
             }

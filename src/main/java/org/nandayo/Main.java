@@ -24,9 +24,7 @@ import org.nandayo.mention.MentionHolder;
 import org.nandayo.mention.MentionManager;
 import org.nandayo.mention.MentionType;
 import org.nandayo.mention.PluginEvents;
-import org.nandayo.utils.CooldownManager;
-import org.nandayo.utils.LangManager;
-import org.nandayo.utils.UpdateChecker;
+import org.nandayo.utils.*;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -45,7 +43,7 @@ public final class Main extends JavaPlugin implements Listener {
     private final int resourceId = 121452;
 
     //AFTER LOAD PERMISSIONS
-    private final List<String> afterLoadPermissions = new ArrayList<>();
+    public final List<String> afterLoadPermissions = new ArrayList<>();
 
     @Override
     public void onEnable() {
@@ -67,13 +65,15 @@ public final class Main extends JavaPlugin implements Listener {
         updateVariables();
 
         //UPDATE CHECK
-        new UpdateChecker(this, resourceId).getVersion(version -> {
-            if (this.getDescription().getVersion().equals(version)) {
-                getLogger().info("Plugin is up-to-date.");
-            } else {
-                getLogger().info("There is a new version update. (" + version + ")");
-            }
-        });
+        if(configManager.getBoolean("check_for_updates", true)) {
+            new UpdateChecker(this, resourceId).getVersion(version -> {
+                if (this.getDescription().getVersion().equals(version)) {
+                    getLogger().info("Plugin is up-to-date.");
+                } else {
+                    getLogger().info("There is a new version update. (" + version + ")");
+                }
+            });
+        }
     }
 
     @Override
@@ -99,58 +99,11 @@ public final class Main extends JavaPlugin implements Listener {
         userManager = new UserManager(this);
         cooldownManager = new CooldownManager(this, configManager);
         langManager = new LangManager(this, configManager.getString("lang_file", "en-US"));
+
         //PERMISSION
-        clearAfterLoadPermissions();
-        setupPermissions();
-    }
-
-    //PERMISSION SETUP
-    public void setupPermissions() {
-        String playerPermission = getPermission(configManager.getString("player.permission", "dmentions.mention.player"));
-        String everyonePermission = getPermission(configManager.getString("everyone.permission", "dmentions.mention.everyone"));
-        String nearbyPermission = getPermission(configManager.getString("nearby.permission", "dmentions.mention.nearby"));
-
-        Bukkit.getPluginManager().addPermission(new Permission(playerPermission, PermissionDefault.OP));
-        Bukkit.getPluginManager().addPermission(new Permission(nearbyPermission, PermissionDefault.OP));
-        Bukkit.getPluginManager().addPermission(new Permission(everyonePermission, PermissionDefault.OP));
-        afterLoadPermissions.add(playerPermission);
-        afterLoadPermissions.add(nearbyPermission);
-        afterLoadPermissions.add(everyonePermission);
-
-        if (LP.isConnected()) {
-            Permission adminPermission = Bukkit.getPluginManager().getPermission("dmentions.admin");
-            if(adminPermission == null) return;
-
-            Map<String, Boolean> children = new HashMap<>();
-            children.put(playerPermission, true);
-            children.put(everyonePermission, true);
-
-            for (String group : LP.getGroups()) {
-                String groupPermission = getPermission(configManager.getString("group.permission", null)).replace("{group}", group);
-                // REGISTERING GROUP PERMISSIONS
-                Bukkit.getPluginManager().addPermission(new Permission(groupPermission, PermissionDefault.OP));
-                afterLoadPermissions.add(groupPermission);
-                // ADDING GROUP PERMISSIONS AS CHILDREN TO 'dmentions.admin'
-                children.put(groupPermission, true);
-            }
-            adminPermission.getChildren().putAll(children);
-            adminPermission.recalculatePermissibles();
-        }
-    }
-    public void clearAfterLoadPermissions() {
-        if(afterLoadPermissions.isEmpty()) return;
-        for(String perm : afterLoadPermissions) {
-            Permission permission = Bukkit.getPluginManager().getPermission(perm);
-            if(permission != null) {
-                Bukkit.getPluginManager().removePermission(permission);
-            }
-            Permission adminPermission = Bukkit.getPluginManager().getPermission("dmentions.admin");
-            if(adminPermission != null) {
-                adminPermission.getChildren().remove(perm);
-                adminPermission.recalculatePermissibles();
-            }
-        }
-        afterLoadPermissions.clear();
+        PermissionManager permissionManager = new PermissionManager(this, configManager);
+        permissionManager.clearAfterLoadPermissions();
+        permissionManager.setupPermissions();
     }
 
 
@@ -197,14 +150,19 @@ public final class Main extends JavaPlugin implements Listener {
                 if (mh.getType() == MentionType.PLAYER) {
                     Player target = Bukkit.getPlayerExact(mh.getTarget());
                     if (target != null && userManager.getMentionMode(target) && !cooldownManager.playerIsOnCooldown(sender,keyword) && sender.hasPermission(mh.getPerm())) {
-                        cooldownManager.setLastPlayerMention(target.getName(), System.currentTimeMillis());
-                        displayText = configManager.getString("player.display", "<#a9e871>{p}&f").replace("{p}", target.getName()) + suffix;
-                        mentionCounter++;
+                        if(getRestrictConditions(sender, target)) {
+                            cooldownManager.setLastPlayerMention(target.getName(), System.currentTimeMillis());
+                            displayText = configManager.getString("player.display", "<#a9e871>{p}&f").replace("{p}", target.getName()) + suffix;
+                            mentionCounter++;
 
-                        Bukkit.getScheduler().runTask(this, () -> {
-                            MentionPlayerEvent event = new MentionPlayerEvent(sender, target);
-                            Bukkit.getPluginManager().callEvent(event);
-                        });
+                            Bukkit.getScheduler().runTask(this, () -> {
+                                MentionPlayerEvent event = new MentionPlayerEvent(sender, target);
+                                Bukkit.getPluginManager().callEvent(event);
+                            });
+                        }else {
+                            String msg = langManager.getMsg("mention_restricted_warn");
+                            new MessageManager(configManager).sendSortedMessage(sender, msg);
+                        }
                     }
                 } else if (mh.getType() == MentionType.NEARBY) {
                     if (!cooldownManager.nearbyIsOnCooldown(sender) && sender.hasPermission(mh.getPerm())) {
@@ -260,6 +218,14 @@ public final class Main extends JavaPlugin implements Listener {
             return section.getString(groupName, "");
         }
         return configManager.getString("suffix_color.group.__OTHER__", "&f");
+    }
+
+    //CHECK RESTRICTED PERMISSIONS
+    public boolean getRestrictConditions(Player sender, Player target) {
+        if(target.hasPermission("dmentions.mention.restricted")) {
+            return sender.hasPermission("dmentions.mention.restricted.bypass");
+        }
+        return true;
     }
 
     //CONFIG GROUP SECTION

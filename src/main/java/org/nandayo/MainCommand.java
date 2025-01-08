@@ -6,6 +6,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
+import org.nandayo.utils.LangManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,19 +19,27 @@ import static org.nandayo.utils.HexUtil.color;
 @SuppressWarnings("NullableProblems")
 public class MainCommand implements CommandExecutor, TabCompleter {
 
+    private final List<String> commands = Arrays.asList(
+            "/dms toggle",
+            "/dms send <keyword>",
+            "/dms help",
+            "/dms reload",
+            "/dms user <player> mentions true|false");
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
+        LangManager langManager = Main.inst().langManager;
         if(args.length >= 1 && args[0].equalsIgnoreCase("toggle") && sender.hasPermission("dmentions.toggle")) {
             if(sender instanceof Player p) {
                 boolean value = Main.inst().userManager.getMentionMode(p);
                 Main.inst().userManager.setMentionMode(p, !value);
                 if(value) {
-                    p.sendMessage(color("&eYou will no longer be mentioned."));
+                    p.sendMessage(color(langManager.getMsg("command.toggle.no_longer_mentioned")));
                 }else {
-                    p.sendMessage(color("&eYou will now be mentioned."));
+                    p.sendMessage(color(langManager.getMsg("command.toggle.will_now_mentioned")));
                 }
             }else {
-                sender.sendMessage(color("&cYou must be a player to use this command!"));
+                sender.sendMessage(color(langManager.getMsg("command.must_be_player")));
             }
         }
         /*
@@ -41,10 +52,10 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 if(Main.inst().mentionManager.getValidKeywords().contains(keyword)) {
                     p.chat(keyword);
                 }else {
-                    p.sendMessage(color("&cInvalid keyword."));
+                    p.sendMessage(color(langManager.getMsg("command.send.invalid_keyword")));
                 }
             }else {
-                sender.sendMessage(color("&cYou must be a player to use this command!"));
+                sender.sendMessage(color(langManager.getMsg("command.must_be_player")));
             }
         }
         /*
@@ -52,7 +63,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
          */
         else if(args.length >= 1 && args[0].equalsIgnoreCase("reload")  && sender.hasPermission("dmentions.reload")) {
             Main.inst().updateVariables();
-            sender.sendMessage(color("&aReloaded configuration."));
+            sender.sendMessage(color(Main.inst().langManager.getMsg("command.reload.success")));
         }
         /*
          * User Commands
@@ -61,7 +72,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         else if (args.length >= 4 && args[0].equalsIgnoreCase("user") && sender.hasPermission("dmentions.admin")) {
             Player player = Bukkit.getPlayerExact(args[1]);
             if (player == null) {
-                sender.sendMessage(color("&cPlayer not found."));
+                sender.sendMessage(color(langManager.getMsg("command.player_not_found")));
                 return true;
             }
             String var = args[2];
@@ -69,27 +80,27 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             if(var.equalsIgnoreCase("mentions")) {
                 boolean val = Boolean.parseBoolean(value);
                 Main.inst().userManager.setMentionMode(player, val);
-                sender.sendMessage(color("&eMention mode of &f" + player.getName() + "&e set to " + val + "."));
+                String success = langManager.getMsg("command.user.mentions.success").replace("{p}", player.getName()).replace("{value}", String.valueOf(val));
+                sender.sendMessage(color(success));
             }else {
-                sender.sendMessage(color("&cUnknown argument."));
+                sender.sendMessage(color(langManager.getMsg("command.user.unknown")));
             }
         }
         /*
          * Help | Command List
          */
         else if(args.length >= 1 && args[0].equalsIgnoreCase("help") && sender.hasPermission("dmentions.help")) {
-            sender.sendMessage(color("&6Here is command list."),
-                    color("&7/dms toggle"),
-                    color("&7/dms send <keyword>"),
-                    color("&7/dms help"),
-                    color("&7/dms reload"),
-                    color("&7/dms user <player> <mentions> <true|false>"));
+            sender.sendMessage(color(langManager.getMsg("command.help.description")));
+            for(String c : commands) {
+                String msg = langManager.getMsg("command.help.list").replace("{commands}", c);
+                sender.sendMessage(color(msg));
+            }
         }
         /*
          * Unknown Command
          */
         else {
-            sender.sendMessage(color("&cUnknown command."));
+            sender.sendMessage(color(langManager.getMsg("command.unknown")));
         }
         return true;
     }

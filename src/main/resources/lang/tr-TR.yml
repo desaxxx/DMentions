@@ -1,5 +1,10 @@
 # (!) Hex color desteklemektedir. Kullanım: <#RRGGBB>
 #
+# Mesaj içinde '||' kullanarak başlık ve alt başlığı ayırabilirsin. (Sadece TITLE mesajları)
+# Kullanılabilir türler: CHAT, ACTION_BAR, TITLE.
+cooldown_warn: "ACTION_BAR=&cTekrar etiketlemek için {REMAINED} beklemelisin."
+mention_restricted_warn: "ACTION_BAR={PREFIX} &cBu oyuncuyu etiketlemek için yetkin yok."
+#
 player:
   action_bar:
     sender_message: "{PREFIX} <#ddf7a6>{p}<#f4e4c0> adlı oyuncudan bahsettin."
@@ -39,3 +44,24 @@ group:
     title:
       sender_message: ""
       target_message: "{PREFIX}||<#f4e4c0>Sohbette biri senden bahsetti."
+#
+command:
+  must_be_player: "&cBu komudu kullanmak için oyuncu olmalısın!"
+  player_not_found: "&cOyuncu bulunamadı."
+  unknown: "&cBilinmeyen komut."
+  toggle:
+    no_longer_mentioned: "&eArtık etiketlenmeyeceksin."
+    will_now_mentioned: "&eArtık etiketleneceksin."
+  send:
+    invalid_keyword: "&cGeçersiz anahtar kelime."
+  reload:
+    success: "&aKonfigurasyon yenilendi."
+  user:
+    unknown: "&cBilinmeyen arguman."
+    mentions:
+      success: "&f{p}&e adlı oyuncu için etiket modu {value} olarak ayarlandı."
+  help:
+    description: "&6Komut listesi:"
+    list: "&7{commands}"
+#
+lang_version: '{version}' #DO NOT CHANGE.

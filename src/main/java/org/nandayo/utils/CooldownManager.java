@@ -109,16 +109,9 @@ public class CooldownManager {
     }
 
     private void cooldownWarn(Player sender, long remained) {
-        String type = configManager.getString("cooldown_warn.type", "");
-        String message = configManager.getString("cooldown_warn.message", "");
-        if(type.isEmpty() || message.isEmpty()) return;
-
-        String formattedMessage = message.replace("{REMAINED}", plugin.formattedTime(remained));
+        LangManager langManager = plugin.langManager;
+        String msg = langManager.getMsg("cooldown_warn").replace("{REMAINED}", plugin.formattedTime(remained));
         MessageManager messageManager = new MessageManager(configManager);
-        switch (type) {
-            case "CHAT" -> messageManager.sendMessage(sender, formattedMessage);
-            case "ACTION_BAR" -> messageManager.sendActionBar(sender, formattedMessage);
-            case "TITLE" -> messageManager.sendTitle(sender, formattedMessage);
-        }
+        messageManager.sendSortedMessage(sender, msg);
     }
 }

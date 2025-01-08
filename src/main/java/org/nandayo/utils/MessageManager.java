@@ -14,6 +14,17 @@ public class MessageManager {
         this.configManager = configManager;
     }
 
+    //SORTED MESSAGE
+    public void sendSortedMessage(Player player, String msg) {
+        if (msg == null || msg.isEmpty()) return;
+        String[] parts = msg.split("=");
+        switch (parts[0]) {
+            case "CHAT" -> sendMessage(player, parts[1]);
+            case "ACTION_BAR" -> sendActionBar(player, parts[1]);
+            case "TITLE" -> sendTitle(player, parts[1]);
+        }
+    }
+
     //CHAT MESSAGE
     public void sendMessage(Player player, String msg) {
         if(msg == null || msg.isEmpty()) return;

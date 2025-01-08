@@ -1,5 +1,10 @@
 # (!) Includes hex color support for messages. Usage: <#RRGGBB>
 #
+# You can use '||' in message to separate title and subtitle. (Only TITLE messages)
+# Available types: CHAT, ACTION_BAR, TITLE.
+cooldown_warn: "ACTION_BAR=&cYou should wait {REMAINED} before mentioning."
+mention_restricted_warn: "ACTION_BAR={PREFIX} &cYou don't have permission to mention that player."
+#
 player:
   action_bar:
     sender_message: "{PREFIX} <#f4e4c0>You mentioned player &e{p}<#f4e4c0>."
@@ -39,3 +44,24 @@ group:
     title:
       sender_message: ""
       target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
+#
+command:
+  must_be_player: "&cYou must be a player to use this command!"
+  player_not_found: "&cPlayer not found."
+  unknown: "&cUnknown command."
+  toggle:
+    no_longer_mentioned: "&eYou will no longer be mentioned."
+    will_now_mentioned: "&eYou will now be mentioned."
+  send:
+    invalid_keyword: "&cInvalid keyword."
+  reload:
+    success: "&aReloaded configuration."
+  user:
+    unknown: "&cUnknown argument."
+    mentions:
+      success: "&eMention mode of &f{p}&e set to {value}."
+  help:
+    description: "&6Here is the command list:"
+    list: "&7{commands}"
+#
+lang_version: '{version}' #DO NOT CHANGE.
