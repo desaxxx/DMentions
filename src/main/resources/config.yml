@@ -21,7 +21,7 @@ suffix_color:
     default: "&7"
     # For other unspecified groups.
     __OTHER__: "&f"
-}
+#
 player:
   enabled: true
   permission: "dmentions.mention.player"
