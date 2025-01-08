@@ -5,7 +5,7 @@ assignees: "desaxxx"
 body:
   - type: markdown
     attributes:
-      value: "Thanks for reporting a bug in the plugin!"
+      value: "Thanks for reporting a bug!"
   - type: textarea
     id: versions
     attributes:
