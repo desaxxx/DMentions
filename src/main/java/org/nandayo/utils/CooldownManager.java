@@ -2,7 +2,6 @@ package org.nandayo.utils;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.nandayo.ConfigManager;
 import org.nandayo.Main;
 
 import java.util.HashMap;

@@ -6,7 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.nandayo.ConfigManager;
+import org.nandayo.utils.ConfigManager;
 import org.nandayo.Main;
 import org.nandayo.mention.Events.MentionEveryoneEvent;
 import org.nandayo.mention.Events.MentionGroupEvent;
@@ -97,11 +97,12 @@ public class PluginEvents implements Listener {
 
     //GENERAL MENTION METHOD
     private void mention(Player sender, Player[] targets, String soundName, String targetBar, String targetTitle, String senderBar, String senderTitle) {
-        Sound sound;
-        try {
-            sound = Sound.valueOf(soundName);
-        } catch (IllegalArgumentException exc) {
-            sound = null;
+        Sound sound = null;
+        if(soundName != null && !soundName.isEmpty()) {
+            try {
+                sound = Sound.valueOf(soundName);
+            } catch (IllegalArgumentException ignored) {
+            }
         }
 
         MessageManager messageManager = new MessageManager(Main.inst().configManager);

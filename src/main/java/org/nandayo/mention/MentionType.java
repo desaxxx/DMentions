@@ -4,5 +4,5 @@ public enum MentionType {
     PLAYER,
     NEARBY,
     EVERYONE,
-    GROUP;
+    GROUP
 }

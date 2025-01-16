@@ -1,6 +1,8 @@
 # Happy editing!
 # You can find me on Discord with username desaxx if you have any suggestions or bug reports, thank you!
+# Or you can open an issue on GitHub page: https://github.com/desaxxx/DMentions/issues
 #
+# (!) Group getters work with LuckPerms weighting system so you might need to assign them one.
 # (!) All the 'cooldown' values are representing in seconds.
 # (!) Includes hex color support for messages and display. Usage: <#RRGGBB>
 # (!) Messages are in lang directory since v1.3
@@ -29,7 +31,7 @@ player:
 nearby:
   enabled: true
   permission: "dmentions.mention.nearby"
-  sound: "BLOCK_NOTE_BLOCK_PLING"
+  sound: "ENTITY_PLAYER_LEVELUP"
   keyword: "@nearby"
   display: "<#ea79b8>@nearby"
   cooldown: 10
@@ -39,7 +41,7 @@ nearby:
 everyone:
   enabled: true
   permission: "dmentions.mention.everyone"
-  sound: "BLOCK_NOTE_BLOCK_PLING"
+  sound: "ENTITY_WITHER_SPAWN"
   keyword: "@everyone"
   display: "<#8fb56c>@everyone"
   cooldown: 10
@@ -55,12 +57,12 @@ group:
   list:
     # Example group named 'default'
     default:
-      sound: "BLOCK_NOTE_BLOCK_PLING"
+      sound: "ITEM_TOTEM_USE"
       display: "<#c0dee6>@{group}"
       cooldown: 5
     # For other unspecified groups which are not disabled.
     __OTHER__:
-      sound: "BLOCK_NOTE_BLOCK_PLING"
+      sound: "ITEM_TOTEM_USE"
       display: "<#73c7dc>@{group}"
       cooldown: 5
 #

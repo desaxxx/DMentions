@@ -2,6 +2,7 @@ package org.nandayo;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.nandayo.utils.Util;
 
 import java.io.File;
 import java.io.InputStream;
@@ -28,20 +29,19 @@ public class Config {
             this.plugin.saveResource("config.yml", false);
         }
         config = YamlConfiguration.loadConfiguration(file);
-        updateConfig();
     }
 
     //UPDATE CONFIG
-    private void updateConfig() {
+    public Config updateConfig() {
         String version = plugin.getDescription().getVersion();
         String configVersion = config.getString("config_version", "0");
 
-        if(version.equals(configVersion)) return;
+        if(version.equals(configVersion)) return this;
 
         InputStream defStream = plugin.getResource("config.yml");
         if(defStream == null) {
-            plugin.getLogger().warning("Default config.yml not found in plugin resources.");
-            return;
+            Util.log("&cDefault config.yml not found in plugin resources.");
+            return this;
         }
 
         // BACKUP OF OLD CONFIG.YML
@@ -66,20 +66,20 @@ public class Config {
             defConfig.set("config_version", version);
             defConfig.save(file);
             config = defConfig;
-            plugin.updateVariables();
-            plugin.getLogger().info("Updated config file.");
+            Util.log("&aUpdated config file.");
         }catch (Exception e) {
-            plugin.getLogger().warning("Failed to save updated config file.");
+            Util.log("&cFailed to save updated config file.");
             e.printStackTrace();
         }
+        return this;
     }
 
     private void saveBackupConfig(File backupFile, FileConfiguration backupConfig) {
         try {
             backupConfig.save(backupFile);
-            plugin.getLogger().info("Backed up old config file.");
+            Util.log("&aBacked up old config file.");
         } catch (Exception e) {
-            plugin.getLogger().warning("Failed to save backup file.");
+            Util.log("&cFailed to save backup file.");
             e.printStackTrace();
         }
     }

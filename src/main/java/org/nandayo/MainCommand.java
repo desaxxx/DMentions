@@ -6,8 +6,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
+import org.nandayo.GUI.GeneralSettingsMenu;
+import org.nandayo.utils.ConfigManager;
+import org.nandayo.utils.GUIManager;
 import org.nandayo.utils.LangManager;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             "/dms send <keyword>",
             "/dms help",
             "/dms reload",
+            "/dms config",
             "/dms user <player> mentions true|false");
 
     @Override
@@ -87,6 +89,27 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             }
         }
         /*
+         * Config Manager
+         * /dms config
+         */
+        else if(args.length >= 1 && args[0].equalsIgnoreCase("config") && sender.hasPermission("dmentions.configure")) {
+            if(sender instanceof Player p) {
+                Main plugin = Main.inst();
+                if(plugin.guiConfigEditor == null) {
+                    plugin.guiConfigEditor = p;
+
+                    ConfigManager configManager = plugin.configManager;
+                    configManager.resetGuiConfig();
+                    GUIManager manager = new GUIManager(plugin, plugin.configManager, p);
+                    new GeneralSettingsMenu(plugin, p, manager);
+                }else {
+                    p.sendMessage(color(langManager.getMsg("command.config.already_configuring")));
+                }
+            }else {
+                sender.sendMessage(color(langManager.getMsg("command.must_be_player")));
+            }
+        }
+        /*
          * Help | Command List
          */
         else if(args.length >= 1 && args[0].equalsIgnoreCase("help") && sender.hasPermission("dmentions.help")) {
@@ -112,7 +135,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
          */
         if(args.length == 1) {
             if(sender.hasPermission("dmentions.admin")) {
-                return Arrays.asList("toggle","reload","help","user","send");
+                return Arrays.asList("toggle","reload","help","user","send","config");
             }
             return Arrays.asList("toggle");
         }

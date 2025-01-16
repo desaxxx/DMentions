@@ -2,8 +2,7 @@ package org.nandayo.mention;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.nandayo.ConfigManager;
+import org.nandayo.utils.ConfigManager;
 import org.nandayo.Main;
 import org.nandayo.integration.LP;
 

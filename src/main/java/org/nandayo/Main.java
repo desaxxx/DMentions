@@ -10,12 +10,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.nandayo.GUIManager.MenuListener;
 import org.nandayo.data.UserManager;
 import org.nandayo.integration.LP;
+import org.nandayo.integration.LPEvents;
+import org.nandayo.integration.Metrics;
 import org.nandayo.mention.Events.MentionEveryoneEvent;
 import org.nandayo.mention.Events.MentionGroupEvent;
 import org.nandayo.mention.Events.MentionNearbyEvent;
@@ -39,9 +40,6 @@ public final class Main extends JavaPlugin implements Listener {
         return plugin;
     }
 
-    //SPIGOT RESOURCE ID
-    private final int resourceId = 121452;
-
     //AFTER LOAD PERMISSIONS
     public final List<String> afterLoadPermissions = new ArrayList<>();
 
@@ -50,15 +48,17 @@ public final class Main extends JavaPlugin implements Listener {
         plugin = this;
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(this, this);
+        pm.registerEvents(new MenuListener(), this);
         pm.registerEvents(new PluginEvents(), this);
         getCommand("dmentions").setExecutor(new MainCommand());
 
         //APIS
         if(pm.getPlugin("LuckPerms") != null) {
             new LP(this);
-            getLogger().info("LuckPerms has been enabled");
+            new LPEvents(this, LP.getApi()).register();
+            Util.log("&aLuckPerms found. Integration has been enabled!");
         }else {
-            getLogger().info("LuckPerms not found. Skipping group mentions.");
+            Util.log("&fLuckPerms not found. Skipping integration.");
         }
 
         //UPDATE VALUES
@@ -66,14 +66,20 @@ public final class Main extends JavaPlugin implements Listener {
 
         //UPDATE CHECK
         if(configManager.getBoolean("check_for_updates", true)) {
+            //SPIGOT RESOURCE ID
+            int resourceId = 121452;
             new UpdateChecker(this, resourceId).getVersion(version -> {
                 if (this.getDescription().getVersion().equals(version)) {
-                    getLogger().info("Plugin is up-to-date.");
+                    Util.log("&aPlugin is up-to-date.");
                 } else {
-                    getLogger().info("There is a new version update. (" + version + ")");
+                    Util.log("&fThere is a new version update. (&e" + version + "&f)");
                 }
             });
         }
+
+        //bStats
+        int pluginId = 24381;
+        Metrics metrics = new Metrics(this, pluginId);
     }
 
     @Override
@@ -81,16 +87,22 @@ public final class Main extends JavaPlugin implements Listener {
         userManager.saveChanges();
     }
 
+    //SYMBOLS
+    public static String arrow = "⇒";
+
     //MANAGERS
+    public Config config;
     public ConfigManager configManager;
     public MentionManager mentionManager;
     public UserManager userManager;
     public CooldownManager cooldownManager;
     public LangManager langManager;
+    public PermissionManager permissionManager = null;
+    public Player guiConfigEditor = null;
 
     public void updateVariables() {
         //MANAGERS
-        Config config = new Config(this);
+        config = new Config(this).updateConfig();
         configManager = new ConfigManager(config.get());
         mentionManager = new MentionManager(this, configManager);
         if(userManager != null) {
@@ -98,12 +110,14 @@ public final class Main extends JavaPlugin implements Listener {
         }
         userManager = new UserManager(this);
         cooldownManager = new CooldownManager(this, configManager);
-        langManager = new LangManager(this, configManager.getString("lang_file", "en-US"));
+        langManager = new LangManager(this, configManager.getString("lang_file", "en-US")).updateLanguage();
 
         //PERMISSION
-        PermissionManager permissionManager = new PermissionManager(this, configManager);
-        permissionManager.clearAfterLoadPermissions();
-        permissionManager.setupPermissions();
+        if(permissionManager == null) {
+            permissionManager = new PermissionManager(this, configManager);
+            permissionManager.clearAfterLoadPermissions();
+            permissionManager.setupPermissions();
+        }
     }
 
 
@@ -145,14 +159,14 @@ public final class Main extends JavaPlugin implements Listener {
 
                 updatedMessage.append(message, lastAppendPosition, matchStart);
                 String displayText = keyword;
-                String suffix = getSuffixColor(LP.getGroup(sender));
+                String suffix = getSuffixColor(sender);
 
                 if (mh.getType() == MentionType.PLAYER) {
                     Player target = Bukkit.getPlayerExact(mh.getTarget());
                     if (target != null && userManager.getMentionMode(target) && !cooldownManager.playerIsOnCooldown(sender,keyword) && sender.hasPermission(mh.getPerm())) {
                         if(getRestrictConditions(sender, target)) {
                             cooldownManager.setLastPlayerMention(target.getName(), System.currentTimeMillis());
-                            displayText = configManager.getString("player.display", "<#a9e871>{p}&f").replace("{p}", target.getName()) + suffix;
+                            displayText = configManager.getString("player.display", "{p}").replace("{p}", target.getName()) + suffix;
                             mentionCounter++;
 
                             Bukkit.getScheduler().runTask(this, () -> {
@@ -167,7 +181,7 @@ public final class Main extends JavaPlugin implements Listener {
                 } else if (mh.getType() == MentionType.NEARBY) {
                     if (!cooldownManager.nearbyIsOnCooldown(sender) && sender.hasPermission(mh.getPerm())) {
                         cooldownManager.setLastNearbyMention(sender.getName(), System.currentTimeMillis());
-                        displayText = configManager.getString("nearby.display", "<#ea79b8>@nearby&f") + suffix;
+                        displayText = configManager.getString("nearby.display", "@nearby") + suffix;
                         mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
@@ -178,7 +192,7 @@ public final class Main extends JavaPlugin implements Listener {
                 } else if (mh.getType() == MentionType.EVERYONE) {
                     if (!cooldownManager.everyoneIsOnCooldown(sender) && sender.hasPermission(mh.getPerm())) {
                         cooldownManager.setLastEveryoneMention(System.currentTimeMillis());
-                        displayText = configManager.getString("everyone.display", "<#8fb56c>@everyone&f") + suffix;
+                        displayText = configManager.getString("everyone.display", "@everyone") + suffix;
                         mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
@@ -192,7 +206,7 @@ public final class Main extends JavaPlugin implements Listener {
                     if (!cooldownManager.groupIsOnCooldown(sender, mh.getTarget()) && section != null && sender.hasPermission(mh.getPerm())) {
                         cooldownManager.setLastGroupMention(group, System.currentTimeMillis());
                         //Getting from group section
-                        displayText = section.getString("display", "<#73c7dc>{group}&f").replace("{group}", group) + suffix;
+                        displayText = section.getString("display", "{group}").replace("{group}", group) + suffix;
                         mentionCounter++;
 
                         Bukkit.getScheduler().runTask(this, () -> {
@@ -212,12 +226,15 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
     //SUFFIX COLOR
-    public String getSuffixColor(String groupName) {
-        ConfigurationSection section = configManager.getConfigurationSection("suffix_color.group");
-        if(section.contains(groupName)) {
-            return section.getString(groupName, "");
+    public String getSuffixColor(Player sender) {
+        if(LP.isConnected()) {
+            String group = LP.getGroup(sender);
+            ConfigurationSection section = configManager.getConfigurationSection("suffix_color.group");
+            if(section != null && section.contains(group)) {
+                return section.getString(group,"");
+            }
         }
-        return configManager.getString("suffix_color.group.__OTHER__", "&f");
+        return configManager.getString("suffix_color.group.__OTHER__", "");
     }
 
     //CHECK RESTRICTED PERMISSIONS
@@ -234,11 +251,10 @@ public final class Main extends JavaPlugin implements Listener {
         if(configManager.getStringList("group.disabled_groups").contains(groupName)) return null;
 
         ConfigurationSection section = configManager.getConfigurationSection("group.list." + groupName);
-        if(section != null) {
-            return section;
-        }else {
-            return configManager.getConfigurationSection("group.list.__OTHER__");
+        if(section == null) {
+            section = configManager.getConfigurationSection("group.list.__OTHER__");
         }
+        return section;
     }
 
     //LANG GROUP SECTION
@@ -246,11 +262,10 @@ public final class Main extends JavaPlugin implements Listener {
         if(groupName == null || groupName.isEmpty()) return null;
 
         ConfigurationSection section = langManager.getConfig().getConfigurationSection("group." + groupName);
-        if(section != null) {
-            return section;
-        }else {
-            return langManager.getConfig().getConfigurationSection("group.__OTHER__");
+        if(section == null) {
+            section = langManager.getConfig().getConfigurationSection("group.__OTHER__");
         }
+        return section;
     }
 
     //GET NEARBY PLAYERS
@@ -287,5 +302,13 @@ public final class Main extends JavaPlugin implements Listener {
         if (hours > 0) return String.format("%d h, %d m", hours, minutes);
         if (minutes > 0) return String.format("%d m, %d s", minutes, seconds);
         return String.format("%d s", seconds);
+    }
+
+    public int parseInt(String str) {
+        try {
+            return Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }

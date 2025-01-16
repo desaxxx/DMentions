@@ -11,7 +11,7 @@ player:
     target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned you in chat."
   title:
     sender_message: ""
-    target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
+    target_message: ""
 #
 nearby:
   action_bar:
@@ -63,5 +63,9 @@ command:
   help:
     description: "&6Here is the command list:"
     list: "&7{commands}"
+  config:
+    already_configuring: "&cThere is an admin who is already configuring."
+    reset_changes: "&cReset changes."
+    save_changes: "&aUpdated configuration keys."
 #
 lang_version: '{version}' #DO NOT CHANGE.

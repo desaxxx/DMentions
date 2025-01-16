@@ -13,12 +13,14 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+@SuppressWarnings("CallToPrintStackTrace")
 public class LangManager {
 
-    private final List<String> languages = Arrays.asList("en-US","tr-TR");
     private final Main plugin;
 
+    private final List<String> languages = Arrays.asList("en-US","tr-TR");
     private final String defaultLang = "en-US";
+    private FileConfiguration DEFAULT_CONFIG = null;
 
     private final String selectedLang;
     private final File file;
@@ -32,13 +34,17 @@ public class LangManager {
         }
         loadFiles();
         if(!languages.contains(fileName)) {
-            plugin.getLogger().warning("Language " + fileName + " not found. Using default language.");
+            Util.log("&cLanguage " + fileName + " not found. Using default language.");
             fileName = defaultLang;
         }
         this.selectedLang = fileName;
         this.file = new File(dir, fileName + ".yml");
         this.config = YamlConfiguration.loadConfiguration(file);
         updateLanguage();
+    }
+
+    public List<String> getLanguages() {
+        return languages;
     }
 
     public void loadFiles() {
@@ -48,6 +54,13 @@ public class LangManager {
             if(!file.exists() && plugin.getResource(path) != null) {
                 plugin.saveResource(path, false);
             }
+            //Default lang file
+            if(lang.equals(defaultLang)) {
+                DEFAULT_CONFIG = YamlConfiguration.loadConfiguration(file);
+            }
+        }
+        if(DEFAULT_CONFIG == null) {
+            Util.log("&cDefault language (" + defaultLang + ") not found. This may lead to empty messages.");
         }
     }
 
@@ -55,32 +68,44 @@ public class LangManager {
         return config;
     }
 
+    /*
+     * Return the message
+     */
     public String getMsg(String path) {
-        Object obj = config.get(path, "");
+        Object obj = getDefaultIfMissing(path);
         if(obj instanceof String) {
-            return obj.toString();
+            return (String) obj;
         }
         return "";
     }
-    public String getMsg(ConfigurationSection section, String path) {
-        Object obj = section.get(path, "");
-        if(obj instanceof String) {
-            return obj.toString();
+    public String getMsg(ConfigurationSection section, String subPath) {
+        String path = section.getCurrentPath() + "." + subPath;
+        return getMsg(path);
+    }
+
+    /*
+     * Missing keys on language files
+     */
+    private Object getDefaultIfMissing(String path) {
+        if(config.contains(path)) {
+            return config.get(path, "");
+        }else if(DEFAULT_CONFIG != null && DEFAULT_CONFIG.contains(path)) {
+            return DEFAULT_CONFIG.get(path, "");
         }
         return "";
     }
 
     //UPDATE LANGUAGE
-    private void updateLanguage() {
+    public LangManager updateLanguage() {
         String version = plugin.getDescription().getVersion();
         String configVersion = config.getString("lang_version", "0");
 
-        if(version.equals(configVersion)) return;
+        if(version.equals(configVersion)) return this;
 
         InputStream defStream = plugin.getResource("lang/" + selectedLang + ".yml");
         if(defStream == null) {
-            plugin.getLogger().warning("Default " + selectedLang + ".yml not found in plugin resources.");
-            return;
+            Util.log("&cDefault " + selectedLang + ".yml not found in plugin resources.");
+            return this;
         }
 
         // BACKUP OF OLD LANG.YML
@@ -105,20 +130,20 @@ public class LangManager {
             defConfig.set("lang_version", version);
             defConfig.save(file);
             config = defConfig;
-            plugin.updateVariables();
-            plugin.getLogger().info("Updated language file.");
+            Util.log("&aUpdated language file.");
         }catch (Exception e) {
-            plugin.getLogger().warning("Failed to save updated language file.");
+            Util.log("&cFailed to save updated language file.");
             e.printStackTrace();
         }
+        return this;
     }
 
     private void saveBackupConfig(File backupFile, FileConfiguration backupConfig) {
         try {
             backupConfig.save(backupFile);
-            plugin.getLogger().info("Backed up old language file.");
+            Util.log("&aBacked up old language file.");
         } catch (Exception e) {
-            plugin.getLogger().warning("Failed to save old language backup file.");
+            Util.log("&cFailed to save old language backup file.");
             e.printStackTrace();
         }
     }

@@ -63,5 +63,9 @@ command:
   help:
     description: "&6Komut listesi:"
     list: "&7{commands}"
+  config:
+    already_configuring: "&cBir yetkili zaten yapılandırma yapıyor."
+    reset_changes: "&cDeğişiklikler sıfırlandı."
+    save_changes: "&aYapılandırmalar kaydedildi."
 #
 lang_version: '{version}' #DO NOT CHANGE.

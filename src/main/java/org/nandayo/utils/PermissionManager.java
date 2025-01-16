@@ -3,7 +3,6 @@ package org.nandayo.utils;
 import org.bukkit.Bukkit;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
-import org.nandayo.ConfigManager;
 import org.nandayo.Main;
 import org.nandayo.integration.LP;
 
@@ -40,7 +39,7 @@ public class PermissionManager {
             children.put(everyonePermission, true);
 
             for (String group : LP.getGroups()) {
-                String groupPermission = plugin.getPermission(configManager.getString("group.permission", null)).replace("{group}", group);
+                String groupPermission = plugin.getPermission(configManager.getString("group.permission", "")).replace("{group}", group);
                 // REGISTERING GROUP PERMISSIONS
                 Bukkit.getPluginManager().addPermission(new Permission(groupPermission, PermissionDefault.OP));
                 plugin.afterLoadPermissions.add(groupPermission);
@@ -53,13 +52,13 @@ public class PermissionManager {
     }
     public void clearAfterLoadPermissions() {
         if(plugin.afterLoadPermissions.isEmpty()) return;
+        Permission adminPermission = Bukkit.getPluginManager().getPermission("dmentions.admin");
         for(String perm : plugin.afterLoadPermissions) {
             Permission permission = Bukkit.getPluginManager().getPermission(perm);
             if(permission != null) {
                 Bukkit.getPluginManager().removePermission(permission);
             }
-            Permission adminPermission = Bukkit.getPluginManager().getPermission("dmentions.admin");
-            if(adminPermission != null) {
+            if(adminPermission != null && adminPermission.getChildren().containsKey(perm)) {
                 adminPermission.getChildren().remove(perm);
                 adminPermission.recalculatePermissibles();
             }
