@@ -87,6 +87,6 @@ public class LP {
                 .filter(group -> group != null && group.getWeight().isPresent())
                 .max(Comparator.comparingInt(group -> group.getWeight().orElse(0)))
                 .map(Group::getName)
-                .orElse("");
+                .orElse(user.getPrimaryGroup());
     }
 }

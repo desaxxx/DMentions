@@ -1,5 +1,5 @@
 name: DMentions
-version: '1.5'
+version: '1.5.1'
 main: org.nandayo.Main
 api-version: '1.19'
 authors: [ yoshii01 ]
