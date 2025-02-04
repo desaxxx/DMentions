@@ -1,5 +1,5 @@
 # DMentions
-> Simple chat plugin for mentioning players.
+> Advanced chat plugin for mentioning players. Compatible with various chat plugin.
 >
 > Check out [Spigot Page](https://www.spigotmc.org/resources/dmentions.121452/) to get more information.\
 > And if you need help configuring the plugin. First look at the [Wiki](https://github.com/desaxxx/DMentions/wiki)\
