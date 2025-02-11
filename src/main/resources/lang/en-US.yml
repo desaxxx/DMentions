@@ -4,6 +4,7 @@
 # Available types: CHAT, ACTION_BAR, TITLE.
 cooldown_warn: "ACTION_BAR=&cYou should wait {REMAINED} before mentioning."
 mention_restricted_warn: "ACTION_BAR={PREFIX} &cYou don't have permission to mention that player."
+disabled_world_warn: "ACTION_BAR={PREFIX} &cYou cannot mention a player in this world."
 #
 player:
   action_bar:
@@ -60,6 +61,9 @@ command:
     unknown: "&cUnknown argument."
     mentions:
       success: "&eMention mode of &f{p}&e set to {value}."
+    display:
+      invalid_display: "&cInvalid display. It must match a Minecraft nickname expression."
+      success: "&eMention display of &f{p}&e set to {value}."
   help:
     description: "&6Here is the command list:"
     list: "&7{commands}"
@@ -67,5 +71,8 @@ command:
     already_configuring: "&cThere is an admin who is already configuring."
     reset_changes: "&cReset changes."
     save_changes: "&aUpdated configuration keys."
+  customize:
+    invalid_display: "&cInvalid display. It must match a Minecraft nickname expression."
+    success: "&aYou changed your mention display from &c{old_value}&a to &e{value}&a."
 #
 lang_version: '{version}' #DO NOT CHANGE.

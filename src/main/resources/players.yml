@@ -2,3 +2,4 @@
 players:
   UUID-OF-PLAYER:
     mentions: true
+    mention_display: "animeboi"

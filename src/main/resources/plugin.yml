@@ -1,8 +1,8 @@
 name: DMentions
-version: '1.5.1'
-main: org.nandayo.Main
+version: ${project.version}
+main: org.nandayo.DMentions.Main
 api-version: '1.19'
-authors: [ yoshii01 ]
+authors: [ desaxx ]
 softdepend:
   - LuckPerms
 commands:
@@ -17,6 +17,7 @@ permissions:
       dmentions.configure: true
       dmentions.help: true
       dmentions.toggle: true
+      dmentions.customize: true
       dmentions.send: true
       dmentions.mention.restricted.bypass: true
   dmentions.reload:
@@ -26,6 +27,8 @@ permissions:
   dmentions.help:
     default: op
   dmentions.toggle:
+    default: op
+  dmentions.customize:
     default: op
   dmentions.send:
     default: op

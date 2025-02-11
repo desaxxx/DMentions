@@ -6,6 +6,8 @@
 # (!) All the 'cooldown' values are representing in seconds.
 # (!) Includes hex color support for messages and display. Usage: <#RRGGBB>
 # (!) Messages are in lang directory since v1.3
+# (!) You should leave values empty to remove them. Otherwise, the plugin will regenerate them with default values.
+#     (e.g. cooldown: 0, disabled_worlds: [], sound: "", ...)
 #
 # This file should exist within lang directory.
 lang_file: "en-US"
@@ -21,11 +23,18 @@ suffix_color:
     # For other unspecified groups.
     __OTHER__: "&f"
 #
+# Worlds that players cannot mention anybody.
+disabled_worlds:
+  - "no_mention_world_1"
+  - "no_mention_world_2"
+#
 player:
   enabled: true
   permission: "dmentions.mention.player"
   sound: "BLOCK_NOTE_BLOCK_PLING"
   display: "<#a9e871>@{p}"
+  # display of the mention if the player customized it.
+  customized_display: "<#eac773>@{display}"
   cooldown: 5
 #
 nearby:

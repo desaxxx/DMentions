@@ -4,6 +4,7 @@
 # Kullanılabilir türler: CHAT, ACTION_BAR, TITLE.
 cooldown_warn: "ACTION_BAR=&cTekrar etiketlemek için {REMAINED} beklemelisin."
 mention_restricted_warn: "ACTION_BAR={PREFIX} &cBu oyuncuyu etiketlemek için yetkin yok."
+disabled_world_warn: "ACTION_BAR={PREFIX} &cBu dünyada oyuncu etiketleyemezsin."
 #
 player:
   action_bar:
@@ -60,6 +61,9 @@ command:
     unknown: "&cBilinmeyen arguman."
     mentions:
       success: "&f{p}&e adlı oyuncu için etiket modu {value} olarak ayarlandı."
+    display:
+      invalid_display: "&cGeçersiz görüntü. Bir Minecraft kullanıcı adı ifadesiyle eşleşmeli."
+      success: "&f{p}&e adlı oyuncu için etiket görüntüsü {value} olarak ayarlandı."
   help:
     description: "&6Komut listesi:"
     list: "&7{commands}"
@@ -67,5 +71,8 @@ command:
     already_configuring: "&cBir yetkili zaten yapılandırma yapıyor."
     reset_changes: "&cDeğişiklikler sıfırlandı."
     save_changes: "&aYapılandırmalar kaydedildi."
+  customize:
+    invalid_display: "&cGeçersiz görüntü. Bir Minecraft kullanıcı adı ifadesiyle eşleşmeli."
+    success: "&aEtiket görüntünü &c{old_value}&a'dan &e{value}&a olarak değiştirdin."
 #
 lang_version: '{version}' #DO NOT CHANGE.
