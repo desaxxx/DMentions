@@ -19,7 +19,7 @@ public class LangManager {
 
     private final Main plugin;
 
-    private final List<String> languages = Arrays.asList("en-US","tr-TR");
+    private final List<String> languages = Arrays.asList("en-US","tr-TR","zh-CN");
     private final String defaultLang = "en-US";
     private FileConfiguration DEFAULT_CONFIG = null;
 
