@@ -60,3 +60,15 @@ No dependence.
 ## Documentation & Contact
 **Wiki**: Check out the [Wiki](https://github.com/desaxxx/DMentions/wiki) for help configuring the plugin.\
 **Contact**: Found a bug or have a suggestion? Contact me on Discord: **desaxx** or open an [issue](https://github.com/desaxxx/DMentions/issues).
+
+## Images
+![](https://i.imgur.com/820NYD9.png)
+![](https://i.imgur.com/Mfs5lTp.png)
+![](https://i.imgur.com/o32GVnW.png)
+![](https://i.imgur.com/9nPvblf.png)
+![](https://i.imgur.com/HJNJ1qz.png)
+![](https://i.imgur.com/ZWb7ne8.png)
+![](https://i.imgur.com/EiYUPji.png)
+
+## Thanks to Our Users!
+![](https://bstats.org/signatures/bukkit/DMentions.svg)
