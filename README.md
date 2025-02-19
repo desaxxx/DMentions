@@ -2,6 +2,14 @@
 DMentions is a versatile chat plugin that allows you to mention players effortlessly\
 Compatible with various chat plugins, it enhances your in-game communication with ease.
 
+## Supported Languages
+- English
+- Turkish
+- Chinese (Simplified)
+
+> [!NOTE]
+> You can create your own language in `DMentions/lang/` folder.
+
 ## Features
 - **Toggle System**: Enable or disable mentions quickly.
 - **Permissions**: Manage who can use mention commands.
