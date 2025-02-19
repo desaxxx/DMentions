@@ -8,7 +8,7 @@ Compatible with various chat plugins, it enhances your in-game communication wit
 - Chinese (Simplified)
 
 > [!NOTE]
-> You can create your own language in `DMentions/lang/` folder. You can also share it with me!
+> You can create your own language file in `DMentions/lang/` folder. You can also share it with me!
 
 ## Features
 - **Toggle System**: Enable or disable mentions quickly.
