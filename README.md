@@ -52,7 +52,7 @@ Compatible with various chat plugins, it enhances your in-game communication wit
 - **dmentions.mention.player** - Mention a player
 - **dmentions.mention.nearby** - Mention nearby players
 - **dmentions.mention.everyone** - Mention everyone
-- **dmentions.mention.group.%group%** - Mention groups
+- **dmentions.mention.group.%group%** - Mention groups\
 *(!) Mention permissions are editable in config file.*
 
 ## Plugin Dependence
@@ -68,6 +68,7 @@ No dependence.
 ## Documentation & Contact
 **Wiki**: Check out the [Wiki](https://github.com/desaxxx/DMentions/wiki) for help configuring the plugin.\
 **Contact**: Found a bug or have a suggestion? Contact me on Discord: **desaxx** or open an [issue](https://github.com/desaxxx/DMentions/issues).
+**Discord**: Join [Discord Server](https://www.spigotmc.org/resources/dmentions-%E2%9C%A8-advanced-player-mention.121452/) to get support configuring the plugin.
 
 ## Images
 ![](https://i.imgur.com/820NYD9.png)
