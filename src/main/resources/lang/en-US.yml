@@ -4,7 +4,7 @@
 # Available types: CHAT, ACTION_BAR, TITLE.
 cooldown_warn: "ACTION_BAR=&cYou should wait {REMAINED} before mentioning."
 mention_restricted_warn: "ACTION_BAR={PREFIX} &cYou don't have permission to mention that player."
-disabled_world_warn: "ACTION_BAR={PREFIX} &cYou cannot mention a player in this world."
+disabled_world_warn: "ACTION_BAR={PREFIX} &cYou can't mention a player in this world."
 #
 player:
   action_bar:
@@ -45,7 +45,8 @@ group:
     title:
       sender_message: ""
       target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
-#
+
+# Commands
 command:
   must_be_player: "&cYou must be a player to use this command!"
   player_not_found: "&cPlayer not found."
@@ -74,5 +75,274 @@ command:
   customize:
     invalid_display: "&cInvalid display. It must match a Minecraft nickname expression."
     success: "&aYou changed your mention display from &c{old_value}&a to &e{value}&a."
+
+# Menus
+menu:
+  general_button:
+    display_name: "&3General Settings"
+    lore:
+      viewing:
+        - "&eYou are viewing this setting."
+      not_viewing:
+        - "&eClick to view!"
+  mention_button:
+    display_name: "&3Mention Settings"
+    lore:
+      viewing:
+        - "&eYou are viewing this setting."
+      not_viewing:
+        - "&eClick to view!"
+      go_back:
+        - "&eClick to go back!"
+  reset_changes:
+    display_name: "&cReset changes"
+    lore:
+      - "&eClick to apply!"
+  save_changes:
+    display_name: "&aSave Changes"
+    lore:
+      - "&eClick to apply!"
+  back:
+    display_name: "&eBack"
+    lore:
+      - ""
+  general_settings_menu:
+    title: "&8General Settings"
+    language:
+      display_name: "&3Language"
+      lore:
+        unchanged:
+          - "&eCurrent: &f{value}"
+          - "&eClick to choose another language!"
+        changed:
+          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to choose another language!"
+    check_for_updates:
+      display_name: "&3Check for Updates"
+      lore:
+        unchanged:
+          - "&eState: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&eState: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Update Notification"
+    prefix:
+      display_name: "&3Prefix"
+      lore:
+        unchanged:
+          - "&eCurrent: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Prefix"
+    mention_limit:
+      display_name: "&3Mention Limit"
+      lore:
+        unchanged:
+          - "&eCurrent: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Mention Limit"
+    suffix_colors:
+      display_name: "&3Suffix Colors"
+      lore:
+        - "&eClick to edit colors!"
+    disabled_worlds:
+      display_name: "&3Disabled Worlds"
+      lore:
+        - "&eClick to edit!"
+
+  mention_settings_menu:
+    title: "&8Mention Settings"
+    player_mentions:
+      display_name: "&3Player Mentions"
+      lore:
+        - "&eClick to edit!"
+    everyone_mentions:
+      display_name: "&3Everyone Mentions"
+      lore:
+        - "&eClick to edit!"
+    nearby_mentions:
+      display_name: "&3Nearby Mentions"
+      lore:
+        - "&eClick to edit!"
+    group_mentions:
+      display_name: "&3Group Mentions"
+      lore:
+        - "&eClick to edit!"
+
+  mention_type_settings_menu:
+    title:
+      # If it is a group setting
+      group: "&8Mention Settings ({mentionType}={group})"
+      # Other mention type settings
+      other: "&8Mention Settings ({mentionType})"
+    enabled:
+      display_name:
+        group: "&3Enabled (All Groups)"
+        other: "&3Enabled"
+      lore:
+        unchanged:
+          - "&eState: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&eState: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Enabled State"
+    permission:
+      display_name:
+        group: "&3Permission (All Groups)"
+        other: "&3Permission"
+      lore:
+        unchanged:
+          - "&eCurrent: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Permission"
+    sound:
+      display_name: "&3Sound"
+      lore:
+        unchanged:
+          - "&eCurrent: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Sound"
+    # Except player mention setting
+    keyword:
+      display_name:
+        group: "&3Keyword (All Groups)"
+        other: "&3Keyword"
+      lore:
+        unchanged:
+          - "&eCurrent: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Keyword"
+    display:
+      display_name: "&3Display"
+      lore:
+        unchanged:
+          - "&eCurrent: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Display"
+    cooldown:
+      display_name: "&3Cooldown (seconds)"
+      lore:
+        unchanged:
+          - "&eCurrent: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Cooldown"
+    # Only player mention setting
+    customized_display:
+      display_name: "&3Customized Display"
+      lore:
+        unchanged:
+          - "&eCurrent: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Customized Display"
+    # Only group mention setting
+    add_delete_group:
+      display_name: "&3Add | Delete Group"
+      lore:
+        - "&eLeft click to choose group!"
+        - "&cRight click to remove this group from the list!"
+    # Only group mention setting
+    disabled_groups:
+      display_name: "&3Disabled Groups"
+      lore:
+        - "&eClick to edit!"
+    # Only nearby mention setting
+    radius:
+      display_name: "&3Radius"
+      lore:
+        unchanged:
+          - "&eCurrent: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Radius"
+
+  language_menu:
+    title: "&8Language Chooser"
+    language:
+      display_name: "&3{language}"
+      lore:
+        - "&eClick to choose!"
+
+  suffix_menu:
+    title: "&8Color Manager"
+    existent_group:
+      display_name: "&3{group}"
+      lore:
+        unchanged:
+          - "&eCurrent: &f{value} color"
+          - "&eLeft click to edit!"
+          - "&eRight click to remove from list!"
+        changed:
+          - "&eCurrent: &7{value} color &a⇒ &f{unsaved_value} color"
+          - "&eLeft click to edit!"
+          - "&eRight click to remove from list!"
+      edit_title: "Edit Suffix Color"
+    nonexistent_group:
+      display_name: "&3{group}"
+      lore:
+        - "&eClick to add!"
+
+  disabled_worlds_menu:
+    title: "&8Disabled Worlds"
+    disabled_world:
+      display_name: "&3{world}"
+      lore:
+        - "&eClick to remove from disabled worlds!"
+    non-disabled_world:
+      display_name: "&3{world}"
+      lore:
+        - "&eClick to add to disabled worlds!"
+
+  disabled_groups_menu:
+    title: "&8Disabled Groups"
+    disabled_group:
+      display_name: "&3{group}"
+      lore:
+        - "&eClick to remove from disabled groups!"
+    non-disabled_group:
+      display_name: "&3{group}"
+      lore:
+        - "&eClick to add to disabled groups!"
+
+  choose_group_menu:
+    title: "&8Redirecting | Choose Group"
+    group:
+      display_name: "&3{group}"
+      lore:
+        - "&eClick to edit!"
+
+  add_group_menu:
+    title: "&8Redirecting | Add Group"
+    not_added_group:
+      display_name: "&3{group}"
+      lore:
+        - "&eClick to add!"
+
 #
-lang_version: '{version}' #DO NOT CHANGE.
+lang_version: "{version}" #DO NOT CHANGE.

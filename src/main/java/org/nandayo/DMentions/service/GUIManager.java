@@ -1,35 +1,28 @@
-package org.nandayo.DMentions.utils;
+package org.nandayo.DMentions.service;
 
+import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.nandayo.DAPI.HexUtil;
 import org.nandayo.DAPI.Util;
-import org.nandayo.DMentions.Main;
+import org.nandayo.DMentions.DMentions;
 
 import java.util.List;
 import java.util.Objects;
 
 public class GUIManager {
 
-    private final Main plugin;
+    private final DMentions plugin;
     private final ConfigManager configManager; // Unsaved config manager
 
+    @Getter
     private final Player player; // GUI modifier
 
-    public GUIManager(Main plugin, ConfigManager configManager, Player modifier) {
+    public GUIManager(DMentions plugin, ConfigManager configManager, Player modifier) {
         this.plugin = plugin;
         this.configManager = configManager;
         this.player = modifier;
-    }
-
-    /*
-     * GETTERS
-     */
-    public Player getPlayer() {
-        return player;
-    }
-    public ConfigManager getUConfigManager() {
-        return configManager;
     }
 
     public Object getUValue(String key, Object def) {
@@ -48,19 +41,13 @@ public class GUIManager {
         return configManager.get(key,null, true) != null;
     }
 
-    /*
-     * Value Display
+    /**
+     * Check if value changed.
+     * @param key Key path
+     * @return boolean
      */
-    public String getValueDisplay(String key) {
-        return getValueDisplay(key, "");
-    }
-    public String getValueDisplay(String key, String placeholder) {
-        Object curValue = configManager.get(key, "");
-        Object changedValue = configManager.get(key, "", true);
-        if(Objects.equals(curValue, changedValue)) {
-            return "&f" + curValue + placeholder;
-        }
-        return "&7" + curValue + placeholder + "&a " + Main.arrow + "&f " + getUValue(key, "") + placeholder;
+    public boolean isValueChanged(@NotNull String key) {
+        return !Objects.equals(configManager.get(key, ""), configManager.get(key, "", true));
     }
 
     /*
@@ -68,7 +55,7 @@ public class GUIManager {
      */
     public void resetChanges() {
         configManager.resetGuiConfig();
-        player.sendMessage(HexUtil.color(plugin.langManager.getMsg("command.config.reset_changes")));
+        player.sendMessage(HexUtil.color((String) plugin.LANGUAGE_MANAGER.getMessage("command.config.reset_changes")));
     }
 
     /*
@@ -76,7 +63,7 @@ public class GUIManager {
      */
     public void saveChanges() {
         configManager.saveGuiConfig();
-        player.sendMessage(HexUtil.color(plugin.langManager.getMsg("command.config.save_changes")));
+        player.sendMessage(HexUtil.color((String) plugin.LANGUAGE_MANAGER.getMessage("command.config.save_changes")));
         Util.log("&eUpdated config keys in-game by player " + player.getName() + ".");
     }
 }

@@ -1,9 +1,9 @@
-package org.nandayo.DMentions.utils;
+package org.nandayo.DMentions.service;
 
 import org.bukkit.Bukkit;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
-import org.nandayo.DMentions.Main;
+import org.nandayo.DMentions.DMentions;
 import org.nandayo.DMentions.integration.LP;
 
 import java.util.HashMap;
@@ -11,11 +11,11 @@ import java.util.Map;
 
 public class PermissionManager {
 
-    private final Main plugin;
+    private final DMentions plugin;
     private final ConfigManager configManager;
-    public PermissionManager(Main plugin, ConfigManager configManager) {
+    public PermissionManager(DMentions plugin) {
         this.plugin = plugin;
-        this.configManager = configManager;
+        this.configManager = plugin.CONFIG_MANAGER;
     }
     //PERMISSION SETUP
     public void setupPermissions() {

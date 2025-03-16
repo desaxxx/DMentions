@@ -1,29 +1,33 @@
-package org.nandayo.DMentions.GUI;
+package org.nandayo.DMentions.menu;
 
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.nandayo.DAPI.GUIManager.Button;
-import org.nandayo.DAPI.GUIManager.LazyButton;
-import org.nandayo.DAPI.GUIManager.Menu;
+import org.nandayo.DAPI.guimanager.Button;
+import org.nandayo.DAPI.guimanager.LazyButton;
+import org.nandayo.DAPI.guimanager.Menu;
 import org.nandayo.DAPI.ItemCreator;
-import org.nandayo.DMentions.Main;
+import org.nandayo.DAPI.object.DEnchantment;
+import org.nandayo.DAPI.object.DMaterial;
+import org.nandayo.DMentions.DMentions;
 import org.nandayo.DMentions.mention.MentionType;
-import org.nandayo.DMentions.utils.GUIManager;
+import org.nandayo.DMentions.service.GUIManager;
+import org.nandayo.DMentions.service.LanguageManager;
 
 import java.util.Arrays;
-import java.util.Set;
+import java.util.List;
 
+@SuppressWarnings("unchecked")
 public class MentionSettingsMenu extends Menu {
 
-    private final Main plugin;
+    private final DMentions plugin;
     private final Player player;
     private final GUIManager manager;
 
-    public MentionSettingsMenu(Main plugin, Player player, GUIManager manager) {
+    public MentionSettingsMenu(DMentions plugin, Player player, GUIManager manager) {
         this.plugin = plugin;
         this.player = player;
         this.manager = manager;
@@ -32,12 +36,14 @@ public class MentionSettingsMenu extends Menu {
     }
 
     public void open() {
-        this.createInventory(54, "&8Mention Settings");
+        LanguageManager LANGUAGE_MANAGER = plugin.LANGUAGE_MANAGER;
+        ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.mention_settings_menu");
+        this.createInventory(54, (String) LANGUAGE_MANAGER.getMessage(menuSection, "title"));
 
         /*
          * Glass Fillers
          */
-        this.addLazyButton(new LazyButton(Set.of(1,10,19,28,37,46)) {
+        this.addLazyButton(new LazyButton(Arrays.asList(1,10,19,28,37,46)) {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.GRAY_STAINED_GLASS_PANE)
@@ -53,8 +59,8 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.COMPASS)
-                        .name("&3General Settings")
-                        .lore("&eClick to view!")
+                        .name((String) LANGUAGE_MANAGER.getMessage("menu.general_button.display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.general_button.lore.not_viewing"))
                         .get();
             }
 
@@ -71,9 +77,9 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BELL)
-                        .name("&3Mention Settings")
-                        .lore("&eYou are viewing this setting.")
-                        .enchant(Enchantment.DURABILITY, 1)
+                        .name((String) LANGUAGE_MANAGER.getMessage("menu.mention_button.display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.mention_button.lore.viewing"))
+                        .enchant(plugin.getEnchantment(DEnchantment.UNBREAKING, DEnchantment.DURABILITY), 1)
                         .hideFlag(ItemFlag.values())
                         .get();
             }
@@ -91,8 +97,8 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BARRIER)
-                        .name("&cReset changes")
-                        .lore("&eClick to apply!")
+                        .name((String) LANGUAGE_MANAGER.getMessage("menu.reset_changes.display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.reset_changes.lore"))
                         .get();
             }
 
@@ -110,8 +116,8 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.WRITABLE_BOOK)
-                        .name("&aSave Changes")
-                        .lore("&eClick to apply!")
+                        .name((String) LANGUAGE_MANAGER.getMessage("menu.save_changes.display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.save_changes.lore"))
                         .get();
             }
 
@@ -127,17 +133,18 @@ public class MentionSettingsMenu extends Menu {
          * Player Mention
          */
         this.addButton(new Button(12) {
+            final String langPathName = "player_mentions";
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.PLAYER_HEAD)
-                        .name("&3Player Mentions")
-                        .lore("&eClick to edit!")
+                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
                         .get();
             }
 
             @Override
             public void onClick(Player p, ClickType clickType) {
-                new MentionInsideSettingsMenu(plugin, player, manager, MentionType.PLAYER, null);
+                new MentionTypeSettingsMenu(plugin, player, manager, MentionType.PLAYER, null);
             }
         });
 
@@ -145,17 +152,18 @@ public class MentionSettingsMenu extends Menu {
          * Everyone Mention
          */
         this.addButton(new Button(14) {
+            final String langPathName = "everyone_mentions";
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BEACON)
-                        .name("&3Everyone Mentions")
-                        .lore("&eClick to edit!")
+                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
                         .get();
             }
 
             @Override
             public void onClick(Player p, ClickType clickType) {
-                new MentionInsideSettingsMenu(plugin, player, manager, MentionType.EVERYONE, null);
+                new MentionTypeSettingsMenu(plugin, player, manager, MentionType.EVERYONE, null);
             }
         });
 
@@ -163,17 +171,18 @@ public class MentionSettingsMenu extends Menu {
          * Nearby Mention
          */
         this.addButton(new Button(16) {
+            final String langPathName = "nearby_mentions";
             @Override
             public ItemStack getItem() {
-                return ItemCreator.of(Material.SPYGLASS)
-                        .name("&3Nearby Mentions")
-                        .lore("&eClick to edit!")
+                return ItemCreator.of(plugin.getMaterial(DMaterial.SPYGLASS, DMaterial.TARGET))
+                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
                         .get();
             }
 
             @Override
             public void onClick(Player p, ClickType clickType) {
-                new MentionInsideSettingsMenu(plugin, player, manager, MentionType.NEARBY, null);
+                new MentionTypeSettingsMenu(plugin, player, manager, MentionType.NEARBY, null);
             }
         });
 
@@ -181,11 +190,12 @@ public class MentionSettingsMenu extends Menu {
          * Group Mention
          */
         this.addButton(new Button(30) {
+            final String langPathName = "group_mentions";
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.GREEN_BANNER)
-                        .name("&3Group Mentions")
-                        .lore("&eClick to edit!")
+                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
                         .get();
             }
 
@@ -198,11 +208,9 @@ public class MentionSettingsMenu extends Menu {
         /*
          * Close
          */
-        this.runOnClose(inv -> {
-            plugin.guiConfigEditor = null;
-        });
+        this.runOnClose(inv -> plugin.GUI_CONFIG_EDITOR = null);
 
         this.displayTo(player);
-        plugin.guiConfigEditor = player;
+        plugin.GUI_CONFIG_EDITOR = player;
     }
 }

@@ -21,9 +21,9 @@ public class Config {
     private static File file;
     private static FileConfiguration config;
 
-    private final Main plugin;
+    private final DMentions plugin;
 
-    public Config(Main plugin) {
+    public Config(DMentions plugin) {
         this.plugin = plugin;
         file = new File(this.plugin.getDataFolder(), "config.yml");
         if(!file.exists()) {
@@ -76,7 +76,7 @@ public class Config {
         // Disabled worlds list     (Special Case II)
         defConfig.set("disabled_worlds", config.getStringList("disabled_worlds"));
 
-        // Disabled worlds list     (Special Case III)
+        // Disabled groups list     (Special Case III)
         defConfig.set("group.disabled_groups", config.getStringList("group.disabled_groups"));
 
         // Group list section       (Special Case IV)
@@ -111,6 +111,7 @@ public class Config {
     private void saveBackupConfig() {
         File backupDir = new File(plugin.getDataFolder(), "backups");
         if (!backupDir.exists()) {
+            //noinspection ResultOfMethodCallIgnored
             backupDir.mkdirs();
         }
         String date = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());

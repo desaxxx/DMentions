@@ -1,5 +1,6 @@
 package org.nandayo.DMentions.integration;
 
+import lombok.Getter;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
@@ -8,29 +9,26 @@ import net.luckperms.api.node.types.InheritanceNode;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
-import org.nandayo.DMentions.Main;
+import org.nandayo.DMentions.DMentions;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class LP {
 
+    @Getter
     private static LuckPerms api = null;
-    private final Main plugin;
+    private final DMentions plugin;
 
     private static final Map<UUID, String> playerGroupCache = new HashMap<>();
 
-    public LP(Main plugin) {
+    public LP(DMentions plugin) {
         this.plugin = plugin;
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
             api = provider.getProvider();
         }
     }
-    public static LuckPerms getApi() {
-        return api;
-    }
-
     public static boolean isConnected() {
         return api != null;
     }

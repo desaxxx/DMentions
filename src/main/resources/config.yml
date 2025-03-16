@@ -31,7 +31,8 @@ disabled_worlds:
 player:
   enabled: true
   permission: "dmentions.mention.player"
-  sound: "BLOCK_NOTE_BLOCK_PLING"
+  # you can see the sound list with command /playsound, or you can look at the website https://www.digminecraft.com/lists/sound_list_pc.php
+  sound: "block.note_block.pling"
   display: "<#a9e871>@{p}"
   # display of the mention if the player customized it.
   customized_display: "<#eac773>@{display}"
@@ -40,7 +41,7 @@ player:
 nearby:
   enabled: true
   permission: "dmentions.mention.nearby"
-  sound: "ENTITY_PLAYER_LEVELUP"
+  sound: "entity.player.levelup"
   keyword: "@nearby"
   display: "<#ea79b8>@nearby"
   cooldown: 10
@@ -50,7 +51,7 @@ nearby:
 everyone:
   enabled: true
   permission: "dmentions.mention.everyone"
-  sound: "ENTITY_WITHER_SPAWN"
+  sound: "entity.spawn.wither"
   keyword: "@everyone"
   display: "<#8fb56c>@everyone"
   cooldown: 10
@@ -66,12 +67,12 @@ group:
   list:
     # Example group named 'default'
     default:
-      sound: "ITEM_TOTEM_USE"
+      sound: "item.totem.use"
       display: "<#c0dee6>@{group}"
       cooldown: 5
     # For other unspecified groups which are not disabled.
     __OTHER__:
-      sound: "ITEM_TOTEM_USE"
+      sound: "item.totem.use"
       display: "<#73c7dc>@{group}"
       cooldown: 5
 #

@@ -1,4 +1,4 @@
-package org.nandayo.DMentions.utils;
+package org.nandayo.DMentions.service;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;

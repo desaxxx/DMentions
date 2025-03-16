@@ -1,4 +1,4 @@
-package org.nandayo.DMentions.utils;
+package org.nandayo.DMentions.service;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -18,9 +18,9 @@ public class MessageManager {
         String[] parts = msg.split("=");
         if(parts.length < 2) sendMessage(player, msg);
         switch (parts[0]) {
-            case "CHAT" -> sendMessage(player, parts[1]);
-            case "ACTION_BAR" -> sendActionBar(player, parts[1]);
-            case "TITLE" -> sendTitle(player, parts[1]);
+            case "CHAT": sendMessage(player, parts[1]);break;
+            case "ACTION_BAR": sendActionBar(player, parts[1]);break;
+            case "TITLE": sendTitle(player, parts[1]);break;
         }
     }
 

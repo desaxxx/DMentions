@@ -4,5 +4,5 @@ import org.bukkit.entity.Player;
 
 public interface Mention {
 
-    public Player getSender();
+    Player getSender();
 }

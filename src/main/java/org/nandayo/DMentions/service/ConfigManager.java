@@ -1,9 +1,11 @@
-package org.nandayo.DMentions.utils;
+package org.nandayo.DMentions.service;
 
+import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.nandayo.DMentions.Main;
+import org.nandayo.DAPI.Util;
+import org.nandayo.DMentions.DMentions;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,19 +14,13 @@ import java.io.StringReader;
 
 public class ConfigManager {
 
+    @Getter
     private YamlConfiguration config; // Main config
     private YamlConfiguration uConfig; // Unsaved config
 
     public ConfigManager(FileConfiguration config) {
         this.config = YamlConfiguration.loadConfiguration(new StringReader(config.saveToString()));
         this.uConfig = YamlConfiguration.loadConfiguration(new StringReader(config.saveToString()));
-    }
-
-    public YamlConfiguration getConfig() {
-        return config;
-    }
-    public YamlConfiguration getUConfig() {
-        return uConfig;
     }
 
     /*
@@ -36,9 +32,6 @@ public class ConfigManager {
         } else {
             config.set(key, value);
         }
-    }
-    public void set(String key, Object value) {
-        set(key, value, false);
     }
 
     /*
@@ -100,10 +93,10 @@ public class ConfigManager {
     public void saveGuiConfig() {
         try {
             config = uConfig;
-            config.save(new File(Main.inst().getDataFolder(), "config.yml"));
-            Main.inst().updateVariables();
+            config.save(new File(DMentions.inst().getDataFolder(), "config.yml"));
+            DMentions.inst().updateVariables();
         } catch (IOException e) {
-            e.printStackTrace();
+            Util.log("Could not save GUI Config. " + e.getMessage());
         }
     }
 

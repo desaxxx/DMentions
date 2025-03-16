@@ -45,7 +45,8 @@ group:
     title:
       sender_message: ""
       target_message: "{PREFIX}||<#f4e4c0>你在聊天栏中被他人提到."
-#
+
+# Commands
 command:
   must_be_player: "&c你必须是玩家才可使用此命令!"
   player_not_found: "&c玩家不存在."

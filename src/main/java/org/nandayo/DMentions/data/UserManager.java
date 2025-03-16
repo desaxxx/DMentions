@@ -3,7 +3,7 @@ package org.nandayo.DMentions.data;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.nandayo.DMentions.Main;
+import org.nandayo.DMentions.DMentions;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,9 +14,9 @@ public class UserManager implements IUser{
     private final File file;
     private final FileConfiguration config;
 
-    private final Main plugin;
+    private final DMentions plugin;
 
-    public UserManager(Main plugin) {
+    public UserManager(DMentions plugin) {
         this.plugin = plugin;
         this.file = new File(this.plugin.getDataFolder(), "players.yml");
         this.config = YamlConfiguration.loadConfiguration(file);
@@ -26,8 +26,7 @@ public class UserManager implements IUser{
         try {
             config.save(file);
         } catch (IOException e) {
-            plugin.getLogger().warning("Could not save players.yml");
-            e.printStackTrace();
+            plugin.getLogger().warning("Could not save players.yml. " + e.getMessage());
         }
     }
 

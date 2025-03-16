@@ -1,24 +1,33 @@
 package org.nandayo.DMentions.mention;
 
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+@Getter
 public class MentionHolder {
 
-    private final MentionType type;
-    private final String perm;
-    private final String target; // Could be a player name or a group name (null in cases it's everyone and nearby)
+    /**
+     * As it states
+     */
+    private final @NotNull MentionType type;
+    /**
+     * Permission to mention
+     */
+    private final @NotNull String perm;
+    /**
+     * Case PLAYER -> player name<br>
+     * Case GROUP -> group name<br>
+     * Case OTHER -> null
+     */
+    private final @Nullable String target;
 
-    public MentionHolder(MentionType type, String perm, String target) {
+    public MentionHolder(@NotNull MentionType type, @NotNull String perm, @Nullable String target) {
         this.type = type;
         this.perm = perm;
         this.target = target;
     }
-
-    public MentionType getType() {
-        return type;
-    }
-    public String getTarget() {
-        return target;
-    }
-    public String getPerm() {
-        return perm;
+    public MentionHolder(MentionType type, @NotNull String perm) {
+        this(type, perm, null);
     }
 }

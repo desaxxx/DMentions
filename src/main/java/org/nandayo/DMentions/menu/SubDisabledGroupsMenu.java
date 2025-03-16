@@ -1,25 +1,28 @@
-package org.nandayo.DMentions.GUI;
+package org.nandayo.DMentions.menu;
 
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.nandayo.DAPI.GUIManager.Button;
-import org.nandayo.DAPI.GUIManager.Menu;
+import org.nandayo.DAPI.guimanager.Button;
+import org.nandayo.DAPI.guimanager.Menu;
 import org.nandayo.DAPI.ItemCreator;
-import org.nandayo.DMentions.Main;
+import org.nandayo.DMentions.DMentions;
 import org.nandayo.DMentions.integration.LP;
-import org.nandayo.DMentions.utils.GUIManager;
+import org.nandayo.DMentions.service.GUIManager;
+import org.nandayo.DMentions.service.LanguageManager;
 
 import java.util.List;
 
+@SuppressWarnings("unchecked")
 public class SubDisabledGroupsMenu extends Menu {
 
-    private final Main plugin;
+    private final DMentions plugin;
     private final Player player;
     private final GUIManager manager;
 
-    public SubDisabledGroupsMenu(Main plugin, Player player, GUIManager manager) {
+    public SubDisabledGroupsMenu(DMentions plugin, Player player, GUIManager manager) {
         this.plugin = plugin;
         this.player = player;
         this.manager = manager;
@@ -28,7 +31,9 @@ public class SubDisabledGroupsMenu extends Menu {
     }
 
     public void open() {
-        this.createInventory(54, "&8Disabled Groups");
+        LanguageManager LANGUAGE_MANAGER = plugin.LANGUAGE_MANAGER;
+        ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.disabled_groups_menu");
+        this.createInventory(54, (String) LANGUAGE_MANAGER.getMessage(menuSection, "title"));
 
         int i = 0;
         /*
@@ -40,8 +45,11 @@ public class SubDisabledGroupsMenu extends Menu {
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.RED_BANNER)
-                            .name("&3" + group)
-                            .lore("&eClick to remove from disabled groups!")
+                            .name(LANGUAGE_MANAGER.getMessageReplaceable(menuSection, "disabled_group.display_name")
+                                    .replace("{group}", group)
+                                    .get()[0]
+                            )
+                            .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, "disabled_group.lore"))
                             .get();
                 }
 
@@ -63,11 +71,15 @@ public class SubDisabledGroupsMenu extends Menu {
                 if(disabledList.contains(group)) continue;
 
                 this.addButton(new Button(i++) {
+                    final String langPathName = "non-disabled_group";
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.GREEN_BANNER)
-                                .name("&3" + group)
-                                .lore("&eClick to add to disabled groups!")
+                                .name(LANGUAGE_MANAGER.getMessageReplaceable(menuSection, langPathName + ".display_name")
+                                        .replace("{group}", group)
+                                        .get()[0]
+                                )
+                                .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
                                 .get();
                     }
 
@@ -88,7 +100,8 @@ public class SubDisabledGroupsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
-                        .name("&eBack")
+                        .name((String) LANGUAGE_MANAGER.getMessage("menu.back.display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.back.lore"))
                         .get();
             }
 
@@ -101,11 +114,9 @@ public class SubDisabledGroupsMenu extends Menu {
         /*
          * Close
          */
-        this.runOnClose(inv -> {
-            plugin.guiConfigEditor = null;
-        });
+        this.runOnClose(inv -> plugin.GUI_CONFIG_EDITOR = null);
 
         this.displayTo(player);
-        plugin.guiConfigEditor = player;
+        plugin.GUI_CONFIG_EDITOR = player;
     }
 }

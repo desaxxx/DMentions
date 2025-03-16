@@ -1,25 +1,32 @@
-package org.nandayo.DMentions.GUI;
+package org.nandayo.DMentions.menu;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.nandayo.DAPI.GUIManager.Button;
-import org.nandayo.DAPI.GUIManager.Menu;
+import org.nandayo.DAPI.guimanager.Button;
+import org.nandayo.DAPI.guimanager.Menu;
 import org.nandayo.DAPI.ItemCreator;
-import org.nandayo.DMentions.Main;
+import org.nandayo.DMentions.DMentions;
 import org.nandayo.DMentions.integration.LP;
-import org.nandayo.DMentions.utils.GUIManager;
+import org.nandayo.DMentions.service.ConfigManager;
+import org.nandayo.DMentions.service.GUIManager;
+import org.nandayo.DMentions.service.LanguageManager;
 
+import java.util.List;
+
+@SuppressWarnings("unchecked")
 public class SubSuffixMenu extends Menu {
 
-    private final Main plugin;
+    private final DMentions plugin;
     private final Player player;
     private final GUIManager manager;
+    private final ConfigManager configManager;
 
-    public SubSuffixMenu(Main plugin, Player player, GUIManager manager) {
+    public SubSuffixMenu(DMentions plugin, Player player, GUIManager manager) {
         this.plugin = plugin;
+        this.configManager = plugin.CONFIG_MANAGER;
         this.player = player;
         this.manager = manager;
 
@@ -27,7 +34,9 @@ public class SubSuffixMenu extends Menu {
     }
 
     public void open() {
-        this.createInventory(54, "&8Color Manager");
+        LanguageManager LANGUAGE_MANAGER = plugin.LANGUAGE_MANAGER;
+        ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.suffix_menu");
+        this.createInventory(54, (String) LANGUAGE_MANAGER.getMessage(menuSection, "title"));
 
         /*
          * List groups that are within uConfigManager
@@ -36,27 +45,30 @@ public class SubSuffixMenu extends Menu {
         ConfigurationSection section = manager.getUSection("suffix_color.group");
         for(String suffixGroup : section.getKeys(false)) {
             this.addButton(new Button(i++) {
-                final String path = "suffix_color.group." + suffixGroup;
+                final String configPath = "suffix_color.group." + suffixGroup;
+                final String changed = manager.isValueChanged(configPath) ? "changed" : "unchanged";
+                final String langPathName = "existent_group";
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.GREEN_BANNER)
-                            .name("&3" + suffixGroup)
-                            .lore("&eCurrent: &f" + manager.getValueDisplay(path, "color"),
-                                    "&eLeft click to edit!",
-                                    "&cRight click to remove from list!")
+                            .name(LANGUAGE_MANAGER.getMessageReplaceable(menuSection, langPathName + ".display_name")
+                                    .replace("{group}", suffixGroup)
+                                    .get()[0]
+                            )
+                            .lore(LANGUAGE_MANAGER.getValueDisplayMessage(menuSection, langPathName + ".lore." + changed, configPath, configManager))
                             .get();
                 }
 
                 @Override
                 public void onClick(Player p, ClickType clickType) {
                     if(clickType == ClickType.LEFT) {
-                        new AnvilManager(plugin, manager, player, path, "Edit Suffix Color",
+                        new AnvilManager(plugin, manager, player, configPath, (String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".edit_title"),
                                 ((text) -> {
-                                    manager.setUValue(path, text);
+                                    manager.setUValue(configPath, text);
                                     new SubSuffixMenu(plugin, player, manager);
                                 }));
                     }else if(clickType == ClickType.RIGHT) {
-                        manager.setUValue(path, null);
+                        manager.setUValue(configPath, null);
                         new SubSuffixMenu(plugin, player, manager);
                     }
                 }
@@ -72,11 +84,15 @@ public class SubSuffixMenu extends Menu {
                 if(section.contains(group)) continue;
 
                 this.addButton(new Button(i++) {
+                    final String langPathName = "nonexistent_group";
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.BLACK_BANNER)
-                                .name("&3" + group)
-                                .lore("&eClick to add!")
+                                .name(LANGUAGE_MANAGER.getMessageReplaceable(menuSection, langPathName + ".display_name")
+                                        .replace("{group}", group)
+                                        .get()[0]
+                                )
+                                .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
                                 .get();
                     }
 
@@ -96,7 +112,8 @@ public class SubSuffixMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
-                        .name("&eBack")
+                        .name((String) LANGUAGE_MANAGER.getMessage("menu.back.display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.back.lore"))
                         .get();
             }
 
@@ -109,11 +126,9 @@ public class SubSuffixMenu extends Menu {
         /*
          * Close
          */
-        this.runOnClose(inv -> {
-            plugin.guiConfigEditor = null;
-        });
+        this.runOnClose(inv -> plugin.GUI_CONFIG_EDITOR = null);
 
         this.displayTo(player);
-        plugin.guiConfigEditor = player;
+        plugin.GUI_CONFIG_EDITOR = player;
     }
 }

@@ -1,28 +1,33 @@
-package org.nandayo.DMentions.GUI;
+package org.nandayo.DMentions.menu;
 
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.nandayo.DAPI.GUIManager.Button;
-import org.nandayo.DAPI.GUIManager.LazyButton;
-import org.nandayo.DAPI.GUIManager.Menu;
+import org.nandayo.DAPI.guimanager.Button;
+import org.nandayo.DAPI.guimanager.LazyButton;
+import org.nandayo.DAPI.guimanager.Menu;
 import org.nandayo.DAPI.ItemCreator;
-import org.nandayo.DMentions.Main;
-import org.nandayo.DMentions.utils.GUIManager;
+import org.nandayo.DAPI.object.DEnchantment;
+import org.nandayo.DMentions.DMentions;
+import org.nandayo.DMentions.service.*;
 
-import java.util.Set;
+import java.util.Arrays;
+import java.util.List;
 
+@SuppressWarnings("unchecked")
 public class GeneralSettingsMenu extends Menu {
 
-    private final Main plugin;
+    private final DMentions plugin;
+    private final ConfigManager configManager;
     private final Player player;
     private final GUIManager manager;
 
-    public GeneralSettingsMenu(Main plugin, Player player, GUIManager manager) {
+    public GeneralSettingsMenu(DMentions plugin, Player player, GUIManager manager) {
         this.plugin = plugin;
+        this.configManager = plugin.CONFIG_MANAGER;
         this.player = player;
         this.manager = manager;
 
@@ -30,12 +35,14 @@ public class GeneralSettingsMenu extends Menu {
     }
 
     public void open() {
-        this.createInventory(54, "&8General Settings");
+        LanguageManager LANGUAGE_MANAGER = plugin.LANGUAGE_MANAGER;
+        ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.general_settings_menu");
+        this.createInventory(54, (String) LANGUAGE_MANAGER.getMessage(menuSection,"title"));
 
         /*
          * Glass Fillers
          */
-        this.addLazyButton(new LazyButton(Set.of(1,10,19,28,37,46)) {
+        this.addLazyButton(new LazyButton(Arrays.asList(1,10,19,28,37,46)) {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.GRAY_STAINED_GLASS_PANE)
@@ -51,9 +58,9 @@ public class GeneralSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.COMPASS)
-                        .name("&3General Settings")
-                        .lore("&eYou are viewing this setting.")
-                        .enchant(Enchantment.DURABILITY, 1)
+                        .name((String) LANGUAGE_MANAGER.getMessage("menu.general_button.display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.general_button.lore.viewing"))
+                        .enchant(plugin.getEnchantment(DEnchantment.UNBREAKING, DEnchantment.DURABILITY), 1)
                         .hideFlag(ItemFlag.values())
                         .get();
             }
@@ -71,8 +78,8 @@ public class GeneralSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BELL)
-                        .name("&3Mention Settings")
-                        .lore("&eClick to view!")
+                        .name((String) LANGUAGE_MANAGER.getMessage("menu.mention_button.display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.mention_button.lore.not_viewing"))
                         .get();
             }
 
@@ -89,8 +96,8 @@ public class GeneralSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BARRIER)
-                        .name("&cReset changes")
-                        .lore("&eClick to apply!")
+                        .name((String) LANGUAGE_MANAGER.getMessage("menu.reset_changes.display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.reset_changes.lore"))
                         .get();
             }
 
@@ -108,8 +115,8 @@ public class GeneralSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.WRITABLE_BOOK)
-                        .name("&aSave Changes")
-                        .lore("&eClick to apply!")
+                        .name((String) LANGUAGE_MANAGER.getMessage("menu.save_changes.display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.save_changes.lore"))
                         .get();
             }
 
@@ -125,12 +132,14 @@ public class GeneralSettingsMenu extends Menu {
          * Language
          */
         this.addButton(new Button(12) {
+            final String configPath = "lang_file";
+            final String changed = manager.isValueChanged(configPath) ? "changed" : "unchanged";
+            final String langPathName = "language";
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BOOK)
-                        .name("&3Language")
-                        .lore("&eCurrent: &f" + manager.getValueDisplay("lang_file"),
-                                "&eClick to choose another language!")
+                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
+                        .lore(LANGUAGE_MANAGER.getValueDisplayMessage(menuSection, langPathName + ".lore." + changed, configPath, configManager))
                         .get();
             }
 
@@ -144,21 +153,22 @@ public class GeneralSettingsMenu extends Menu {
          * Check for Updates
          */
         this.addButton(new Button(14) {
-            final String path = "check_for_updates";
+            final String configPath = "check_for_updates";
+            final String changed = manager.isValueChanged(configPath) ? "changed" : "unchanged";
+            final String langPathName = configPath;
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.CLOCK)
-                        .name("&3Check for Updates")
-                        .lore("&eState: &f" + manager.getValueDisplay(path),
-                                "&eClick to toggle!")
+                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
+                        .lore(LANGUAGE_MANAGER.getValueDisplayMessage(menuSection, langPathName + ".lore." + changed, configPath, configManager))
                         .get();
             }
 
             @Override
             public void onClick(Player p, ClickType clickType) {
-                new AnvilManager(plugin, manager, player, path, "Edit Update Notification",
+                new AnvilManager(plugin, manager, player, configPath, (String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
-                            manager.setUValue(path, Boolean.valueOf(text));
+                            manager.setUValue(configPath, Boolean.valueOf(text));
                             new GeneralSettingsMenu(plugin, player, manager);
                         }));
             }
@@ -168,21 +178,22 @@ public class GeneralSettingsMenu extends Menu {
          * Prefix
          */
         this.addButton(new Button(16) {
-            final String path = "prefix";
+            final String configPath = "prefix";
+            final String changed = manager.isValueChanged(configPath) ? "changed" : "unchanged";
+            final String langPathName = configPath;
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.NAME_TAG)
-                        .name("&3Prefix")
-                        .lore("&eCurrent: &f" + manager.getValueDisplay(path),
-                                "&eClick to edit!")
+                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
+                        .lore(LANGUAGE_MANAGER.getValueDisplayMessage(menuSection, langPathName + ".lore." + changed, configPath, configManager))
                         .get();
             }
 
             @Override
             public void onClick(Player p, ClickType clickType) {
-                new AnvilManager(plugin, manager, player, path, "Edit Prefix",
+                new AnvilManager(plugin, manager, player, configPath, (String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
-                            manager.setUValue(path, text);
+                            manager.setUValue(configPath, text);
                             new GeneralSettingsMenu(plugin, player, manager);
                         }));
             }
@@ -192,21 +203,22 @@ public class GeneralSettingsMenu extends Menu {
          * Mention Limit
          */
         this.addButton(new Button(30) {
-            final String path = "mention_limit";
+            final String configPath = "mention_limit";
+            final String changed = manager.isValueChanged(configPath) ? "changed" : "unchanged";
+            final String langPathName = configPath;
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.PAPER)
-                        .name("&3Mention Limit")
-                        .lore("&eCurrent: &f" + manager.getValueDisplay(path),
-                                "&eClick to edit!")
+                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
+                        .lore(LANGUAGE_MANAGER.getValueDisplayMessage(menuSection, langPathName + ".lore." + changed, configPath, configManager))
                         .get();
             }
 
             @Override
             public void onClick(Player p, ClickType clickType) {
-                new AnvilManager(plugin, manager, player, path, "Edit Mention Limit",
+                new AnvilManager(plugin, manager, player, configPath, (String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
-                            manager.setUValue(path, plugin.parseInt(text));
+                            manager.setUValue(configPath, plugin.parseInt(text));
                             new GeneralSettingsMenu(plugin, player, manager);
                         }));
             }
@@ -216,11 +228,12 @@ public class GeneralSettingsMenu extends Menu {
          * Suffix Color
          */
         this.addButton(new Button(32) {
+            final String langPathName = "suffix_colors";
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.CYAN_DYE)
-                        .name("&3Suffix Colors")
-                        .lore("&eClick to edit colors!")
+                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
                         .get();
             }
 
@@ -234,11 +247,12 @@ public class GeneralSettingsMenu extends Menu {
          * Disabled Worlds
          */
         this.addButton(new Button(34) {
+            final String langPathName = "disabled_worlds";
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.GRASS_BLOCK)
-                        .name("&3Disabled Worlds")
-                        .lore("&eClick to edit!")
+                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
                         .get();
             }
 
@@ -251,11 +265,9 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Close
          */
-        this.runOnClose(inv -> {
-            plugin.guiConfigEditor = null;
-        });
+        this.runOnClose(inv -> plugin.GUI_CONFIG_EDITOR = null);
 
         this.displayTo(player);
-        plugin.guiConfigEditor = player;
+        plugin.GUI_CONFIG_EDITOR = player;
     }
 }

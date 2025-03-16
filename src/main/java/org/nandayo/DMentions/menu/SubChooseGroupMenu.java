@@ -1,24 +1,28 @@
-package org.nandayo.DMentions.GUI;
+package org.nandayo.DMentions.menu;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.nandayo.DAPI.GUIManager.Button;
-import org.nandayo.DAPI.GUIManager.Menu;
+import org.nandayo.DAPI.guimanager.Button;
+import org.nandayo.DAPI.guimanager.Menu;
 import org.nandayo.DAPI.ItemCreator;
-import org.nandayo.DMentions.Main;
+import org.nandayo.DMentions.DMentions;
 import org.nandayo.DMentions.mention.MentionType;
-import org.nandayo.DMentions.utils.GUIManager;
+import org.nandayo.DMentions.service.GUIManager;
+import org.nandayo.DMentions.service.LanguageManager;
 
+import java.util.List;
+
+@SuppressWarnings("unchecked")
 public class SubChooseGroupMenu extends Menu {
 
-    private final Main plugin;
+    private final DMentions plugin;
     private final Player player;
     private final GUIManager manager;
 
-    public SubChooseGroupMenu(Main plugin, Player player, GUIManager manager) {
+    public SubChooseGroupMenu(DMentions plugin, Player player, GUIManager manager) {
         this.plugin = plugin;
         this.player = player;
         this.manager = manager;
@@ -27,7 +31,9 @@ public class SubChooseGroupMenu extends Menu {
     }
 
     public void open() {
-        this.createInventory(54, "&8Redirecting | Choose Group");
+        LanguageManager LANGUAGE_MANAGER = plugin.LANGUAGE_MANAGER;
+        ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.choose_group_menu");
+        this.createInventory(54, (String) LANGUAGE_MANAGER.getMessage(menuSection, "title"));
 
         /*
          * List groups that are within group.list
@@ -40,14 +46,17 @@ public class SubChooseGroupMenu extends Menu {
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.GREEN_BANNER)
-                                .name("&3" + group)
-                                .lore("&eClick to edit!")
+                                .name(LANGUAGE_MANAGER.getMessageReplaceable(menuSection, "group.display_name")
+                                        .replace("{group}", group)
+                                        .get()[0]
+                                )
+                                .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, "group.lore"))
                                 .get();
                     }
 
                     @Override
                     public void onClick(Player p, ClickType clickType) {
-                        new MentionInsideSettingsMenu(plugin, player, manager, MentionType.GROUP, group);
+                        new MentionTypeSettingsMenu(plugin, player, manager, MentionType.GROUP, group);
                     }
                 });
             }
@@ -60,7 +69,8 @@ public class SubChooseGroupMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
-                        .name("&eBack")
+                        .name((String) LANGUAGE_MANAGER.getMessage("menu.back.display_name"))
+                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.back.lore"))
                         .get();
             }
 
@@ -73,11 +83,9 @@ public class SubChooseGroupMenu extends Menu {
         /*
          * Close
          */
-        this.runOnClose(inv -> {
-            plugin.guiConfigEditor = null;
-        });
+        this.runOnClose(inv -> plugin.GUI_CONFIG_EDITOR = null);
 
         this.displayTo(player);
-        plugin.guiConfigEditor = player;
+        plugin.GUI_CONFIG_EDITOR = player;
     }
 }
