@@ -5,9 +5,11 @@
 # (!) Group getters work with LuckPerms weighting system so you might need to assign them one.
 # (!) All the 'cooldown' values are representing in seconds.
 # (!) Includes hex color support for messages and display. Usage: <#RRGGBB>
-# (!) Messages are in lang directory since v1.3
+# (!) Messages are in lang directory since v1.3.
 # (!) You should leave values empty to remove them. Otherwise, the plugin will regenerate them with default values.
 #     (e.g. cooldown: 0, disabled_worlds: [], sound: "", ...)
+# (!) Sound patterns changed since v1.7.
+#     See the sound list with command /playsound (without "minecraft:"), or take a look at the website https://www.digminecraft.com/lists/sound_list_pc.php
 #
 # This file should exist within lang directory.
 lang_file: "en-US"
@@ -31,7 +33,6 @@ disabled_worlds:
 player:
   enabled: true
   permission: "dmentions.mention.player"
-  # you can see the sound list with command /playsound, or you can look at the website https://www.digminecraft.com/lists/sound_list_pc.php
   sound: "block.note_block.pling"
   display: "<#a9e871>@{p}"
   # display of the mention if the player customized it.
@@ -51,7 +52,7 @@ nearby:
 everyone:
   enabled: true
   permission: "dmentions.mention.everyone"
-  sound: "entity.spawn.wither"
+  sound: "entity.wither.spawn"
   keyword: "@everyone"
   display: "<#8fb56c>@everyone"
   cooldown: 10
