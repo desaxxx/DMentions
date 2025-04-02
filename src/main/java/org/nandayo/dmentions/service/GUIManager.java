@@ -1,12 +1,12 @@
-package org.nandayo.DMentions.service;
+package org.nandayo.dmentions.service;
 
 import lombok.Getter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.nandayo.DAPI.HexUtil;
-import org.nandayo.DAPI.Util;
-import org.nandayo.DMentions.DMentions;
+import org.nandayo.dapi.HexUtil;
+import org.nandayo.dapi.Util;
+import org.nandayo.dmentions.DMentions;
 
 import java.util.List;
 import java.util.Objects;

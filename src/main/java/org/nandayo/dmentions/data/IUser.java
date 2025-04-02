@@ -1,4 +1,4 @@
-package org.nandayo.DMentions.data;
+package org.nandayo.dmentions.data;
 
 import org.bukkit.entity.Player;
 

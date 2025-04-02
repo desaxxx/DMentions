@@ -1,9 +1,9 @@
-package org.nandayo.DMentions.service;
+package org.nandayo.dmentions.service;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
-import org.nandayo.DAPI.HexUtil;
+import org.nandayo.dapi.HexUtil;
 
 public class MessageManager {
 

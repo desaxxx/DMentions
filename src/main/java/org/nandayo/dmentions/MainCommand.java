@@ -1,4 +1,4 @@
-package org.nandayo.DMentions;
+package org.nandayo.dmentions;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -6,11 +6,11 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.nandayo.DAPI.HexUtil;
-import org.nandayo.DMentions.menu.GeneralSettingsMenu;
-import org.nandayo.DMentions.service.ConfigManager;
-import org.nandayo.DMentions.service.GUIManager;
-import org.nandayo.DMentions.service.LanguageManager;
+import org.nandayo.dapi.HexUtil;
+import org.nandayo.dmentions.menu.GeneralSettingsMenu;
+import org.nandayo.dmentions.service.ConfigManager;
+import org.nandayo.dmentions.service.GUIManager;
+import org.nandayo.dmentions.service.LanguageManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,4 +1,4 @@
-package org.nandayo.DMentions.mention.Events;
+package org.nandayo.dmentions.mention.event;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;

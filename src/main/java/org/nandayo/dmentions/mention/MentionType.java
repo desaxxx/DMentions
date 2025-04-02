@@ -1,4 +1,4 @@
-package org.nandayo.DMentions.mention;
+package org.nandayo.dmentions.mention;
 
 public enum MentionType {
     PLAYER,

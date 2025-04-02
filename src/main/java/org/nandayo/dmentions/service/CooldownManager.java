@@ -1,12 +1,12 @@
-package org.nandayo.DMentions.service;
+package org.nandayo.dmentions.service;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import org.nandayo.DMentions.DMentions;
-import org.nandayo.DMentions.mention.MentionType;
+import org.nandayo.dmentions.DMentions;
+import org.nandayo.dmentions.mention.MentionType;
 
 import java.util.HashMap;
 import java.util.Locale;

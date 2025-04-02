@@ -1,4 +1,4 @@
-package org.nandayo.DMentions.mention;
+package org.nandayo.dmentions.mention;
 
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;

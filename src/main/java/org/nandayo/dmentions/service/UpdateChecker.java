@@ -1,8 +1,8 @@
-package org.nandayo.DMentions.service;
+package org.nandayo.dmentions.service;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
-import org.nandayo.DAPI.Util;
+import org.nandayo.dapi.Util;
 
 import java.io.IOException;
 import java.io.InputStream;

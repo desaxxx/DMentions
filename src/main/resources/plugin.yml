@@ -1,6 +1,6 @@
 name: DMentions
 version: ${project.version}
-main: org.nandayo.DMentions.DMentions
+main: org.nandayo.dmentions.DMentions
 api-version: '1.16'
 authors: [ desaxx ]
 softdepend:

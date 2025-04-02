@@ -1,18 +1,18 @@
-package org.nandayo.DMentions.menu;
+package org.nandayo.dmentions.menu;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.nandayo.DAPI.guimanager.Button;
-import org.nandayo.DAPI.guimanager.Menu;
-import org.nandayo.DAPI.ItemCreator;
-import org.nandayo.DMentions.DMentions;
-import org.nandayo.DMentions.integration.LP;
-import org.nandayo.DMentions.mention.MentionType;
-import org.nandayo.DMentions.service.GUIManager;
-import org.nandayo.DMentions.service.LanguageManager;
+import org.nandayo.dapi.guimanager.Button;
+import org.nandayo.dapi.guimanager.Menu;
+import org.nandayo.dapi.ItemCreator;
+import org.nandayo.dmentions.DMentions;
+import org.nandayo.dmentions.integration.LP;
+import org.nandayo.dmentions.mention.MentionType;
+import org.nandayo.dmentions.service.GUIManager;
+import org.nandayo.dmentions.service.LanguageManager;
 
 import java.util.List;
 

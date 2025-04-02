@@ -6,7 +6,7 @@
 
     <groupId>org.nandayo</groupId>
     <artifactId>DMentions</artifactId>
-    <version>1.7</version>
+    <version>1.7.1</version>
     <packaging>jar</packaging>
 
     <name>DMentions</name>
@@ -42,15 +42,15 @@
                             <relocations>
                                 <relocation>
                                     <pattern>net.wesjd.anvilgui</pattern>
-                                    <shadedPattern>org.nandayo.DMentions.anvilgui</shadedPattern>
+                                    <shadedPattern>org.nandayo.dmentions.anvilgui</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.github.desaxxx.DAPI</pattern>
-                                    <shadedPattern>org.nandayo.DMentions.dapi</shadedPattern>
+                                    <shadedPattern>org.nandayo.dmentions.dapi</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.bstats</pattern>
-                                    <shadedPattern>org.nandayo.DMentions.bstats</shadedPattern>
+                                    <shadedPattern>org.nandayo.dmentions.bstats</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
@@ -99,7 +99,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.21.4-R0.1-SNAPSHOT</version>
+            <version>1.21.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -122,7 +122,7 @@
         <dependency>
             <groupId>com.github.desaxxx</groupId>
             <artifactId>DAPI</artifactId>
-            <version>1.1.9</version>
+            <version>1.1.11</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

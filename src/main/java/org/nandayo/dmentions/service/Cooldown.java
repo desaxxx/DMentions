@@ -1,4 +1,4 @@
-package org.nandayo.DMentions.service;
+package org.nandayo.dmentions.service;
 
 import java.util.HashMap;
 

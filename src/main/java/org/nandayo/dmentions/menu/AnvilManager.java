@@ -1,11 +1,11 @@
-package org.nandayo.DMentions.menu;
+package org.nandayo.dmentions.menu;
 
 import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.nandayo.DMentions.DMentions;
-import org.nandayo.DMentions.service.GUIManager;
+import org.nandayo.dmentions.DMentions;
+import org.nandayo.dmentions.service.GUIManager;
 
 import java.util.Arrays;
 import java.util.function.Consumer;

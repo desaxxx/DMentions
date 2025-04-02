@@ -1,9 +1,9 @@
-package org.nandayo.DMentions;
+package org.nandayo.dmentions;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.nandayo.DAPI.Util;
+import org.nandayo.dapi.Util;
 
 import java.io.File;
 import java.io.InputStream;

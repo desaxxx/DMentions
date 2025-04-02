@@ -1,10 +1,10 @@
-package org.nandayo.DMentions.service;
+package org.nandayo.dmentions.service;
 
 import org.bukkit.Bukkit;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
-import org.nandayo.DMentions.DMentions;
-import org.nandayo.DMentions.integration.LP;
+import org.nandayo.dmentions.DMentions;
+import org.nandayo.dmentions.integration.LP;
 
 import java.util.HashMap;
 import java.util.Map;

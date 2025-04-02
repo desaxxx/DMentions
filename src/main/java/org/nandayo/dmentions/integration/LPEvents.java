@@ -1,4 +1,4 @@
-package org.nandayo.DMentions.integration;
+package org.nandayo.dmentions.integration;
 
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.event.EventBus;

@@ -1,4 +1,4 @@
-package org.nandayo.DMentions.mention;
+package org.nandayo.dmentions.mention;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -6,11 +6,11 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.nandayo.DMentions.mention.Events.*;
-import org.nandayo.DMentions.service.ConfigManager;
-import org.nandayo.DMentions.DMentions;
-import org.nandayo.DMentions.service.LanguageManager;
-import org.nandayo.DMentions.service.MessageManager;
+import org.nandayo.dmentions.mention.event.*;
+import org.nandayo.dmentions.service.ConfigManager;
+import org.nandayo.dmentions.DMentions;
+import org.nandayo.dmentions.service.LanguageManager;
+import org.nandayo.dmentions.service.MessageManager;
 
 public class PluginEvents implements Listener {
 

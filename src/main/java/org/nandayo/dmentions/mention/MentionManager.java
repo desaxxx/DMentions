@@ -1,4 +1,4 @@
-package org.nandayo.DMentions.mention;
+package org.nandayo.dmentions.mention;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -6,16 +6,16 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.nandayo.DAPI.HexUtil;
-import org.nandayo.DMentions.mention.Events.MentionEveryoneEvent;
-import org.nandayo.DMentions.mention.Events.MentionGroupEvent;
-import org.nandayo.DMentions.mention.Events.MentionNearbyEvent;
-import org.nandayo.DMentions.mention.Events.MentionPlayerEvent;
-import org.nandayo.DMentions.service.ConfigManager;
-import org.nandayo.DMentions.DMentions;
-import org.nandayo.DMentions.integration.LP;
-import org.nandayo.DMentions.service.CooldownManager;
-import org.nandayo.DMentions.service.MessageManager;
+import org.nandayo.dapi.HexUtil;
+import org.nandayo.dmentions.mention.event.MentionEveryoneEvent;
+import org.nandayo.dmentions.mention.event.MentionGroupEvent;
+import org.nandayo.dmentions.mention.event.MentionNearbyEvent;
+import org.nandayo.dmentions.mention.event.MentionPlayerEvent;
+import org.nandayo.dmentions.service.ConfigManager;
+import org.nandayo.dmentions.DMentions;
+import org.nandayo.dmentions.integration.LP;
+import org.nandayo.dmentions.service.CooldownManager;
+import org.nandayo.dmentions.service.MessageManager;
 
 import java.util.*;
 import java.util.regex.Matcher;

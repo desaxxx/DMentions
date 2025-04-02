@@ -1,12 +1,12 @@
-package org.nandayo.DMentions.service;
+package org.nandayo.dmentions.service;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.nandayo.DAPI.Util;
-import org.nandayo.DMentions.DMentions;
+import org.nandayo.dapi.Util;
+import org.nandayo.dmentions.DMentions;
 
 import java.io.File;
 import java.io.InputStream;

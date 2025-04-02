@@ -1,9 +1,9 @@
-package org.nandayo.DMentions.data;
+package org.nandayo.dmentions.data;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.nandayo.DMentions.DMentions;
+import org.nandayo.dmentions.DMentions;
 
 import java.io.File;
 import java.io.IOException;

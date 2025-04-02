@@ -1,4 +1,4 @@
-package org.nandayo.DMentions;
+package org.nandayo.dmentions;
 
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
@@ -16,17 +16,17 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.nandayo.DAPI.DAPI;
-import org.nandayo.DAPI.Util;
-import org.nandayo.DAPI.object.DEnchantment;
-import org.nandayo.DAPI.object.DMaterial;
-import org.nandayo.DMentions.data.UserManager;
-import org.nandayo.DMentions.integration.LP;
-import org.nandayo.DMentions.integration.LPEvents;
-import org.nandayo.DMentions.mention.MentionManager;
-import org.nandayo.DMentions.mention.MentionType;
-import org.nandayo.DMentions.mention.PluginEvents;
-import org.nandayo.DMentions.service.*;
+import org.nandayo.dapi.DAPI;
+import org.nandayo.dapi.Util;
+import org.nandayo.dapi.object.DEnchantment;
+import org.nandayo.dapi.object.DMaterial;
+import org.nandayo.dmentions.data.UserManager;
+import org.nandayo.dmentions.integration.LP;
+import org.nandayo.dmentions.integration.LPEvents;
+import org.nandayo.dmentions.mention.MentionManager;
+import org.nandayo.dmentions.mention.MentionType;
+import org.nandayo.dmentions.mention.PluginEvents;
+import org.nandayo.dmentions.service.*;
 
 import java.io.File;
 import java.util.ArrayList;

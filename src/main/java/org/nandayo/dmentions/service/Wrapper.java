@@ -1,4 +1,4 @@
-package org.nandayo.DMentions.service;
+package org.nandayo.dmentions.service;
 
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -7,8 +7,8 @@ import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.nandayo.DAPI.Util;
-import org.nandayo.DMentions.DMentions;
+import org.nandayo.dapi.Util;
+import org.nandayo.dmentions.DMentions;
 
 import java.util.Locale;
 
