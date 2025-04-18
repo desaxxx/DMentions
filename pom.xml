@@ -6,7 +6,7 @@
 
     <groupId>org.nandayo</groupId>
     <artifactId>DMentions</artifactId>
-    <version>1.7.1</version>
+    <version>1.7.2</version>
     <packaging>jar</packaging>
 
     <name>DMentions</name>
@@ -117,7 +117,7 @@
         <dependency>
             <groupId>net.wesjd</groupId>
             <artifactId>anvilgui</artifactId>
-            <version>1.10.4-SNAPSHOT</version>
+            <version>1.10.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.github.desaxxx</groupId>
@@ -127,7 +127,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.36</version>
+            <version>1.18.38</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

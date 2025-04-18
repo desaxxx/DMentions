@@ -35,7 +35,7 @@ public class SubLanguageMenu extends Menu {
         this.createInventory(54, (String) LANGUAGE_MANAGER.getMessage(menuSection, "title"));
 
         int i = 0;
-        for(String lang : plugin.LANGUAGE_MANAGER.DEFAULT_LANGUAGE_LIST) {
+        for(String lang : plugin.LANGUAGE_MANAGER.REGISTERED_LANGUAGES) {
             this.addButton(new Button(i++) {
                 final String langPathName = "language";
                 @Override

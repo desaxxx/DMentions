@@ -25,11 +25,13 @@ public class LanguageManager {
             //noinspection ResultOfMethodCallIgnored
             folder.mkdirs();
         }
+        this.loadDefaultFiles();
         this.loadFiles(fileName);
     }
 
     // Default values
-    public final List<String> DEFAULT_LANGUAGE_LIST = Arrays.asList("en-US","tr-TR","zh-CN");
+    public final List<String> REGISTERED_LANGUAGES = new ArrayList<>();
+    private final List<String> DEFAULT_LANGUAGES = Arrays.asList("en-US","tr-TR","zh-CN");
     private final String DEFAULT_LANGUAGE = "en-US";
     private FileConfiguration DEFAULT_LANGUAGE_CONFIG;
 
@@ -41,16 +43,14 @@ public class LanguageManager {
      * @param searchingFor File name of selected language
      */
     private void loadFiles(@NotNull String searchingFor) {
-        File[] files = folder.listFiles();
+        File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".yml"));
         if (files != null) {
-            for(String fileName : DEFAULT_LANGUAGE_LIST) {
-                File file = new File(folder, fileName + ".yml");
-                if(!file.exists()) {
-                    plugin.saveResource("lang" + File.separator + fileName + ".yml", false);
-                }
+            for(File file : files) {
+                String fileName = file.getName().substring(0, file.getName().length() - 4);
+                REGISTERED_LANGUAGES.add(fileName);
                 // Setup selected language file.
                 if(fileName.equals(searchingFor)) {
-                    this.SELECTED_LANGUAGE_CONFIG = updateLanguage(fileName);
+                    this.SELECTED_LANGUAGE_CONFIG = (DEFAULT_LANGUAGES.contains(fileName)) ? updateLanguage(fileName) : YamlConfiguration.loadConfiguration(file);
                 }
                 // Setup default language file.
                 if(fileName.equals(DEFAULT_LANGUAGE)) {
@@ -58,10 +58,22 @@ public class LanguageManager {
                 }
             }
         }
-        // If selected language was not found.
+        // Fallback if selected language wasn't found
         if(this.SELECTED_LANGUAGE_CONFIG == null) {
             this.SELECTED_LANGUAGE_CONFIG = this.DEFAULT_LANGUAGE_CONFIG;
             Util.log("&cLanguage " + searchingFor + " was not found. Using default language.");
+        }
+    }
+
+    /**
+     * Load default language files.
+     */
+    private void loadDefaultFiles() {
+        for(String fileName : DEFAULT_LANGUAGES) {
+            File file = new File(folder, fileName + ".yml");
+            if(file.exists() || plugin.getResource("lang/" + fileName + ".yml") == null) continue;
+
+            plugin.saveResource("lang/" + fileName + ".yml", false);
         }
     }
 
@@ -80,7 +92,7 @@ public class LanguageManager {
 
         InputStream defStream = plugin.getResource("lang/" + languageName + ".yml");
         if(defStream == null) {
-            Util.log("&cDefault " + languageName + ".yml not found in plugin resources.");
+            Util.log("&cDefault '" + languageName + ".yml' was not found in plugin resources.");
             return config;
         }
 
