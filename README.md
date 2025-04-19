@@ -2,6 +2,11 @@
 DMentions is a versatile chat plugin that allows you to mention players effortlessly\
 Compatible with various chat plugins, it enhances your in-game communication with ease.
 
+## Download Links
+- ![Spigot](https://www.spigotmc.org/resources/dmentions-%E2%9C%A8-advanced-player-mention.121452/)
+- ![BuiltByBit](https://builtbybit.com/resources/dmentions.57545/)
+- Modrinth SOON
+
 ## Supported Languages
 - English
 - Turkish
