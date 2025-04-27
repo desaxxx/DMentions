@@ -5,7 +5,7 @@ Compatible with various chat plugins, it enhances your in-game communication wit
 ## Download Links
 - [Spigot](https://www.spigotmc.org/resources/dmentions-%E2%9C%A8-advanced-player-mention.121452/)
 - [BuiltByBit](https://builtbybit.com/resources/dmentions.57545/)
-- [Modrinth](https://modrinth.com/plugin/dmentions/versions)
+- [Modrinth](https://modrinth.com/plugin/dmentions)
 
 ## Supported Languages
 - English
