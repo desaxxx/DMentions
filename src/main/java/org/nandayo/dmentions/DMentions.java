@@ -1,5 +1,7 @@
 package org.nandayo.dmentions;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -20,19 +22,19 @@ import org.nandayo.dapi.DAPI;
 import org.nandayo.dapi.Util;
 import org.nandayo.dapi.object.DEnchantment;
 import org.nandayo.dapi.object.DMaterial;
-import org.nandayo.dmentions.data.UserManager;
+import org.nandayo.dmentions.service.UserManager;
 import org.nandayo.dmentions.integration.LP;
 import org.nandayo.dmentions.integration.LPEvents;
-import org.nandayo.dmentions.mention.MentionManager;
-import org.nandayo.dmentions.mention.MentionType;
-import org.nandayo.dmentions.mention.PluginEvents;
+import org.nandayo.dmentions.service.MentionManager;
+import org.nandayo.dmentions.enumeration.MentionType;
+import org.nandayo.dmentions.event.PluginEvents;
 import org.nandayo.dmentions.service.*;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Getter
 public final class DMentions extends JavaPlugin implements Listener {
 
     private static DMentions plugin;
@@ -57,7 +59,8 @@ public final class DMentions extends JavaPlugin implements Listener {
 
         //APIS
         if(pm.getPlugin("LuckPerms") != null) {
-            new LP(this);
+            //noinspection InstantiationOfUtilityClass
+            new LP();
             new LPEvents(this, LP.getApi()).register();
             Util.log("&aLuckPerms found. Integration has been enabled!");
         }else {
@@ -68,7 +71,7 @@ public final class DMentions extends JavaPlugin implements Listener {
         updateVariables();
 
         //UPDATE CHECK
-        if(CONFIG_MANAGER.getBoolean("check_for_updates", true)) {
+        if(configuration.getConfig().getBoolean("check_for_updates", true)) {
             //SPIGOT RESOURCE ID
             new UpdateChecker(this, 121452).getVersion(version -> {
                 if (this.getDescription().getVersion().equals(version)) {
@@ -85,50 +88,49 @@ public final class DMentions extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        USER_MANAGER.saveChanges();
+        userManager.saveChanges();
     }
 
     //MANAGERS
-    public Wrapper WRAPPER;
-    public Config CONFIG;
-    public ConfigManager CONFIG_MANAGER;
-    public MentionManager MENTION_MANAGER;
-    public UserManager USER_MANAGER;
-    public CooldownManager COOLDOWN_MANAGER;
-    public LanguageManager LANGUAGE_MANAGER;
-    public PermissionManager PERMISSION_MANAGER = null;
-    public Player GUI_CONFIG_EDITOR = null;
+    private Wrapper wrapper;
+    private Config configuration;
+    private MentionManager mentionManager;
+    private UserManager userManager;
+    private CooldownManager cooldownManager;
+    private LanguageManager languageManager;
+    private PermissionManager permissionManager = null;
+    @Setter
+    private Player guiConfigEditor = null;
 
     public void updateVariables() {
         //MANAGERS
-        WRAPPER = new Wrapper(this);
-        CONFIG = new Config(this).updateConfig();
-        CONFIG_MANAGER = new ConfigManager(CONFIG.get());
-        MENTION_MANAGER = new MentionManager(this);
-        if(USER_MANAGER != null) {
-            USER_MANAGER.saveChanges();
+        wrapper = new Wrapper(this);
+        configuration = new Config(this).updateConfig();
+        mentionManager = new MentionManager(this);
+        if(userManager != null) {
+            userManager.saveChanges();
         }
-        USER_MANAGER = new UserManager(this);
-        COOLDOWN_MANAGER = new CooldownManager(this);
-        COOLDOWN_MANAGER.updateConfigCooldowns();
-        LANGUAGE_MANAGER = new LanguageManager(this, new File(getDataFolder(), "lang"), CONFIG_MANAGER.getString("lang_file","en-US"));
+        userManager = new UserManager(this);
+        cooldownManager = new CooldownManager(this);
+        cooldownManager.updateConfigCooldowns();
+        languageManager = new LanguageManager(this, configuration.getConfig().getString("lang_file","en-US"));
 
         //PERMISSION
-        if(PERMISSION_MANAGER == null) {
-            PERMISSION_MANAGER = new PermissionManager(this);
-            PERMISSION_MANAGER.clearAfterLoadPermissions();
-            PERMISSION_MANAGER.setupPermissions();
+        if(permissionManager == null) {
+            permissionManager = new PermissionManager(this);
+            permissionManager.clearAfterLoadPermissions();
+            permissionManager.setupPermissions();
         }
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        MENTION_MANAGER.addPlayer(event.getPlayer());
+        mentionManager.addPlayer(event.getPlayer());
     }
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        MENTION_MANAGER.removePlayer(event.getPlayer());
-        COOLDOWN_MANAGER.removeCooldown(MentionType.PLAYER, event.getPlayer().getName());
+        mentionManager.removePlayer(event.getPlayer());
+        cooldownManager.removeCooldown(MentionType.PLAYER, event.getPlayer().getName());
     }
 
     @EventHandler (priority = EventPriority.HIGH)
@@ -137,12 +139,12 @@ public final class DMentions extends JavaPlugin implements Listener {
         String message = e.getMessage();
         if(e.isCancelled()) return;
 
-        List<String> disabledWorlds = CONFIG_MANAGER.getStringList("disabled_worlds");
-        if(disabledWorlds != null && disabledWorlds.contains(sender.getWorld().getName())) {
-            new MessageManager(CONFIG_MANAGER).sendSortedMessage(sender, (String) LANGUAGE_MANAGER.getMessage("disabled_world_warn"));
+        List<String> disabledWorlds = configuration.getConfig().getStringList("disabled_worlds");
+        if(disabledWorlds.contains(sender.getWorld().getName())) {
+            new MessageManager(plugin).sendSortedMessage(sender, languageManager.getString("disabled_world_warn"));
             return;
         }
-        String mentionedString = MENTION_MANAGER.getMentionedString(this, sender, message);
+        String mentionedString = mentionManager.getMentionedString(this, sender, message);
         e.setMessage(mentionedString);
     }
 
@@ -154,9 +156,9 @@ public final class DMentions extends JavaPlugin implements Listener {
      * @return Material
      */
     public Material getMaterial(@NotNull DMaterial dMaterial, @NotNull DMaterial def) {
-        Material mat = dMaterial.get();
+        Material mat = dMaterial.parseMaterial();
         if (mat != null) return mat;
-        else return def.get();
+        else return def.parseMaterial();
     }
 
     /**
@@ -182,13 +184,13 @@ public final class DMentions extends JavaPlugin implements Listener {
     //CONFIG GROUP SECTION
     public ConfigurationSection getConfigGroupSection(@NotNull String groupName) {
         if(groupName.isEmpty()) return null;
-        if(CONFIG_MANAGER.getStringList("group.disabled_groups").contains(groupName)) return null;
-        return CONFIG_MANAGER.getConfigurationSection("group.list." + getGroupConfigTitle(groupName));
+        if(configuration.getConfig().getStringList("group.disabled_groups").contains(groupName)) return null;
+        return configuration.getConfig().getConfigurationSection("group.list." + getGroupConfigTitle(groupName));
     }
 
     //LANG GROUP SECTION
     public ConfigurationSection getLanguageGroupSection(@NotNull String groupName) {
-        return LANGUAGE_MANAGER.getSection("group." + getGroupConfigTitle(groupName));
+        return languageManager.getSection("group." + getGroupConfigTitle(groupName));
     }
 
     /**
@@ -199,7 +201,7 @@ public final class DMentions extends JavaPlugin implements Listener {
     @NotNull
     public String getGroupConfigTitle(@Nullable String groupName) {
         if(groupName == null) return "__OTHER__";
-        ConfigurationSection section = CONFIG_MANAGER.getConfigurationSection("group.list");
+        ConfigurationSection section = configuration.getConfig().getConfigurationSection("group.list");
         if(section == null || !section.contains(groupName)) return "__OTHER__";
         return groupName;
     }

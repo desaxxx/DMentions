@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.guimanager.Button;
 import org.nandayo.dapi.guimanager.LazyButton;
 import org.nandayo.dapi.guimanager.Menu;
@@ -14,35 +15,31 @@ import org.nandayo.dapi.object.DEnchantment;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.service.*;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("unchecked")
 public class GeneralSettingsMenu extends Menu {
 
-    private final DMentions plugin;
-    private final ConfigManager configManager;
-    private final Player player;
-    private final GUIManager manager;
+    private final @NotNull DMentions plugin;
+    private final @NotNull Config config;
+    private final @NotNull Player player;
 
-    public GeneralSettingsMenu(DMentions plugin, Player player, GUIManager manager) {
+    public GeneralSettingsMenu(@NotNull DMentions plugin, @NotNull Player player) {
         this.plugin = plugin;
-        this.configManager = plugin.CONFIG_MANAGER;
+        this.config = plugin.getConfiguration();
         this.player = player;
-        this.manager = manager;
-
         open();
     }
 
-    public void open() {
-        LanguageManager LANGUAGE_MANAGER = plugin.LANGUAGE_MANAGER;
+    private void open() {
+        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
         ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.general_settings_menu");
-        this.createInventory(54, (String) LANGUAGE_MANAGER.getMessage(menuSection,"title"));
+        this.createInventory(54, LANGUAGE_MANAGER.getString(menuSection,"title"));
 
         /*
          * Glass Fillers
          */
-        this.addLazyButton(new LazyButton(Arrays.asList(1,10,19,28,37,46)) {
+        this.addButton(new LazyButton(1,10,19,28,37,46) {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.GRAY_STAINED_GLASS_PANE)
@@ -58,15 +55,15 @@ public class GeneralSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.COMPASS)
-                        .name((String) LANGUAGE_MANAGER.getMessage("menu.general_button.display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.general_button.lore.viewing"))
+                        .name(LANGUAGE_MANAGER.getString("menu.general_button.display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList("menu.general_button.lore.viewing"))
                         .enchant(plugin.getEnchantment(DEnchantment.UNBREAKING, DEnchantment.DURABILITY), 1)
                         .hideFlag(ItemFlag.values())
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, ClickType clickType) {
                 // NONE
             }
         });
@@ -78,14 +75,14 @@ public class GeneralSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BELL)
-                        .name((String) LANGUAGE_MANAGER.getMessage("menu.mention_button.display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.mention_button.lore.not_viewing"))
+                        .name(LANGUAGE_MANAGER.getString("menu.mention_button.display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList("menu.mention_button.lore.not_viewing"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new MentionSettingsMenu(plugin, player, manager);
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new MentionSettingsMenu(plugin, player);
             }
         });
 
@@ -96,14 +93,14 @@ public class GeneralSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BARRIER)
-                        .name((String) LANGUAGE_MANAGER.getMessage("menu.reset_changes.display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.reset_changes.lore"))
+                        .name(LANGUAGE_MANAGER.getString("menu.reset_changes.display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList("menu.reset_changes.lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                manager.resetChanges();
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                config.resetUnsavedConfig(p);
                 player.closeInventory();
             }
         });
@@ -115,14 +112,14 @@ public class GeneralSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.WRITABLE_BOOK)
-                        .name((String) LANGUAGE_MANAGER.getMessage("menu.save_changes.display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.save_changes.lore"))
+                        .name(LANGUAGE_MANAGER.getString("menu.save_changes.display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList("menu.save_changes.lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                manager.saveChanges();
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                config.saveUnsavedConfig(p);
                 player.closeInventory();
             }
         });
@@ -133,19 +130,25 @@ public class GeneralSettingsMenu extends Menu {
          */
         this.addButton(new Button(12) {
             final String configPath = "lang_file";
-            final String changed = manager.isValueChanged(configPath) ? "changed" : "unchanged";
+            final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = "language";
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BOOK)
-                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
-                        .lore(LANGUAGE_MANAGER.getValueDisplayMessage(menuSection, langPathName + ".lore." + changed, configPath, configManager))
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(() -> {
+                            List<String> lore = new ArrayList<>();
+                            for(String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                                lore.add(config.getValueDisplayMessage(line, configPath));
+                            }
+                            return lore;
+                        })
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new SubLanguageMenu(plugin, player, manager);
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new SubLanguageMenu(plugin, player);
             }
         });
 
@@ -154,22 +157,28 @@ public class GeneralSettingsMenu extends Menu {
          */
         this.addButton(new Button(14) {
             final String configPath = "check_for_updates";
-            final String changed = manager.isValueChanged(configPath) ? "changed" : "unchanged";
+            final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.CLOCK)
-                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
-                        .lore(LANGUAGE_MANAGER.getValueDisplayMessage(menuSection, langPathName + ".lore." + changed, configPath, configManager))
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(() -> {
+                            List<String> lore = new ArrayList<>();
+                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                                lore.add(config.getValueDisplayMessage(line, configPath));
+                            }
+                            return lore;
+                        })
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new AnvilManager(plugin, manager, player, configPath, (String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".edit_title"),
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
-                            manager.setUValue(configPath, Boolean.valueOf(text));
-                            new GeneralSettingsMenu(plugin, player, manager);
+                            config.getUnsavedConfig().set(configPath, Boolean.parseBoolean(text));
+                            new GeneralSettingsMenu(plugin, player);
                         }));
             }
         });
@@ -179,22 +188,28 @@ public class GeneralSettingsMenu extends Menu {
          */
         this.addButton(new Button(16) {
             final String configPath = "prefix";
-            final String changed = manager.isValueChanged(configPath) ? "changed" : "unchanged";
+            final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.NAME_TAG)
-                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
-                        .lore(LANGUAGE_MANAGER.getValueDisplayMessage(menuSection, langPathName + ".lore." + changed, configPath, configManager))
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(() -> {
+                            List<String> lore = new ArrayList<>();
+                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                                lore.add(config.getValueDisplayMessage(line, configPath));
+                            }
+                            return lore;
+                        })
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new AnvilManager(plugin, manager, player, configPath, (String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".edit_title"),
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
-                            manager.setUValue(configPath, text);
-                            new GeneralSettingsMenu(plugin, player, manager);
+                            config.getUnsavedConfig().set(configPath, text);
+                            new GeneralSettingsMenu(plugin, player);
                         }));
             }
         });
@@ -204,22 +219,28 @@ public class GeneralSettingsMenu extends Menu {
          */
         this.addButton(new Button(30) {
             final String configPath = "mention_limit";
-            final String changed = manager.isValueChanged(configPath) ? "changed" : "unchanged";
+            final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.PAPER)
-                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
-                        .lore(LANGUAGE_MANAGER.getValueDisplayMessage(menuSection, langPathName + ".lore." + changed, configPath, configManager))
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(() -> {
+                            List<String> lore = new ArrayList<>();
+                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection,langPathName + ".lore." + changed)) {
+                                lore.add(config.getValueDisplayMessage(line, configPath));
+                            }
+                            return lore;
+                        })
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new AnvilManager(plugin, manager, player, configPath, (String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".edit_title"),
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
-                            manager.setUValue(configPath, plugin.parseInt(text));
-                            new GeneralSettingsMenu(plugin, player, manager);
+                            config.getUnsavedConfig().set(configPath, plugin.parseInt(text));
+                            new GeneralSettingsMenu(plugin, player);
                         }));
             }
         });
@@ -232,14 +253,14 @@ public class GeneralSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.CYAN_DYE)
-                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new SubSuffixMenu(plugin, player, manager);
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new SubSuffixMenu(plugin, player);
             }
         });
 
@@ -251,23 +272,23 @@ public class GeneralSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.GRASS_BLOCK)
-                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new SubDisabledWorldsMenu(plugin, player, manager);
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new SubDisabledWorldsMenu(plugin, player);
             }
         });
 
         /*
          * Close
          */
-        this.runOnClose(inv -> plugin.GUI_CONFIG_EDITOR = null);
+        this.runOnClose(inv -> plugin.setGuiConfigEditor(null));
 
         this.displayTo(player);
-        plugin.GUI_CONFIG_EDITOR = player;
+        plugin.setGuiConfigEditor(player);
     }
 }

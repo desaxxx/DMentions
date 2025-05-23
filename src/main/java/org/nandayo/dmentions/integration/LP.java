@@ -9,7 +9,6 @@ import net.luckperms.api.node.types.InheritanceNode;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
-import org.nandayo.dmentions.DMentions;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,17 +17,16 @@ public class LP {
 
     @Getter
     private static LuckPerms api = null;
-    private final DMentions plugin;
 
     private static final Map<UUID, String> playerGroupCache = new HashMap<>();
 
-    public LP(DMentions plugin) {
-        this.plugin = plugin;
+    public LP() {
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
             api = provider.getProvider();
         }
     }
+
     public static boolean isConnected() {
         return api != null;
     }

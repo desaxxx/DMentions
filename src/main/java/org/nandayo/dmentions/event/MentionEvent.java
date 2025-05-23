@@ -1,11 +1,13 @@
-package org.nandayo.dmentions.mention.event;
+package org.nandayo.dmentions.event;
 
+import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class MentionEvent extends Event implements Mention {
+@Getter
+public class MentionEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
 
@@ -13,19 +15,15 @@ public class MentionEvent extends Event implements Mention {
     public @NotNull HandlerList getHandlers() {
         return handlers;
     }
+
+    @SuppressWarnings("unused")
     public static HandlerList getHandlerList() {
         return handlers;
     }
 
-    private final Player sender;
+    private final @NotNull Player sender;
 
-    public MentionEvent(Player sender) {
+    public MentionEvent(@NotNull Player sender) {
         this.sender = sender;
     }
-
-    @Override
-    public Player getSender() {
-        return sender;
-    }
-
 }

@@ -10,13 +10,14 @@ import net.luckperms.api.node.types.InheritanceNode;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.nandayo.dmentions.DMentions;
 
 public class LPEvents {
 
-    private final JavaPlugin plugin;
+    private final DMentions plugin;
     private final LuckPerms api;
 
-    public LPEvents(JavaPlugin plugin, LuckPerms api) {
+    public LPEvents(DMentions plugin, LuckPerms api) {
         this.plugin = plugin;
         this.api = api;
     }

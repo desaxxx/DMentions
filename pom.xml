@@ -6,7 +6,7 @@
 
     <groupId>org.nandayo</groupId>
     <artifactId>DMentions</artifactId>
-    <version>1.7.3</version>
+    <version>1.8</version>
     <packaging>jar</packaging>
 
     <name>DMentions</name>
@@ -122,7 +122,7 @@
         <dependency>
             <groupId>com.github.desaxxx</groupId>
             <artifactId>DAPI</artifactId>
-            <version>1.1.11</version>
+            <version>1.1.23</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

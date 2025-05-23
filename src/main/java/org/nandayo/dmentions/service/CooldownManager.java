@@ -6,15 +6,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.mention.MentionType;
+import org.nandayo.dmentions.enumeration.MentionType;
+import org.nandayo.dmentions.model.Cooldown;
 
 import java.util.HashMap;
 import java.util.Locale;
 
 public class CooldownManager {
 
-    private final DMentions plugin;
-    public CooldownManager(DMentions plugin) {
+    private final @NotNull DMentions plugin;
+    public CooldownManager(@NotNull DMentions plugin) {
         this.plugin = plugin;
     }
 
@@ -69,14 +70,15 @@ public class CooldownManager {
      */
     public void updateConfigCooldowns() {
         CONFIG_COOLDOWN_MS.clear();
-        CONFIG_COOLDOWN_MS.put("player", plugin.CONFIG_MANAGER.getLong("player.cooldown", 0) * 1000);
-        CONFIG_COOLDOWN_MS.put("nearby", plugin.CONFIG_MANAGER.getLong("nearby.cooldown", 0) * 1000);
-        CONFIG_COOLDOWN_MS.put("everyone", plugin.CONFIG_MANAGER.getLong("everyone.cooldown", 0) * 1000);
+        Config config = plugin.getConfiguration();
+        CONFIG_COOLDOWN_MS.put("player", config.getConfig().getLong("player.cooldown", 0) * 1000);
+        CONFIG_COOLDOWN_MS.put("nearby", config.getConfig().getLong("nearby.cooldown", 0) * 1000);
+        CONFIG_COOLDOWN_MS.put("everyone", config.getConfig().getLong("everyone.cooldown", 0) * 1000);
 
-        ConfigurationSection groupSection = plugin.CONFIG_MANAGER.getConfigurationSection("group.list");
+        ConfigurationSection groupSection = config.getConfig().getConfigurationSection("group.list");
         if(groupSection == null) return;
         for(String group : groupSection.getKeys(false)) {
-            if(plugin.CONFIG_MANAGER.getStringList("group.disabled_groups").contains(group)) continue;
+            if(config.getConfig().getStringList("group.disabled_groups").contains(group)) continue;
             CONFIG_COOLDOWN_MS.put("group_" + group, groupSection.getLong(group + ".cooldown", 0) * 1000);
         }
     }
@@ -105,10 +107,9 @@ public class CooldownManager {
      */
     public void cooldownWarn(@NotNull Player sender, long remaining) {
         if(remaining <= 0) return;
-        LanguageManager LANGUAGE_MANAGER = plugin.LANGUAGE_MANAGER;
-        String msg = LANGUAGE_MANAGER.getMessageReplaceable("cooldown_warn")
-                .replace("{REMAINED}", plugin.formattedTime(remaining))
-                .get()[0];
-        new MessageManager(plugin.CONFIG_MANAGER).sendSortedMessage(sender, msg);
+        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
+        String msg = LANGUAGE_MANAGER.getString("cooldown_warn")
+                .replace("{REMAINED}", plugin.formattedTime(remaining));
+        new MessageManager(plugin).sendSortedMessage(sender, msg);
     }
 }

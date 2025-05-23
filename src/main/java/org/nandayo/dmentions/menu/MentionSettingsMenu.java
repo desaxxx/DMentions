@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.guimanager.Button;
 import org.nandayo.dapi.guimanager.LazyButton;
 import org.nandayo.dapi.guimanager.Menu;
@@ -13,37 +14,33 @@ import org.nandayo.dapi.ItemCreator;
 import org.nandayo.dapi.object.DEnchantment;
 import org.nandayo.dapi.object.DMaterial;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.mention.MentionType;
-import org.nandayo.dmentions.service.GUIManager;
+import org.nandayo.dmentions.enumeration.MentionType;
+import org.nandayo.dmentions.service.Config;
 import org.nandayo.dmentions.service.LanguageManager;
 
-import java.util.Arrays;
-import java.util.List;
-
-@SuppressWarnings("unchecked")
 public class MentionSettingsMenu extends Menu {
 
-    private final DMentions plugin;
-    private final Player player;
-    private final GUIManager manager;
+    private final @NotNull DMentions plugin;
+    private final @NotNull Config config;
+    private final @NotNull Player player;
 
-    public MentionSettingsMenu(DMentions plugin, Player player, GUIManager manager) {
+    public MentionSettingsMenu(@NotNull DMentions plugin, @NotNull Player player) {
         this.plugin = plugin;
+        this.config = plugin.getConfiguration();
         this.player = player;
-        this.manager = manager;
 
         open();
     }
 
     public void open() {
-        LanguageManager LANGUAGE_MANAGER = plugin.LANGUAGE_MANAGER;
+        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
         ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.mention_settings_menu");
-        this.createInventory(54, (String) LANGUAGE_MANAGER.getMessage(menuSection, "title"));
+        this.createInventory(54, LANGUAGE_MANAGER.getString(menuSection, "title"));
 
         /*
          * Glass Fillers
          */
-        this.addLazyButton(new LazyButton(Arrays.asList(1,10,19,28,37,46)) {
+        this.addButton(new LazyButton(1,10,19,28,37,46) {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.GRAY_STAINED_GLASS_PANE)
@@ -59,14 +56,14 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.COMPASS)
-                        .name((String) LANGUAGE_MANAGER.getMessage("menu.general_button.display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.general_button.lore.not_viewing"))
+                        .name(LANGUAGE_MANAGER.getString("menu.general_button.display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList("menu.general_button.lore.not_viewing"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new GeneralSettingsMenu(plugin, player, manager);
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new GeneralSettingsMenu(plugin, player);
             }
         });
 
@@ -77,15 +74,15 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BELL)
-                        .name((String) LANGUAGE_MANAGER.getMessage("menu.mention_button.display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.mention_button.lore.viewing"))
+                        .name(LANGUAGE_MANAGER.getString("menu.mention_button.display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList("menu.mention_button.lore.viewing"))
                         .enchant(plugin.getEnchantment(DEnchantment.UNBREAKING, DEnchantment.DURABILITY), 1)
                         .hideFlag(ItemFlag.values())
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, ClickType clickType) {
                 // NONE
             }
         });
@@ -97,14 +94,14 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BARRIER)
-                        .name((String) LANGUAGE_MANAGER.getMessage("menu.reset_changes.display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.reset_changes.lore"))
+                        .name(LANGUAGE_MANAGER.getString("menu.reset_changes.display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList("menu.reset_changes.lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                manager.resetChanges();
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                config.resetUnsavedConfig(p);
                 player.closeInventory();
             }
         });
@@ -116,14 +113,14 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.WRITABLE_BOOK)
-                        .name((String) LANGUAGE_MANAGER.getMessage("menu.save_changes.display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.save_changes.lore"))
+                        .name(LANGUAGE_MANAGER.getString("menu.save_changes.display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList("menu.save_changes.lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                manager.saveChanges();
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                config.saveUnsavedConfig(p);
                 player.closeInventory();
             }
         });
@@ -137,14 +134,14 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.PLAYER_HEAD)
-                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new MentionTypeSettingsMenu(plugin, player, manager, MentionType.PLAYER, null);
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new MentionTypeSettingsMenu(plugin, player, MentionType.PLAYER, null);
             }
         });
 
@@ -156,14 +153,14 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BEACON)
-                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new MentionTypeSettingsMenu(plugin, player, manager, MentionType.EVERYONE, null);
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new MentionTypeSettingsMenu(plugin, player, MentionType.EVERYONE, null);
             }
         });
 
@@ -175,14 +172,14 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(plugin.getMaterial(DMaterial.SPYGLASS, DMaterial.TARGET))
-                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new MentionTypeSettingsMenu(plugin, player, manager, MentionType.NEARBY, null);
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new MentionTypeSettingsMenu(plugin, player, MentionType.NEARBY, null);
             }
         });
 
@@ -194,23 +191,23 @@ public class MentionSettingsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.GREEN_BANNER)
-                        .name((String) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new SubChooseGroupMenu(plugin, player, manager);
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new SubChooseGroupMenu(plugin, player);
             }
         });
 
         /*
          * Close
          */
-        this.runOnClose(inv -> plugin.GUI_CONFIG_EDITOR = null);
+        this.runOnClose(inv -> plugin.setGuiConfigEditor(null));
 
         this.displayTo(player);
-        plugin.GUI_CONFIG_EDITOR = player;
+        plugin.setGuiConfigEditor(player);
     }
 }

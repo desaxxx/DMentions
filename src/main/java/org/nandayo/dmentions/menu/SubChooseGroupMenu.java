@@ -5,58 +5,54 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.guimanager.Button;
 import org.nandayo.dapi.guimanager.Menu;
 import org.nandayo.dapi.ItemCreator;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.mention.MentionType;
-import org.nandayo.dmentions.service.GUIManager;
+import org.nandayo.dmentions.enumeration.MentionType;
+import org.nandayo.dmentions.service.Config;
 import org.nandayo.dmentions.service.LanguageManager;
 
-import java.util.List;
-
-@SuppressWarnings("unchecked")
 public class SubChooseGroupMenu extends Menu {
 
-    private final DMentions plugin;
-    private final Player player;
-    private final GUIManager manager;
+    private final @NotNull DMentions plugin;
+    private final @NotNull Config config;
+    private final @NotNull Player player;
 
-    public SubChooseGroupMenu(DMentions plugin, Player player, GUIManager manager) {
+    public SubChooseGroupMenu(@NotNull DMentions plugin, @NotNull Player player) {
         this.plugin = plugin;
+        this.config = plugin.getConfiguration();
         this.player = player;
-        this.manager = manager;
-
         open();
     }
 
-    public void open() {
-        LanguageManager LANGUAGE_MANAGER = plugin.LANGUAGE_MANAGER;
+    private void open() {
+        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
         ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.choose_group_menu");
-        this.createInventory(54, (String) LANGUAGE_MANAGER.getMessage(menuSection, "title"));
+        this.createInventory(54, LANGUAGE_MANAGER.getString(menuSection, "title"));
 
         /*
          * List groups that are within group.list
          */
         int i = 0;
-        ConfigurationSection section = manager.getUSection("group.list");
+        ConfigurationSection section = config.getUnsavedConfig().getConfigurationSection("group.list");
         if(section != null) {
             for(String group : section.getKeys(false)) {
                 this.addButton(new Button(i++) {
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.GREEN_BANNER)
-                                .name(LANGUAGE_MANAGER.getMessageReplaceable(menuSection, "group.display_name")
+                                .name(LANGUAGE_MANAGER.getString(menuSection, "group.display_name")
                                         .replace("{group}", group)
-                                        .get()[0]
                                 )
-                                .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, "group.lore"))
+                                .lore(LANGUAGE_MANAGER.getStringList(menuSection, "group.lore"))
                                 .get();
                     }
 
                     @Override
-                    public void onClick(Player p, ClickType clickType) {
-                        new MentionTypeSettingsMenu(plugin, player, manager, MentionType.GROUP, group);
+                    public void onClick(@NotNull Player p, ClickType clickType) {
+                        new MentionTypeSettingsMenu(plugin, player, MentionType.GROUP, group);
                     }
                 });
             }
@@ -69,23 +65,23 @@ public class SubChooseGroupMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
-                        .name((String) LANGUAGE_MANAGER.getMessage("menu.back.display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.back.lore"))
+                        .name(LANGUAGE_MANAGER.getString("menu.back.display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList("menu.back.lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new MentionSettingsMenu(plugin, player, manager);
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new MentionSettingsMenu(plugin, player);
             }
         });
 
         /*
          * Close
          */
-        this.runOnClose(inv -> plugin.GUI_CONFIG_EDITOR = null);
+        this.runOnClose(inv -> plugin.setGuiConfigEditor(null));
 
         this.displayTo(player);
-        plugin.GUI_CONFIG_EDITOR = player;
+        plugin.setGuiConfigEditor(player);
     }
 }

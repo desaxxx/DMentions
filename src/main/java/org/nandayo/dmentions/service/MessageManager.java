@@ -3,13 +3,15 @@ package org.nandayo.dmentions.service;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.HexUtil;
+import org.nandayo.dmentions.DMentions;
 
 public class MessageManager {
 
-    private final ConfigManager configManager;
-    public MessageManager(ConfigManager configManager) {
-        this.configManager = configManager;
+    private final @NotNull DMentions plugin;
+    public MessageManager(@NotNull DMentions plugin) {
+        this.plugin = plugin;
     }
 
     //SORTED MESSAGE
@@ -31,6 +33,7 @@ public class MessageManager {
         player.sendMessage(formattedText);
     }
     //ACTION BAR
+    @SuppressWarnings("deprecation")
     public void sendActionBar(Player player, String msg) {
         if(msg == null || msg.isEmpty()) return;
         String formattedText = HexUtil.color(prefixedString(msg));
@@ -49,7 +52,7 @@ public class MessageManager {
     //PREFIX REPLACE
     public String prefixedString(String str) {
         if(str == null || str.isEmpty()) return "";
-        String prefix = configManager.getString("prefix", "");
+        String prefix = plugin.getConfiguration().getConfig().getString("prefix", "");
         return str.replaceAll("\\{PREFIX}", prefix);
     }
 }

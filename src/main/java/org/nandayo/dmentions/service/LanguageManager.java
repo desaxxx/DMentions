@@ -16,11 +16,11 @@ import java.util.*;
 
 public class LanguageManager {
 
-    private final DMentions plugin;
+    private final @NotNull DMentions plugin;
     private final File folder;
-    public LanguageManager(@NotNull DMentions plugin, @NotNull File folder, @NotNull String fileName) {
+    public LanguageManager(@NotNull DMentions plugin, @NotNull String fileName) {
         this.plugin = plugin;
-        this.folder = folder;
+        this.folder = new File(plugin.getDataFolder(), "lang");
         if(!folder.exists()) {
             //noinspection ResultOfMethodCallIgnored
             folder.mkdirs();
@@ -85,22 +85,15 @@ public class LanguageManager {
         File file = new File(folder, languageName + ".yml");
         FileConfiguration config = YamlConfiguration.loadConfiguration(file);
 
-        String version = plugin.getDescription().getVersion();
-        String configVersion = config.getString("lang_version", "0");
+        if(compareVersions(config)) return config;
 
-        if(version.equals(configVersion)) return config;
-
-        InputStream defStream = plugin.getResource("lang/" + languageName + ".yml");
-        if(defStream == null) {
-            Util.log("&cDefault '" + languageName + ".yml' was not found in plugin resources.");
-            return config;
-        }
+        FileConfiguration defConfig = getSourceConfiguration(languageName);
+        if (defConfig == null) return config;
 
         // Backup old config
         saveBackupConfig(languageName, config);
 
         // Value pasting from old config
-        FileConfiguration defConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defStream));
         for(String key : defConfig.getKeys(true)) {
             if (defConfig.isConfigurationSection(key)) {
                 continue; // Skip parent keys
@@ -110,10 +103,10 @@ public class LanguageManager {
             }
         }
 
+        defConfig.set("lang_version", plugin.getDescription().getVersion());
+        config = defConfig;
         try {
-            defConfig.set("lang_version", version);
-            defConfig.save(new File(folder, languageName + ".yml"));
-            config = defConfig;
+            config.save(new File(folder, languageName + ".yml"));
             Util.log("&aUpdated language file.");
         }catch (Exception e) {
             Util.log("&cFailed to save updated language file. " + e.getMessage());
@@ -122,7 +115,30 @@ public class LanguageManager {
     }
 
     /**
-     * Save backup of old config.
+     * Compare plugin and configuration file versions.
+     * @return whether they match or not.
+     */
+    private boolean compareVersions(@NotNull FileConfiguration config) {
+        String version = plugin.getDescription().getVersion();
+        String configVersion = config.getString("lang_version", "0");
+        return version.equals(configVersion);
+    }
+
+    /**
+     * Get the default configuration from source of plugin.
+     * @return FileConfiguration
+     */
+    private FileConfiguration getSourceConfiguration(@NotNull String languageName) {
+        InputStream defStream = plugin.getResource("lang/" + languageName + ".yml");
+        if(defStream == null) {
+            Util.log("&cDefault '" + languageName + ".yml' was not found in plugin resources.");
+            return null;
+        }
+        return YamlConfiguration.loadConfiguration(new InputStreamReader(defStream));
+    }
+
+    /**
+     * Save backup of old language config.
      */
     private void saveBackupConfig(@NotNull String languageName, @NotNull FileConfiguration config) {
         File backupDir = new File(plugin.getDataFolder(), "backups");
@@ -136,7 +152,9 @@ public class LanguageManager {
             config.save(backupFile);
             Util.log("&aBacked up old language file.");
         } catch (Exception e) {
-            Util.log("&cFailed to save old language backup file. " + e.getMessage());
+            Util.log("&cFailed to save old language backup file. ");
+            //noinspection CallToPrintStackTrace
+            e.printStackTrace();
         }
     }
 
@@ -161,10 +179,41 @@ public class LanguageManager {
      * @return Object value
      */
     @NotNull
-    public Object getMessage(@NotNull String path) {
+    public String getString(@NotNull String path) {
+        String str = SELECTED_LANGUAGE_CONFIG.contains(path)
+                ? SELECTED_LANGUAGE_CONFIG.getString(path)
+                : DEFAULT_LANGUAGE_CONFIG.getString(path);
+        if(str == null) {
+            Util.log("{WARN}Null message at path '" + path + "'");
+            return "";
+        }
+        return str;
+    }
+
+    /**
+     * Get message from selected language config.
+     * IF selected language config doesn't contain it, it gets from default language config.
+     * @param path Message path
+     * @return Object value
+     */
+    @NotNull
+    public List<String> getStringList(@NotNull String path) {
         return SELECTED_LANGUAGE_CONFIG.contains(path)
-                ? SELECTED_LANGUAGE_CONFIG.get(path, "")
-                : DEFAULT_LANGUAGE_CONFIG.get(path,"");
+                ? SELECTED_LANGUAGE_CONFIG.getStringList(path)
+                : DEFAULT_LANGUAGE_CONFIG.getStringList(path);
+    }
+
+    /**
+     * Get message from selected language config.
+     * IF selected language config doesn't contain it, it gets from default language config.
+     * @param path Message path
+     * @return Object value
+     */
+    @NotNull
+    public Boolean getBoolean(@NotNull String path) {
+        return SELECTED_LANGUAGE_CONFIG.contains(path)
+                ? SELECTED_LANGUAGE_CONFIG.getBoolean(path)
+                : DEFAULT_LANGUAGE_CONFIG.getBoolean(path);
     }
 
     /**
@@ -175,105 +224,34 @@ public class LanguageManager {
      * @return Object value
      */
     @NotNull
-    public Object getMessage(@Nullable ConfigurationSection section, @NotNull String subPath) {
+    public String getString(@Nullable ConfigurationSection section, @NotNull String subPath) {
         final String currentPath = section == null ? "" : section.getCurrentPath();
-        return getMessage(currentPath + "." + subPath);
+        return getString(currentPath + "." + subPath);
     }
 
     /**
-     * Get Replacer class to replace a config message that's from selected language config.
-     * IF selected language config doesn't contain it, it gets from default language config.
-     * @param path Message path
-     * @return Replacer
-     */
-    @NotNull
-    public Replacer getMessageReplaceable(@NotNull String path) {
-        Object message = getMessage(path);
-        if(message instanceof String) {
-            return new Replacer((String) message);
-        }else if(message instanceof String[]) {
-            return new Replacer((String[]) message);
-        }else if(message instanceof List) {
-            //noinspection unchecked
-            return new Replacer(((List<String>) message).toArray(new String[0]));
-        }
-        return new Replacer("");
-    }
-
-    /**
-     * Get Replacer class to replace a config message that's from selected language config section
+     * Get message from selected language config section.
      * IF selected language config doesn't contain it, it gets from default language config section.
      * @param section Message Section
      * @param subPath Message sub path
-     * @return Replacer
+     * @return Object value
      */
     @NotNull
-    public Replacer getMessageReplaceable(@Nullable ConfigurationSection section, @NotNull String subPath) {
+    public List<String> getStringList(@Nullable ConfigurationSection section, @NotNull String subPath) {
         final String currentPath = section == null ? "" : section.getCurrentPath();
-        return getMessageReplaceable(currentPath + "." + subPath);
-    }
-
-
-    static public class Replacer {
-
-        public Replacer(@NotNull String... str) {
-            this.str = str;
-        }
-
-        private String[] str;
-
-        /**
-         * Replace placeholders using this method.
-         * @param replacement Placeholder
-         * @param value Replaced value
-         * @return Replacer
-         */
-        public Replacer replace(@NotNull String replacement, @NotNull Object value) {
-            String[] replaced = new String[str.length];
-            for(int index = 0; index < str.length; index++) {
-                replaced[index] = str[index].replace(replacement, value.toString());
-            }
-            this.str = replaced;
-            return this;
-        }
-
-        /**
-         * Get the result Strings.
-         * @return String[]
-         */
-        public String[] get() {
-            return this.str;
-        }
+        return getStringList(currentPath + "." + subPath);
     }
 
     /**
-     * Get changeable value display message from selected language config.
-     * IF selected language config doesn't contain it, it gets from default language config.
-     * @param langPath Message path
-     * @param configPath Config path
-     * @param configManager ConfigManager
-     * @return String[]
-     */
-    public String[] getValueDisplayMessage(@NotNull String langPath, @NotNull String configPath, @NotNull ConfigManager configManager) {
-        return getMessageReplaceable(langPath)
-                .replace("{value}", configManager.get(configPath, ""))
-                .replace("{unsaved_value}", configManager.get(configPath, "", true))
-                .get();
-    }
-
-    /**
-     * Get changeable value display from selected language config section.
+     * Get message from selected language config section.
      * IF selected language config doesn't contain it, it gets from default language config section.
      * @param section Message Section
-     * @param langSubPath Message sub path
-     * @param configPath Config path
-     * @param configManager ConfigManager
-     * @return String[]
+     * @param subPath Message sub path
+     * @return Object value
      */
-    public String[] getValueDisplayMessage(@Nullable ConfigurationSection section, @NotNull String langSubPath, @NotNull String configPath, @NotNull ConfigManager configManager) {
-        return getMessageReplaceable(section, langSubPath)
-                .replace("{value}", configManager.get(configPath, ""))
-                .replace("{unsaved_value}", configManager.get(configPath, "", true))
-                .get();
+    @NotNull
+    public Boolean getBoolean(@Nullable ConfigurationSection section, @NotNull String subPath) {
+        final String currentPath = section == null ? "" : section.getCurrentPath();
+        return getBoolean(currentPath + "." + subPath);
     }
 }

@@ -5,59 +5,57 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.guimanager.Button;
 import org.nandayo.dapi.guimanager.Menu;
 import org.nandayo.dapi.ItemCreator;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.integration.LP;
-import org.nandayo.dmentions.service.GUIManager;
+import org.nandayo.dmentions.service.Config;
 import org.nandayo.dmentions.service.LanguageManager;
 
 import java.util.List;
 
-@SuppressWarnings("unchecked")
 public class SubDisabledGroupsMenu extends Menu {
 
-    private final DMentions plugin;
-    private final Player player;
-    private final GUIManager manager;
+    private final @NotNull DMentions plugin;
+    private final @NotNull Config config;
+    private final @NotNull Player player;
 
-    public SubDisabledGroupsMenu(DMentions plugin, Player player, GUIManager manager) {
+    public SubDisabledGroupsMenu(DMentions plugin, @NotNull Player player) {
         this.plugin = plugin;
+        this.config = plugin.getConfiguration();
         this.player = player;
-        this.manager = manager;
-
         open();
     }
 
-    public void open() {
-        LanguageManager LANGUAGE_MANAGER = plugin.LANGUAGE_MANAGER;
+    private void open() {
+        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
         ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.disabled_groups_menu");
-        this.createInventory(54, (String) LANGUAGE_MANAGER.getMessage(menuSection, "title"));
+        this.createInventory(54, LANGUAGE_MANAGER.getString(menuSection, "title"));
 
         int i = 0;
         /*
          * List groups that are disabled.
          */
-        List<String> disabledList = manager.getUStringList("group.disabled_groups");
+        List<String> disabledList = config.getUnsavedConfig().getStringList("group.disabled_groups");
         for(String group : disabledList) {
             this.addButton(new Button(i++) {
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.RED_BANNER)
-                            .name(LANGUAGE_MANAGER.getMessageReplaceable(menuSection, "disabled_group.display_name")
+                            .name(LANGUAGE_MANAGER.getString(menuSection, "disabled_group.display_name")
                                     .replace("{group}", group)
-                                    .get()[0]
                             )
-                            .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, "disabled_group.lore"))
+                            .lore(LANGUAGE_MANAGER.getStringList(menuSection, "disabled_group.lore"))
                             .get();
                 }
 
                 @Override
-                public void onClick(Player p, ClickType clickType) {
+                public void onClick(@NotNull Player p, ClickType clickType) {
                     disabledList.remove(group);
-                    manager.setUValue("group.disabled_groups", disabledList);
-                    new SubDisabledGroupsMenu(plugin, player, manager);
+                    config.getUnsavedConfig().set("group.disabled_groups", disabledList);
+                    new SubDisabledGroupsMenu(plugin, player);
                 }
             });
         }
@@ -75,19 +73,18 @@ public class SubDisabledGroupsMenu extends Menu {
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.GREEN_BANNER)
-                                .name(LANGUAGE_MANAGER.getMessageReplaceable(menuSection, langPathName + ".display_name")
+                                .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name")
                                         .replace("{group}", group)
-                                        .get()[0]
                                 )
-                                .lore((List<String>) LANGUAGE_MANAGER.getMessage(menuSection, langPathName + ".lore"))
+                                .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
                                 .get();
                     }
 
                     @Override
-                    public void onClick(Player p, ClickType clickType) {
+                    public void onClick(@NotNull Player p, ClickType clickType) {
                         disabledList.add(group);
-                        manager.setUValue("group.disabled_groups", disabledList);
-                        new SubDisabledGroupsMenu(plugin, player, manager);
+                        config.getUnsavedConfig().set("group.disabled_groups", disabledList);
+                        new SubDisabledGroupsMenu(plugin, player);
                     }
                 });
             }
@@ -100,23 +97,23 @@ public class SubDisabledGroupsMenu extends Menu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
-                        .name((String) LANGUAGE_MANAGER.getMessage("menu.back.display_name"))
-                        .lore((List<String>) LANGUAGE_MANAGER.getMessage("menu.back.lore"))
+                        .name(LANGUAGE_MANAGER.getString("menu.back.display_name"))
+                        .lore(LANGUAGE_MANAGER.getStringList("menu.back.lore"))
                         .get();
             }
 
             @Override
-            public void onClick(Player p, ClickType clickType) {
-                new MentionSettingsMenu(plugin, player, manager);
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new MentionSettingsMenu(plugin, player);
             }
         });
 
         /*
          * Close
          */
-        this.runOnClose(inv -> plugin.GUI_CONFIG_EDITOR = null);
+        this.runOnClose(inv -> plugin.setGuiConfigEditor(null));
 
         this.displayTo(player);
-        plugin.GUI_CONFIG_EDITOR = player;
+        plugin.setGuiConfigEditor(player);
     }
 }

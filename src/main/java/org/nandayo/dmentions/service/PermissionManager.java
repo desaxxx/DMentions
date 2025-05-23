@@ -3,6 +3,7 @@ package org.nandayo.dmentions.service;
 import org.bukkit.Bukkit;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
+import org.jetbrains.annotations.NotNull;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.integration.LP;
 
@@ -11,17 +12,17 @@ import java.util.Map;
 
 public class PermissionManager {
 
-    private final DMentions plugin;
-    private final ConfigManager configManager;
-    public PermissionManager(DMentions plugin) {
+    private final @NotNull DMentions plugin;
+    private final @NotNull Config config;
+    public PermissionManager(@NotNull DMentions plugin) {
         this.plugin = plugin;
-        this.configManager = plugin.CONFIG_MANAGER;
+        this.config = plugin.getConfiguration();
     }
     //PERMISSION SETUP
     public void setupPermissions() {
-        String playerPermission = plugin.getPermission(configManager.getString("player.permission", "dmentions.mention.player"));
-        String everyonePermission = plugin.getPermission(configManager.getString("everyone.permission", "dmentions.mention.everyone"));
-        String nearbyPermission = plugin.getPermission(configManager.getString("nearby.permission", "dmentions.mention.nearby"));
+        String playerPermission = plugin.getPermission(config.getConfig().getString("player.permission", "dmentions.mention.player"));
+        String everyonePermission = plugin.getPermission(config.getConfig().getString("everyone.permission", "dmentions.mention.everyone"));
+        String nearbyPermission = plugin.getPermission(config.getConfig().getString("nearby.permission", "dmentions.mention.nearby"));
 
         Bukkit.getPluginManager().addPermission(new Permission(playerPermission, PermissionDefault.OP));
         Bukkit.getPluginManager().addPermission(new Permission(nearbyPermission, PermissionDefault.OP));
@@ -39,7 +40,7 @@ public class PermissionManager {
             children.put(everyonePermission, true);
 
             for (String group : LP.getGroups()) {
-                String groupPermission = plugin.getPermission(configManager.getString("group.permission", "")).replace("{group}", group);
+                String groupPermission = plugin.getPermission(config.getConfig().getString("group.permission", "")).replace("{group}", group);
                 // REGISTERING GROUP PERMISSIONS
                 Bukkit.getPluginManager().addPermission(new Permission(groupPermission, PermissionDefault.OP));
                 plugin.afterLoadPermissions.add(groupPermission);

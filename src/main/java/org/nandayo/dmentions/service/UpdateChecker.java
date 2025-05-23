@@ -2,6 +2,7 @@ package org.nandayo.dmentions.service;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.Util;
 
 import java.io.IOException;
@@ -20,14 +21,14 @@ public class UpdateChecker {
         this.plugin = plugin;
     }
 
-    public void getVersion(final Consumer<String> consumer) {
+    public void getVersion(@NotNull Consumer<String> consumer) {
         Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
             try (InputStream is = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + this.resourceId + "/~").openStream();
                  Scanner scann = new Scanner(is)) {
                 if (scann.hasNext()) {
                     consumer.accept(scann.next());
                 }
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException e) {
                 Util.log("&cUnable to check for updates: " + e.getMessage());
             }
         });

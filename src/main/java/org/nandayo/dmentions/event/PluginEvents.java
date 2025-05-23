@@ -1,4 +1,4 @@
-package org.nandayo.dmentions.mention;
+package org.nandayo.dmentions.event;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -6,8 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.nandayo.dmentions.mention.event.*;
-import org.nandayo.dmentions.service.ConfigManager;
+import org.nandayo.dmentions.service.Config;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.service.LanguageManager;
 import org.nandayo.dmentions.service.MessageManager;
@@ -18,20 +17,20 @@ public class PluginEvents implements Listener {
     public void onPlayerMention(MentionPlayerEvent e) {
         Player sender = e.getSender();
         Player target = e.getTarget();
-        ConfigManager configManager = DMentions.inst().CONFIG_MANAGER;
-        LanguageManager LANGUAGE_MANAGER = DMentions.inst().LANGUAGE_MANAGER;
+        Config config = DMentions.inst().getConfiguration();
+        LanguageManager LANGUAGE_MANAGER = DMentions.inst().getLanguageManager();
 
-        String soundName = configManager.getString("player.sound", "");
+        String soundName = config.getConfig().getString("player.sound", "");
 
-        String targetBar = LANGUAGE_MANAGER.getMessageReplaceable("player.action_bar.target_message")
-                .replace("{p}", sender.getName()).get()[0];
-        String targetTitle = LANGUAGE_MANAGER.getMessageReplaceable("player.title.target_message")
-                .replace("{p}", sender.getName()).get()[0];
+        String targetBar = LANGUAGE_MANAGER.getString("player.action_bar.target_message")
+                .replace("{p}", sender.getName());
+        String targetTitle = LANGUAGE_MANAGER.getString("player.title.target_message")
+                .replace("{p}", sender.getName());
 
-        String senderBar = LANGUAGE_MANAGER.getMessageReplaceable("player.action_bar.sender_message")
-                .replace("{p}", target.getName()).get()[0];
-        String senderTitle = LANGUAGE_MANAGER.getMessageReplaceable("player.title.sender_message")
-                .replace("{p}", target.getName()).get()[0];
+        String senderBar = LANGUAGE_MANAGER.getString("player.action_bar.sender_message")
+                .replace("{p}", target.getName());
+        String senderTitle = LANGUAGE_MANAGER.getString("player.title.sender_message")
+                .replace("{p}", target.getName());
 
         mention(sender, new Player[]{target}, soundName, targetBar, targetTitle, senderBar, senderTitle);
     }
@@ -40,18 +39,18 @@ public class PluginEvents implements Listener {
     public void onNearbyMention(MentionNearbyEvent e) {
         Player sender = e.getSender();
         Player[] targets = e.getTargets();
-        ConfigManager configManager = DMentions.inst().CONFIG_MANAGER;
-        LanguageManager LANGUAGE_MANAGER = DMentions.inst().LANGUAGE_MANAGER;
+        Config config = DMentions.inst().getConfiguration();
+        LanguageManager LANGUAGE_MANAGER = DMentions.inst().getLanguageManager();
 
-        String soundName = configManager.getString("nearby.sound", "");
+        String soundName = config.getConfig().getString("nearby.sound", "");
 
-        String targetBar = LANGUAGE_MANAGER.getMessageReplaceable("nearby.action_bar.target_message")
-                .replace("{p}", sender.getName()).get()[0];
-        String targetTitle = LANGUAGE_MANAGER.getMessageReplaceable("nearby.title.target_message")
-                .replace("{p}", sender.getName()).get()[0];
+        String targetBar = LANGUAGE_MANAGER.getString("nearby.action_bar.target_message")
+                .replace("{p}", sender.getName());
+        String targetTitle = LANGUAGE_MANAGER.getString("nearby.title.target_message")
+                .replace("{p}", sender.getName());
 
-        String senderBar = (String) LANGUAGE_MANAGER.getMessage("nearby.action_bar.sender_message");
-        String senderTitle = (String) LANGUAGE_MANAGER.getMessage("nearby.title.sender_message");
+        String senderBar = LANGUAGE_MANAGER.getString("nearby.action_bar.sender_message");
+        String senderTitle = LANGUAGE_MANAGER.getString("nearby.title.sender_message");
 
         mention(sender, targets, soundName, targetBar, targetTitle, senderBar, senderTitle);
     }
@@ -60,18 +59,18 @@ public class PluginEvents implements Listener {
     public void onEveryoneMention(MentionEveryoneEvent e) {
         Player sender = e.getSender();
         Player[] targets = e.getTargets();
-        ConfigManager configManager = DMentions.inst().CONFIG_MANAGER;
-        LanguageManager LANGUAGE_MANAGER = DMentions.inst().LANGUAGE_MANAGER;
+        Config config = DMentions.inst().getConfiguration();
+        LanguageManager LANGUAGE_MANAGER = DMentions.inst().getLanguageManager();
 
-        String soundName = configManager.getString("everyone.sound", "");
+        String soundName = config.getConfig().getString("everyone.sound", "");
 
-        String targetBar = LANGUAGE_MANAGER.getMessageReplaceable("everyone.action_bar.target_message")
-                .replace("{p}", sender.getName()).get()[0];
-        String targetTitle = LANGUAGE_MANAGER.getMessageReplaceable("everyone.title.target_message")
-                .replace("{p}", sender.getName()).get()[0];
+        String targetBar = LANGUAGE_MANAGER.getString("everyone.action_bar.target_message")
+                .replace("{p}", sender.getName());
+        String targetTitle = LANGUAGE_MANAGER.getString("everyone.title.target_message")
+                .replace("{p}", sender.getName());
 
-        String senderBar = (String) LANGUAGE_MANAGER.getMessage("everyone.action_bar.sender_message");
-        String senderTitle = (String) LANGUAGE_MANAGER.getMessage("everyone.title.sender_message");
+        String senderBar = LANGUAGE_MANAGER.getString("everyone.action_bar.sender_message");
+        String senderTitle = LANGUAGE_MANAGER.getString("everyone.title.sender_message");
 
         mention(sender, targets, soundName, targetBar, targetTitle, senderBar, senderTitle);
     }
@@ -82,7 +81,7 @@ public class PluginEvents implements Listener {
         String group = e.getGroup();
         Player[] targets = e.getTargets();
 
-        LanguageManager LANGUAGE_MANAGER = DMentions.inst().LANGUAGE_MANAGER;
+        LanguageManager LANGUAGE_MANAGER = DMentions.inst().getLanguageManager();
 
         //GROUP CONFIG SECTION
         ConfigurationSection configSection = DMentions.inst().getConfigGroupSection(group);
@@ -91,19 +90,17 @@ public class PluginEvents implements Listener {
 
         String soundName = configSection.getString("sound", "");
 
-        String targetBar = LANGUAGE_MANAGER.getMessageReplaceable(languageSection,"action_bar.target_message")
+        String targetBar = LANGUAGE_MANAGER.getString(languageSection,"action_bar.target_message")
                 .replace("{p}", sender.getName())
-                .replace("{group}", group)
-                .get()[0];
-        String targetTitle = LANGUAGE_MANAGER.getMessageReplaceable(languageSection,"title.target_message")
+                .replace("{group}", group);
+        String targetTitle = LANGUAGE_MANAGER.getString(languageSection,"title.target_message")
                 .replace("{p}", sender.getName())
-                .replace("{group}", group)
-                .get()[0];
+                .replace("{group}", group);
 
-        String senderBar = LANGUAGE_MANAGER.getMessageReplaceable(languageSection,"action_bar.sender_message")
-                .replace("{group}", group).get()[0];
-        String senderTitle = LANGUAGE_MANAGER.getMessageReplaceable(languageSection,"title.sender_message")
-                .replace("{group}", group).get()[0];
+        String senderBar = LANGUAGE_MANAGER.getString(languageSection,"action_bar.sender_message")
+                .replace("{group}", group);
+        String senderTitle = LANGUAGE_MANAGER.getString(languageSection,"title.sender_message")
+                .replace("{group}", group);
 
         mention(sender, targets, soundName, targetBar, targetTitle, senderBar, senderTitle);
     }
@@ -114,10 +111,10 @@ public class PluginEvents implements Listener {
     private void mention(Player sender, Player[] targets, String soundName, String targetBar, String targetTitle, String senderBar, String senderTitle) {
         Sound sound = null;
         if(soundName != null && !soundName.isEmpty()) {
-            sound = DMentions.inst().WRAPPER.getSound(soundName);
+            sound = DMentions.inst().getWrapper().getSound(soundName);
         }
 
-        MessageManager messageManager = new MessageManager(DMentions.inst().CONFIG_MANAGER);
+        MessageManager messageManager = new MessageManager(DMentions.inst());
         //SENDER
         messageManager.sendActionBar(sender, senderBar);
         messageManager.sendTitle(sender, senderTitle);
