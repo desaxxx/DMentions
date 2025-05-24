@@ -1,10 +1,20 @@
 # (!) Includes hex color support for messages. Usage: <#RRGGBB>
 #
 # You can use '||' in message to separate title and subtitle. (Only TITLE messages)
-# Available types: CHAT, ACTION_BAR, TITLE.
+# Available message types: CHAT, ACTION_BAR, TITLE.
+# Examples:
+#   "ACTION_BAR=&cThat's no good."
+#   "TITLE=<#4bbdbc>Mention||&fYou have been mentioned by a player."
+#   "CHAT={PREFIX} &7This is a prefixed message which you configured at config.yml"
+#
 cooldown_warn: "ACTION_BAR=&cYou should wait {REMAINED} before mentioning."
 mention_restricted_warn: "ACTION_BAR={PREFIX} &cYou don't have permission to mention that player."
 disabled_world_warn: "ACTION_BAR={PREFIX} &cYou can't mention a player in this world."
+afk_warn: "ACTION_BAR={PREFIX} &cYou can't mention an AFK player."
+ignore_warn: "ACTION_BAR={PREFIX} &cYou can't mention a player that ignores you."
+vanish_notify:
+  true: "CHAT={PREFIX} &cYou can't be mentioned now."
+  false: "CHAT={PREFIX} &aYou can be mentioned now."
 #
 player:
   action_bar:
@@ -12,7 +22,7 @@ player:
     target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned you in chat."
   title:
     sender_message: ""
-    target_message: ""
+    target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
 #
 nearby:
   action_bar:
@@ -112,41 +122,89 @@ menu:
       display_name: "&3Language"
       lore:
         unchanged:
-          - "&eCurrent: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to choose another language!"
         changed:
-          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to choose another language!"
     check_for_updates:
       display_name: "&3Check for Updates"
       lore:
         unchanged:
-          - "&eState: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to edit!"
         changed:
-          - "&eState: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to edit!"
       edit_title: "Edit Update Notification"
     prefix:
       display_name: "&3Prefix"
       lore:
         unchanged:
-          - "&eCurrent: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to edit!"
         changed:
-          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to edit!"
       edit_title: "Edit Prefix"
     mention_limit:
       display_name: "&3Mention Limit"
       lore:
         unchanged:
-          - "&eCurrent: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to edit!"
         changed:
-          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to edit!"
       edit_title: "Edit Mention Limit"
+    vanish_respect:
+      display_name: "&3Vanish Respect"
+      lore:
+        unchanged:
+          - "&7Prevents mentioning players who"
+          - "&7are vanished using Essentials."
+          - ""
+          - "&eValue: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&7Prevents mentioning players who"
+          - "&7are vanished using Essentials."
+          - ""
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Vanish Respect"
+    afk_respect:
+      display_name: "&3AFK Respect"
+      lore:
+        unchanged:
+          - "&7Prevents mentioning players who"
+          - "&7are AFK using Essentials."
+          - ""
+          - "&eValue: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&7Prevents mentioning players who"
+          - "&7are AFK using Essentials."
+          - ""
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit AFK Respect"
+    ignore_respect:
+      display_name: "&3Ignore Respect"
+      lore:
+        unchanged:
+          - "&7Prevents mentioning players who"
+          - "&7have ignored the sender using Essentials."
+          - ""
+          - "&eValue: &f{value}"
+          - "&eClick to edit!"
+        changed:
+          - "&7Prevents mentioning players who"
+          - "&7have ignored the sender using Essentials."
+          - ""
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eClick to edit!"
+      edit_title: "Edit Ignore Respect"
     suffix_colors:
       display_name: "&3Suffix Colors"
       lore:
@@ -187,10 +245,10 @@ menu:
         other: "&3Enabled"
       lore:
         unchanged:
-          - "&eState: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to edit!"
         changed:
-          - "&eState: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to edit!"
       edit_title: "Edit Enabled State"
     permission:
@@ -199,20 +257,20 @@ menu:
         other: "&3Permission"
       lore:
         unchanged:
-          - "&eCurrent: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to edit!"
         changed:
-          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to edit!"
       edit_title: "Edit Permission"
     sound:
       display_name: "&3Sound"
       lore:
         unchanged:
-          - "&eCurrent: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to edit!"
         changed:
-          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to edit!"
       edit_title: "Edit Sound"
     # Except player mention setting
@@ -222,30 +280,30 @@ menu:
         other: "&3Keyword"
       lore:
         unchanged:
-          - "&eCurrent: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to edit!"
         changed:
-          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to edit!"
       edit_title: "Edit Keyword"
     display:
       display_name: "&3Display"
       lore:
         unchanged:
-          - "&eCurrent: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to edit!"
         changed:
-          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to edit!"
       edit_title: "Edit Display"
     cooldown:
       display_name: "&3Cooldown (seconds)"
       lore:
         unchanged:
-          - "&eCurrent: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to edit!"
         changed:
-          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to edit!"
       edit_title: "Edit Cooldown"
     # Only player mention setting
@@ -253,10 +311,10 @@ menu:
       display_name: "&3Customized Display"
       lore:
         unchanged:
-          - "&eCurrent: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to edit!"
         changed:
-          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to edit!"
       edit_title: "Edit Customized Display"
     # Only group mention setting
@@ -275,10 +333,10 @@ menu:
       display_name: "&3Radius"
       lore:
         unchanged:
-          - "&eCurrent: &f{value}"
+          - "&eValue: &f{value}"
           - "&eClick to edit!"
         changed:
-          - "&eCurrent: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
           - "&eClick to edit!"
       edit_title: "Edit Radius"
 
@@ -295,11 +353,11 @@ menu:
       display_name: "&3{group}"
       lore:
         unchanged:
-          - "&eCurrent: &f{value} color"
+          - "&eValue: &f{value} color"
           - "&eLeft click to edit!"
           - "&eRight click to remove from list!"
         changed:
-          - "&eCurrent: &7{value} color &a⇒ &f{unsaved_value} color"
+          - "&eValue: &7{value} color &a⇒ &f{unsaved_value} color"
           - "&eLeft click to edit!"
           - "&eRight click to remove from list!"
       edit_title: "Edit Suffix Color"

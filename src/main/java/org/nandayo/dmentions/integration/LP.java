@@ -41,7 +41,7 @@ public class LP {
 
     //GET ONLINE GROUP MEMBERS
     public static Player[] getOnlinePlayersInGroup(String groupName) {
-        if (api == null || groupName == null ||groupName.isEmpty()) return new Player[0];
+        if (api == null || groupName == null || groupName.isEmpty()) return new Player[0];
         return Bukkit.getOnlinePlayers().stream()
                 .filter(player -> {
                     User user = api.getUserManager().getUser(player.getUniqueId());

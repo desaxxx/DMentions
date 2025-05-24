@@ -110,6 +110,6 @@ public class CooldownManager {
         LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
         String msg = LANGUAGE_MANAGER.getString("cooldown_warn")
                 .replace("{REMAINED}", plugin.formattedTime(remaining));
-        new MessageManager(plugin).sendSortedMessage(sender, msg);
+        MessageManager.sendSortedMessage(sender, msg);
     }
 }

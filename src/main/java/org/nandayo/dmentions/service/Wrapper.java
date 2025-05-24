@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.nandayo.dapi.Util;
@@ -26,7 +27,7 @@ public class Wrapper {
     private int fetchVersion() {
         String[] ver = Bukkit.getBukkitVersion().split("-")[0].split("\\.");
         if(ver.length < 2) {
-            Util.log("{WARN}Could not fetch server version!");
+            Util.log("&cCould not fetch server version!");
             Bukkit.getPluginManager().disablePlugin(plugin);
         }
         int major = 0;
@@ -54,5 +55,13 @@ public class Wrapper {
     public Sound getSound(@NotNull String soundName) {
         // since v1.16.4
         return Registry.SOUNDS.get(NamespacedKey.minecraft(soundName.toLowerCase(Locale.ENGLISH)));
+    }
+
+    public void playSound(@NotNull Player player, @NotNull Sound sound) {
+        if(version >= 181) {
+            player.playSound(player, sound, 0.6f, 1f);
+        }else {
+            player.playSound(player.getLocation(), sound, 0.6f, 1f);
+        }
     }
 }

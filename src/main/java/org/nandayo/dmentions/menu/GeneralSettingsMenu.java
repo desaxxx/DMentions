@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.guimanager.Button;
 import org.nandayo.dapi.guimanager.LazyButton;
@@ -155,7 +156,7 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Check for Updates
          */
-        this.addButton(new Button(14) {
+        this.addButton(new Button(13) {
             final String configPath = "check_for_updates";
             final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
@@ -186,7 +187,7 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Prefix
          */
-        this.addButton(new Button(16) {
+        this.addButton(new Button(14) {
             final String configPath = "prefix";
             final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
@@ -217,7 +218,7 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Mention Limit
          */
-        this.addButton(new Button(30) {
+        this.addButton(new Button(15) {
             final String configPath = "mention_limit";
             final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
@@ -246,6 +247,101 @@ public class GeneralSettingsMenu extends Menu {
         });
 
         /*
+         * Vanish Respect
+         */
+        this.addButton(new Button(16) {
+            final String configPath = "vanish_respect";
+            final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
+            final String langPathName = configPath;
+            @Override
+            public ItemStack getItem() {
+                return ItemCreator.of(Material.POTION)
+                        .potion(PotionType.INVISIBILITY)
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(() -> {
+                            List<String> lore = new ArrayList<>();
+                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection,langPathName + ".lore." + changed)) {
+                                lore.add(config.getValueDisplayMessage(line, configPath));
+                            }
+                            return lore;
+                        })
+                        .hideFlag(ItemFlag.values())
+                        .get();
+            }
+
+            @Override
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                        ((text) -> {
+                            config.getUnsavedConfig().set(configPath, Boolean.parseBoolean(text));
+                            new GeneralSettingsMenu(plugin, player);
+                        }));
+            }
+        });
+
+        /*
+         * AFK Respect
+         */
+        this.addButton(new Button(30) {
+            final String configPath = "afk_respect";
+            final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
+            final String langPathName = configPath;
+            @Override
+            public ItemStack getItem() {
+                return ItemCreator.of(Material.PACKED_ICE)
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(() -> {
+                            List<String> lore = new ArrayList<>();
+                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection,langPathName + ".lore." + changed)) {
+                                lore.add(config.getValueDisplayMessage(line, configPath));
+                            }
+                            return lore;
+                        })
+                        .get();
+            }
+
+            @Override
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                        ((text) -> {
+                            config.getUnsavedConfig().set(configPath, Boolean.parseBoolean(text));
+                            new GeneralSettingsMenu(plugin, player);
+                        }));
+            }
+        });
+
+        /*
+         * Ignore Respect
+         */
+        this.addButton(new Button(31) {
+            final String configPath = "ignore_respect";
+            final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
+            final String langPathName = configPath;
+            @Override
+            public ItemStack getItem() {
+                return ItemCreator.of(Material.ENDER_EYE)
+                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .lore(() -> {
+                            List<String> lore = new ArrayList<>();
+                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection,langPathName + ".lore." + changed)) {
+                                lore.add(config.getValueDisplayMessage(line, configPath));
+                            }
+                            return lore;
+                        })
+                        .get();
+            }
+
+            @Override
+            public void onClick(@NotNull Player p, ClickType clickType) {
+                new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                        ((text) -> {
+                            config.getUnsavedConfig().set(configPath, Boolean.parseBoolean(text));
+                            new GeneralSettingsMenu(plugin, player);
+                        }));
+            }
+        });
+
+        /*
          * Suffix Color
          */
         this.addButton(new Button(32) {
@@ -267,7 +363,7 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Disabled Worlds
          */
-        this.addButton(new Button(34) {
+        this.addButton(new Button(33) {
             final String langPathName = "disabled_worlds";
             @Override
             public ItemStack getItem() {

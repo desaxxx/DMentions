@@ -1,15 +1,19 @@
 package org.nandayo.dmentions.event;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.nandayo.dmentions.integration.EssentialsHook;
 import org.nandayo.dmentions.service.Config;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.service.LanguageManager;
 import org.nandayo.dmentions.service.MessageManager;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class PluginEvents implements Listener {
 
@@ -109,30 +113,41 @@ public class PluginEvents implements Listener {
      * General mention method
      */
     private void mention(Player sender, Player[] targets, String soundName, String targetBar, String targetTitle, String senderBar, String senderTitle) {
-        Sound sound = null;
+        DMentions plugin = DMentions.inst();
+        Sound sound;
         if(soundName != null && !soundName.isEmpty()) {
-            sound = DMentions.inst().getWrapper().getSound(soundName);
+            sound = plugin.getWrapper().getSound(soundName);
+        } else {
+            sound = null;
         }
 
-        MessageManager messageManager = new MessageManager(DMentions.inst());
         //SENDER
-        messageManager.sendActionBar(sender, senderBar);
-        messageManager.sendTitle(sender, senderTitle);
-        if(sound != null) sender.playSound(sender.getLocation(), sound, 0.6f, 1.0f);
+        MessageManager.sendActionBar(sender, senderBar);
+        MessageManager.sendTitle(sender, senderTitle);
+        if(sound != null) plugin.getWrapper().playSound(sender, sound);
 
         //TARGET
-        int counter = 0;
-        for(Player target : targets) {
-            if(target == sender || DMentions.inst().isRestricted(sender,target)) continue;
-            if(sound != null) {
-                target.playSound(target.getLocation(), sound, 0.6f, 1.0f);
-            }
-            messageManager.sendActionBar(target, targetBar);
-            messageManager.sendTitle(target, targetTitle);
+        new BukkitRunnable() {
+            int counter = 0;
+            final List<Player> targetList = Arrays.asList(targets);
 
-            if(++counter % 15 == 0) {
-                Bukkit.getScheduler().runTaskLater(DMentions.inst(), () -> {}, 10L);
+            @Override
+            public void run() {
+                for(int i = 0; i < 30; i++) {
+                    if(counter >= targetList.size()) break;
+                    Player target = targetList.get(counter);
+                    counter++;
+
+                    boolean isIgnored = plugin.getConfiguration().getConfig().getBoolean("ignore_respect", true) && EssentialsHook.isIgnored(sender, target);
+                    boolean isAFK = plugin.getConfiguration().getConfig().getBoolean("afk_respect", false) && EssentialsHook.isAFK(target);
+                    boolean isVanished = plugin.getConfiguration().getConfig().getBoolean("vanish_respect", true) && EssentialsHook.isVanished(target);
+                    if(target == null || target.equals(sender) || plugin.isRestricted(sender, target) || isIgnored || isAFK || isVanished) continue;
+
+                    if(sound != null) plugin.getWrapper().playSound(target, sound);
+                    MessageManager.sendActionBar(target, targetBar);
+                    MessageManager.sendTitle(target, targetTitle);
+                }
             }
-        }
+        }.runTaskTimer(plugin, 0, 10L);
     }
 }

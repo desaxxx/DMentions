@@ -2,6 +2,11 @@
 #
 # 你可以在消息文本中使用 '||' 使其显示标题与副标题. (仅对 TITLE 类消息有效)
 # 可用类型: CHAT, ACTION_BAR, TITLE.
+# Examples:
+#   "ACTION_BAR=&cThat's no good."
+#   "TITLE=<#4bbdbc>Mention||&fYou have been mentioned by a player."
+#   "CHAT={PREFIX} &7This is a prefixed message which you configured at config.yml"
+#
 cooldown_warn: "ACTION_BAR=&c你需要等待 {REMAINED} 才可再次提及他人."
 mention_restricted_warn: "ACTION_BAR={PREFIX} &c你没有权限提及该玩家."
 disabled_world_warn: "ACTION_BAR={PREFIX} &c你不能在该世界提及其他人."

@@ -1,10 +1,20 @@
 # (!) Hex color desteklemektedir. Kullanım: <#RRGGBB>
 #
 # Mesaj içinde '||' kullanarak başlık ve alt başlığı ayırabilirsin. (Sadece TITLE mesajları)
-# Kullanılabilir türler: CHAT, ACTION_BAR, TITLE.
+# Kullanılabilir mesaj türleri: CHAT, ACTION_BAR, TITLE.
+# Örnekler:
+#   "ACTION_BAR=&cBu iyi değil."
+#   "TITLE=<#4bbdbc>Etiket||&fBir oyuncu tarafından etiketlendin."
+#   "CHAT={PREFIX} &7Bu mesaj config.yml'den düzenlediğin önekli bir mesaj."
+#
 cooldown_warn: "ACTION_BAR=&cTekrar etiketlemek için {REMAINED} beklemelisin."
 mention_restricted_warn: "ACTION_BAR={PREFIX} &cBu oyuncuyu etiketlemek için yetkin yok."
 disabled_world_warn: "ACTION_BAR={PREFIX} &cBu dünyada oyuncu etiketleyemezsin."
+afk_warn: "ACTION_BAR={PREFIX} &cAFK oyuncuları etiketleyemezsin."
+ignore_warn: "ACTION_BAR={PREFIX} &cSeni engellemiş oyuncuları etiketleyemezsin."
+vanish_notify:
+  true: "CHAT={PREFIX} &cArtık etiketlenmeyeceksin."
+  false: "CHAT={PREFIX} &aArtık etiketleneceksin."
 #
 player:
   action_bar:
@@ -12,7 +22,7 @@ player:
     target_message: "{PREFIX} <#ddf7a6>{p}<#f4e4c0> adlı oyuncu sohbette senden bahsetti."
   title:
     sender_message: ""
-    target_message: ""
+    target_message: "{PREFIX}||<#f4e4c0>Sohbette biri senden bahsetti."
 #
 nearby:
   action_bar:
@@ -112,41 +122,89 @@ menu:
       display_name: "&3Dil"
       lore:
         unchanged:
-          - "&eMevcut: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eBaşka bir dil seçmek için tıkla!"
         changed:
-          - "&eMevcut: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eBaşka bir dil seçmek için tıkla!"
     check_for_updates:
       display_name: "&3Güncellemeleri Kontrol Et"
       lore:
         unchanged:
-          - "&eDurum: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eDüzenlemek için tıkla!"
         changed:
-          - "&eDurum: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eDüzenlemek için tıkla!"
       edit_title: "Güncelleme Bildirimini Düzenle"
     prefix:
       display_name: "&3Önek"
       lore:
         unchanged:
-          - "&eMevcut: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eDüzenlemek için tıkla!"
         changed:
-          - "&eMevcut: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eDüzenlemek için tıkla!"
       edit_title: "Öneki Düzenle"
     mention_limit:
       display_name: "&3Etiket Limiti"
       lore:
         unchanged:
-          - "&eMevcut: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eDüzenlemek için tıkla!"
         changed:
-          - "&eMevcut: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eDüzenlemek için tıkla!"
       edit_title: "Etiket Limitini Düzenle"
+    vanish_respect:
+      display_name: "&3Görünmezlere Saygı"
+      lore:
+        unchanged:
+          - "&7Essentials ile görünmez olmuş"
+          - "&7oyuncuları etiketlemeyi engeller."
+          - ""
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&7Essentials ile görünmez olmuş"
+          - "&7oyuncuları etiketlemeyi engeller."
+          - ""
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Görünmezlere Saygıyı Düzenle"
+    afk_respect:
+      display_name: "&3AFK Oyunculara Saygı"
+      lore:
+        unchanged:
+          - "&7Essentials ile AFK olmuş"
+          - "&7oyuncuları etiketlemeyi engeller."
+          - ""
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&7Essentials ile AFK olmuş"
+          - "&7oyuncuları etiketlemeyi engeller."
+          - ""
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "AFK Oyunculara Saygıyı Düzenle"
+    ignore_respect:
+      display_name: "&3Engelleyenlere Saygı"
+      lore:
+        unchanged:
+          - "&7Essentials ile göndericiyi engellemiş"
+          - "&7oyuncuların etiketlemesini engeller."
+          - ""
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&7Essentials ile göndericiyi engellemiş"
+          - "&7oyuncuların etiketlemesini engeller."
+          - ""
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Engelleyenlere Saygıyı Düzenle"
     suffix_colors:
       display_name: "&3Sonek Renkleri"
       lore:
@@ -187,10 +245,10 @@ menu:
         other: "&3Etkinleştirme"
       lore:
         unchanged:
-          - "&eDurum: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eDüzenlemek için tıkla!"
         changed:
-          - "&eDurum: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eDüzenlemek için tıkla!"
       edit_title: "Etkinleştirmeyi Düzenle"
     permission:
@@ -199,20 +257,20 @@ menu:
         other: "&3Yetki"
       lore:
         unchanged:
-          - "&eMevcut: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eDüzenlemek için tıkla!"
         changed:
-          - "&eMevcut: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eDüzenlemek için tıkla!"
       edit_title: "Yetkiyi Düzenle"
     sound:
       display_name: "&3Ses"
       lore:
         unchanged:
-          - "&eMevcut: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eDüzenlemek için tıkla!"
         changed:
-          - "&eMevcut: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eDüzenlemek için tıkla!"
       edit_title: "Sesi Düzenle"
     # Except player mention setting
@@ -222,30 +280,30 @@ menu:
         other: "&3Anahtar Kelime"
       lore:
         unchanged:
-          - "&eMevcut: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eDüzenlemek için tıkla!"
         changed:
-          - "&eMevcut: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eDüzenlemek için tıkla!"
       edit_title: "Anahtar Kelimeyi Düzenle"
     display:
       display_name: "&3Görüntü"
       lore:
         unchanged:
-          - "&eMevcut: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eDüzenlemek için tıkla!"
         changed:
-          - "&eMevcut: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eDüzenlemek için tıkla!"
       edit_title: "Görüntüyü Düzenle"
     cooldown:
       display_name: "&3Bekleme Süresi (saniye)"
       lore:
         unchanged:
-          - "&eMevcut: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eDüzenlemek için tıkla!"
         changed:
-          - "&eMevcut: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eDüzenlemek için tıkla!"
       edit_title: "Bekleme Süresini Düzenle"
     # Only player mention setting
@@ -253,10 +311,10 @@ menu:
       display_name: "&3Özelleştirilmiş Görüntü"
       lore:
         unchanged:
-          - "&eMevcut: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eDüzenlemek için tıkla!"
         changed:
-          - "&eMevcut: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eDüzenlemek için tıkla!"
       edit_title: "Özelleştirilmiş Görüntüyü Düzenle"
     # Only group mention setting
@@ -275,10 +333,10 @@ menu:
       display_name: "&3Yarıçap"
       lore:
         unchanged:
-          - "&eMevcut: &f{value}"
+          - "&eDeğer: &f{value}"
           - "&eDüzenlemek için tıkla!"
         changed:
-          - "&eMevcut: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
           - "&eDüzenlemek için tıkla!"
       edit_title: "Yarıçapı Düzenle"
 
@@ -295,11 +353,11 @@ menu:
       display_name: "&3{group}"
       lore:
         unchanged:
-          - "&eMevcut: &f{value} color"
+          - "&eDeğer: &f{value} color"
           - "&eDüzenlemek için sol tıkla!"
           - "&eListeden çıkarmak için sağ tıkla!"
         changed:
-          - "&eMevcut: &7{value} color &a⇒ &f{unsaved_value} color"
+          - "&eDeğer: &7{value} color &a⇒ &f{unsaved_value} color"
           - "&eDüzenlemek için sol tıkla!"
           - "&eListeden çıkarmak için sağ tıkla!"
       edit_title: "Sonek Rengini Düzenle"

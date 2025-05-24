@@ -12,6 +12,7 @@ import org.nandayo.dmentions.event.MentionEveryoneEvent;
 import org.nandayo.dmentions.event.MentionGroupEvent;
 import org.nandayo.dmentions.event.MentionNearbyEvent;
 import org.nandayo.dmentions.event.MentionPlayerEvent;
+import org.nandayo.dmentions.integration.EssentialsHook;
 import org.nandayo.dmentions.model.MentionHolder;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.integration.LP;
@@ -147,12 +148,20 @@ public class MentionManager {
                     if(mentionHolder.getTarget() == null) continue;
                     Player target = Bukkit.getPlayerExact(mentionHolder.getTarget());
                     if(target == null || !plugin.getUserManager().getMentionMode(target)) continue;
-                    if(plugin.isRestricted(sender, target)) {
-                        new MessageManager(plugin).sendSortedMessage(sender, plugin.getLanguageManager().getString("mention_restricted_warn"));
-                        continue;
-                    }
                     if(remainedCooldown > 0) {
                         cooldownManager.cooldownWarn(sender, remainedCooldown);
+                        continue;
+                    }
+                    if(plugin.isRestricted(sender, target)) {
+                        MessageManager.sendSortedMessage(sender, plugin.getLanguageManager().getString("mention_restricted_warn"));
+                        continue;
+                    }
+                    if(plugin.getConfiguration().getConfig().getBoolean("ignore_respect", true) && EssentialsHook.isIgnored(sender, target)) {
+                        MessageManager.sendSortedMessage(sender, plugin.getLanguageManager().getString("ignore_warn"));
+                        continue;
+                    }
+                    if(plugin.getConfiguration().getConfig().getBoolean("afk_respect", false) && EssentialsHook.isAFK(target)) {
+                        MessageManager.sendSortedMessage(sender, plugin.getLanguageManager().getString("afk_warn"));
                         continue;
                     }
 

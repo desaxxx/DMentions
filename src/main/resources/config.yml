@@ -17,6 +17,12 @@ check_for_updates: true
 prefix: "&8[<#ffd16d>DMentions&8]&r"
 # How many mentions in single message.
 mention_limit: 2
+# Prevents mentioning players who are vanished using Essentials.
+vanish_respect: true
+# Prevents mentioning players who are marked as AFK via Essentials.
+afk_respect: false
+# Prevents mentioning players who have ignored the sender via Essentials.
+ignore_respect: true
 # Chat colors of groups to match colors after mentioning.
 suffix_color:
   group:

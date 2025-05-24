@@ -22,6 +22,7 @@ import org.nandayo.dapi.DAPI;
 import org.nandayo.dapi.Util;
 import org.nandayo.dapi.object.DEnchantment;
 import org.nandayo.dapi.object.DMaterial;
+import org.nandayo.dmentions.integration.EssentialsHook;
 import org.nandayo.dmentions.service.UserManager;
 import org.nandayo.dmentions.integration.LP;
 import org.nandayo.dmentions.integration.LPEvents;
@@ -51,23 +52,13 @@ public final class DMentions extends JavaPlugin implements Listener {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(this, this);
         pm.registerEvents(new PluginEvents(), this);
-        DAPI dapi = new DAPI(plugin);
-        dapi.registerMenuListener();
-        Util.PREFIX = "&7[&eDMentions&7]&r ";
 
         Objects.requireNonNull(getCommand("dmentions")).setExecutor(new MainCommand());
 
-        //APIS
-        if(pm.getPlugin("LuckPerms") != null) {
-            //noinspection InstantiationOfUtilityClass
-            new LP();
-            new LPEvents(this, LP.getApi()).register();
-            Util.log("&aLuckPerms found. Integration has been enabled!");
-        }else {
-            Util.log("&fLuckPerms not found. Skipping integration.");
-        }
+        setupDAPI();
 
-        //UPDATE VALUES
+        setupIntegrations();
+
         updateVariables();
 
         //UPDATE CHECK
@@ -89,6 +80,26 @@ public final class DMentions extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         userManager.saveChanges();
+    }
+
+    private void setupDAPI() {
+        DAPI dapi = new DAPI(plugin);
+        dapi.registerMenuListener();
+        Util.PREFIX = "&7[&eDMentions&7]&r ";
+    }
+
+    @SuppressWarnings("InstantiationOfUtilityClass")
+    private void setupIntegrations() {
+        if(Bukkit.getPluginManager().getPlugin("LuckPerms") != null) {
+            new LP();
+            new LPEvents(this, LP.getApi()).register();
+            Util.log("&aLuckPerms integration has been enabled. Make sure you are using v5.1 or newer.");
+        }
+        if(Bukkit.getPluginManager().getPlugin("Essentials") != null) {
+            new EssentialsHook();
+            Bukkit.getPluginManager().registerEvents(new EssentialsHook.EssentialsListener(this), this);
+            Util.log("&aEssentialX integration has been enabled. Make sure you are using v2.19.2 or newer.");
+        }
     }
 
     //MANAGERS
@@ -141,7 +152,7 @@ public final class DMentions extends JavaPlugin implements Listener {
 
         List<String> disabledWorlds = configuration.getConfig().getStringList("disabled_worlds");
         if(disabledWorlds.contains(sender.getWorld().getName())) {
-            new MessageManager(plugin).sendSortedMessage(sender, languageManager.getString("disabled_world_warn"));
+            MessageManager.sendSortedMessage(sender, languageManager.getString("disabled_world_warn"));
             return;
         }
         String mentionedString = mentionManager.getMentionedString(this, sender, message);

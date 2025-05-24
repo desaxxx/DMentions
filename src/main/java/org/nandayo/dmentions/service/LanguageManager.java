@@ -184,7 +184,7 @@ public class LanguageManager {
                 ? SELECTED_LANGUAGE_CONFIG.getString(path)
                 : DEFAULT_LANGUAGE_CONFIG.getString(path);
         if(str == null) {
-            Util.log("{WARN}Null message at path '" + path + "'");
+            Util.log("&cNull message at path '" + path + "'");
             return "";
         }
         return str;

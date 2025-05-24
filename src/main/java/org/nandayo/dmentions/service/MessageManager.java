@@ -9,13 +9,12 @@ import org.nandayo.dmentions.DMentions;
 
 public class MessageManager {
 
-    private final @NotNull DMentions plugin;
-    public MessageManager(@NotNull DMentions plugin) {
-        this.plugin = plugin;
-    }
-
-    //SORTED MESSAGE
-    public void sendSortedMessage(Player player, String msg) {
+    /**
+     * Send a message to the player.
+     * @param player Player
+     * @param msg Message.
+     */
+    static public void sendSortedMessage(@NotNull Player player, String msg) {
         if (msg == null || msg.isEmpty()) return;
         String[] parts = msg.split("=");
         if(parts.length < 2) sendMessage(player, msg);
@@ -26,21 +25,35 @@ public class MessageManager {
         }
     }
 
-    //CHAT MESSAGE
-    public void sendMessage(Player player, String msg) {
+    /**
+     * Send a chat message to the player.
+     * @param player Player
+     * @param msg Message
+     */
+    static public void sendMessage(@NotNull Player player, String msg) {
         if(msg == null || msg.isEmpty()) return;
         String formattedText = HexUtil.color(prefixedString(msg));
         player.sendMessage(formattedText);
     }
-    //ACTION BAR
+
+    /**
+     * Send an action bar message to the player.
+     * @param player Player
+     * @param msg Message
+     */
     @SuppressWarnings("deprecation")
-    public void sendActionBar(Player player, String msg) {
+    static public void sendActionBar(@NotNull Player player, String msg) {
         if(msg == null || msg.isEmpty()) return;
         String formattedText = HexUtil.color(prefixedString(msg));
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(formattedText));
     }
-    //TITLE
-    public void sendTitle(Player player, String msg) {
+
+    /**
+     * Send a title message to the player.
+     * @param player Player
+     * @param msg Message
+     */
+    static public void sendTitle(@NotNull Player player, String msg) {
         if(msg == null || msg.isEmpty()) return;
         String[] lines = msg.split("\\|\\|");
         String title = HexUtil.color(prefixedString(lines[0]));
@@ -49,10 +62,14 @@ public class MessageManager {
         player.sendTitle(title, subtitle, 10, 30, 20);
     }
 
-    //PREFIX REPLACE
-    public String prefixedString(String str) {
+    /**
+     * Replace prefix placeholders with the prefix.
+     * @param str Message
+     * @return Replaced Message
+     */
+    static private String prefixedString(String str) {
         if(str == null || str.isEmpty()) return "";
-        String prefix = plugin.getConfiguration().getConfig().getString("prefix", "");
+        String prefix = DMentions.inst().getConfiguration().getConfig().getString("prefix", "");
         return str.replaceAll("\\{PREFIX}", prefix);
     }
 }
