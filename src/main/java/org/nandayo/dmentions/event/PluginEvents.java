@@ -134,7 +134,10 @@ public class PluginEvents implements Listener {
             @Override
             public void run() {
                 for(int i = 0; i < 30; i++) {
-                    if(counter >= targetList.size()) break;
+                    if(counter >= targetList.size()) {
+                        cancel();
+                        break;
+                    }
                     Player target = targetList.get(counter);
                     counter++;
 
