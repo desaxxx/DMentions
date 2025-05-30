@@ -61,8 +61,9 @@ Compatible with various chat plugins, it enhances your in-game communication wit
 *(!) Mention permissions are editable in config file.*
 
 ## Plugin Dependence
-No dependence.
-- **Optional**: Requires [LuckPerms](https://luckperms.net/) for group mentioning.
+No required dependence. Optionally:
+- [LuckPerms](https://luckperms.net/) for group mentioning.
+- [EssentialsX](https://essentialsx.net/) to support configuration options to respect vanished players, ignored players and/or AFK players.
 
 ## Installation
 1- **Download** the <ins>latest</ins> version of the plugin from [Spigot](https://www.spigotmc.org/resources/dmentions-%E2%9C%A8-advanced-player-mention.121452/).\
