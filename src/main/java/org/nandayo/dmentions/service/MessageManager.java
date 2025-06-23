@@ -54,8 +54,7 @@ public class MessageManager {
         String[] lines = msg.split("\\|\\|");
         String title = prefixedString(lines[0]);
         String subtitle = lines.length > 1 ? prefixedString(lines[1]) : "";
-
-        ChannelType.TITLE_AND_SUBTITLE.send(player, new ChannelTitleMessage(prefixedString(title), subtitle));
+        ChannelType.TITLE_AND_SUBTITLE.send(player, new ChannelTitleMessage(title, subtitle));
     }
 
     /**
