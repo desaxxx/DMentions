@@ -1,5 +1,6 @@
 package org.nandayo.dmentions.menu;
 
+import com.google.common.collect.Sets;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -7,33 +8,26 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.guimanager.Button;
-import org.nandayo.dapi.guimanager.Menu;
 import org.nandayo.dapi.ItemCreator;
+import org.nandayo.dapi.guimanager.MenuType;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.integration.LP;
 import org.nandayo.dmentions.enumeration.MentionType;
-import org.nandayo.dmentions.service.Config;
-import org.nandayo.dmentions.service.LanguageManager;
 
 import java.util.List;
+import java.util.Set;
 
-public class SubMentionAddGroupMenu extends Menu {
-
-    private final @NotNull DMentions plugin;
-    private final @NotNull Config config;
-    private final @NotNull Player player;
+public class SubMentionAddGroupMenu extends BaseMenu {
 
     public SubMentionAddGroupMenu(@NotNull DMentions plugin, @NotNull Player player) {
-        this.plugin = plugin;
-        this.config = plugin.getConfiguration();
-        this.player = player;
+        super(plugin, player);
         open();
     }
 
-    private void open() {
-        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
+    @Override
+    void open() {
         ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.add_group_menu");
-        this.createInventory(54, LANGUAGE_MANAGER.getString(menuSection, "title"));
+        createInventory(MenuType.CHEST_6_ROWS, LANGUAGE_MANAGER.getString(menuSection, "title"));
 
         /*
          * List groups that are not added in MentionInsideSettings.
@@ -44,9 +38,16 @@ public class SubMentionAddGroupMenu extends Menu {
             int i = 0;
             for(String group : LP.getGroups()) {
                 if(section.contains(group) || disabledGroups.contains(group)) continue;
+                int slot = i++;
 
-                this.addButton(new Button(i++) {
+                addButton(new Button() {
                     final String langPathName = "not_added_group";
+
+                    @Override
+                    public @NotNull Set<Integer> getSlots() {
+                        return Sets.newHashSet(slot);
+                    }
+
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.YELLOW_BANNER)
@@ -58,7 +59,7 @@ public class SubMentionAddGroupMenu extends Menu {
                     }
 
                     @Override
-                    public void onClick(@NotNull Player p, ClickType clickType) {
+                    public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                         config.getUnsavedConfig().set("group.list." + group + ".sound", "block.note_block.pling");
                         config.getUnsavedConfig().set("group.list." + group + ".display", "<#73c7dc>@{group}");
                         config.getUnsavedConfig().set("group.list." + group + ".cooldown", 5);
@@ -71,7 +72,12 @@ public class SubMentionAddGroupMenu extends Menu {
         /*
          * Back
          */
-        this.addButton(new Button(45) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(45);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
@@ -81,7 +87,7 @@ public class SubMentionAddGroupMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new MentionSettingsMenu(plugin, player);
             }
         });
@@ -89,9 +95,9 @@ public class SubMentionAddGroupMenu extends Menu {
         /*
          * Close
          */
-        this.runOnClose(inv -> plugin.setGuiConfigEditor(null));
+        runOnClose(inv -> plugin.setGuiConfigEditor(null));
 
-        this.displayTo(player);
+        displayTo(player);
         plugin.setGuiConfigEditor(player);
     }
 }

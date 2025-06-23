@@ -1,5 +1,6 @@
 package org.nandayo.dmentions.menu;
 
+import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -9,31 +10,24 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.guimanager.Button;
-import org.nandayo.dapi.guimanager.Menu;
 import org.nandayo.dapi.ItemCreator;
+import org.nandayo.dapi.guimanager.MenuType;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.service.Config;
-import org.nandayo.dmentions.service.LanguageManager;
 
 import java.util.List;
+import java.util.Set;
 
-public class SubDisabledWorldsMenu extends Menu {
-
-    private final @NotNull DMentions plugin;
-    private final @NotNull Config config;
-    private final @NotNull Player player;
+public class SubDisabledWorldsMenu extends BaseMenu {
 
     public SubDisabledWorldsMenu(@NotNull DMentions plugin, @NotNull Player player) {
-        this.plugin = plugin;
-        this.config = plugin.getConfiguration();
-        this.player = player;
+        super(plugin, player);
         open();
     }
 
-    private void open() {
-        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
+    @Override
+    void open() {
         ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.disabled_worlds_menu");
-        this.createInventory(54, LANGUAGE_MANAGER.getString(menuSection, "title"));
+        createInventory(MenuType.CHEST_6_ROWS, LANGUAGE_MANAGER.getString(menuSection, "title"));
 
         int i = 0;
         /*
@@ -41,8 +35,16 @@ public class SubDisabledWorldsMenu extends Menu {
          */
         List<String> disabledList = config.getUnsavedConfig().getStringList("disabled_worlds");
         for(String world : disabledList) {
-            this.addButton(new Button(i++) {
+            int slot = i++;
+            
+            addButton(new Button() {
                 final String langPathName = "disabled_world";
+
+                @Override
+                public @NotNull Set<Integer> getSlots() {
+                    return Sets.newHashSet(slot);
+                }
+
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.RED_BANNER)
@@ -54,7 +56,7 @@ public class SubDisabledWorldsMenu extends Menu {
                 }
 
                 @Override
-                public void onClick(@NotNull Player p, ClickType clickType) {
+                public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                     disabledList.remove(world);
                     config.getUnsavedConfig().set("disabled_worlds", disabledList);
                     new SubDisabledWorldsMenu(plugin, player);
@@ -69,9 +71,16 @@ public class SubDisabledWorldsMenu extends Menu {
         for(World w : Bukkit.getWorlds()) {
             String world = w.getName();
             if(disabledList.contains(world)) continue;
+            int slot = i++;
 
-            this.addButton(new Button(i++) {
+            addButton(new Button() {
                 final String langPathName = "non-disabled_world";
+
+                @Override
+                public @NotNull Set<Integer> getSlots() {
+                    return Sets.newHashSet(slot);
+                }
+
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.GREEN_BANNER)
@@ -83,7 +92,7 @@ public class SubDisabledWorldsMenu extends Menu {
                 }
 
                 @Override
-                public void onClick(@NotNull Player p, ClickType clickType) {
+                public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                     disabledList.add(world);
                     config.getUnsavedConfig().set("disabled_worlds", disabledList);
                     new SubDisabledWorldsMenu(plugin, player);
@@ -94,7 +103,12 @@ public class SubDisabledWorldsMenu extends Menu {
         /*
          * Back
          */
-        this.addButton(new Button(45) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(45);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
@@ -104,7 +118,7 @@ public class SubDisabledWorldsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new GeneralSettingsMenu(plugin, player);
             }
         });

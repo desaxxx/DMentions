@@ -1,5 +1,6 @@
 package org.nandayo.dmentions.menu;
 
+import com.google.common.collect.Sets;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -7,34 +8,36 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.guimanager.Button;
-import org.nandayo.dapi.guimanager.Menu;
 import org.nandayo.dapi.ItemCreator;
+import org.nandayo.dapi.guimanager.MenuType;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.service.Config;
-import org.nandayo.dmentions.service.LanguageManager;
 
-public class SubLanguageMenu extends Menu {
+import java.util.Set;
 
-    private final @NotNull DMentions plugin;
-    private final @NotNull Config config;
-    private final @NotNull Player player;
+public class SubLanguageMenu extends BaseMenu {
 
     public SubLanguageMenu(@NotNull DMentions plugin, @NotNull Player player) {
-        this.plugin = plugin;
-        this.config = plugin.getConfiguration();
-        this.player = player;
+        super(plugin, player);
         open();
     }
 
-    private void open() {
-        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
+    @Override
+    void open() {
         ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.language_menu");
-        this.createInventory(54, LANGUAGE_MANAGER.getString(menuSection, "title"));
+        createInventory(MenuType.CHEST_6_ROWS, LANGUAGE_MANAGER.getString(menuSection, "title"));
 
         int i = 0;
         for(String lang : LANGUAGE_MANAGER.REGISTERED_LANGUAGES) {
-            this.addButton(new Button(i++) {
+            int slot = i++;
+            
+            addButton(new Button() {
                 final String langPathName = "language";
+
+                @Override
+                public @NotNull Set<Integer> getSlots() {
+                    return Sets.newHashSet(slot);
+                }
+
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.BOOK)
@@ -46,7 +49,7 @@ public class SubLanguageMenu extends Menu {
                 }
 
                 @Override
-                public void onClick(@NotNull Player p, ClickType clickType) {
+                public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                     config.getUnsavedConfig().set("lang_file", lang);
                     new GeneralSettingsMenu(plugin, player);
                 }
@@ -56,7 +59,12 @@ public class SubLanguageMenu extends Menu {
         /*
          * Back
          */
-        this.addButton(new Button(45) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(45);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
@@ -66,7 +74,7 @@ public class SubLanguageMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new GeneralSettingsMenu(plugin, player);
             }
         });

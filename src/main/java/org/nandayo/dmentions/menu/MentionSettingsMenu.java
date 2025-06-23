@@ -1,5 +1,6 @@
 package org.nandayo.dmentions.menu;
 
+import com.google.common.collect.Sets;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -8,39 +9,36 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.guimanager.Button;
-import org.nandayo.dapi.guimanager.LazyButton;
-import org.nandayo.dapi.guimanager.Menu;
 import org.nandayo.dapi.ItemCreator;
+import org.nandayo.dapi.guimanager.MenuType;
 import org.nandayo.dapi.object.DEnchantment;
 import org.nandayo.dapi.object.DMaterial;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.enumeration.MentionType;
-import org.nandayo.dmentions.service.Config;
-import org.nandayo.dmentions.service.LanguageManager;
 
-public class MentionSettingsMenu extends Menu {
+import java.util.Set;
 
-    private final @NotNull DMentions plugin;
-    private final @NotNull Config config;
-    private final @NotNull Player player;
+public class MentionSettingsMenu extends BaseMenu {
 
     public MentionSettingsMenu(@NotNull DMentions plugin, @NotNull Player player) {
-        this.plugin = plugin;
-        this.config = plugin.getConfiguration();
-        this.player = player;
-
+        super(plugin, player);
         open();
     }
 
-    public void open() {
-        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
+    @Override
+    void open() {
         ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.mention_settings_menu");
-        this.createInventory(54, LANGUAGE_MANAGER.getString(menuSection, "title"));
+        createInventory(MenuType.CHEST_6_ROWS, LANGUAGE_MANAGER.getString(menuSection, "title"));
 
         /*
          * Glass Fillers
          */
-        this.addButton(new LazyButton(1,10,19,28,37,46) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(1,10,19,28,37,46);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.GRAY_STAINED_GLASS_PANE)
@@ -52,7 +50,12 @@ public class MentionSettingsMenu extends Menu {
         /*
          * General Settings Icon
          */
-        this.addButton(new Button(9) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(9);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.COMPASS)
@@ -62,7 +65,7 @@ public class MentionSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new GeneralSettingsMenu(plugin, player);
             }
         });
@@ -70,7 +73,12 @@ public class MentionSettingsMenu extends Menu {
         /*
          * Mention Settings Icon
          */
-        this.addButton(new Button(27) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(27);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BELL)
@@ -80,17 +88,17 @@ public class MentionSettingsMenu extends Menu {
                         .hideFlag(ItemFlag.values())
                         .get();
             }
-
-            @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
-                // NONE
-            }
         });
 
         /*
          * Reset Changes Icon
          */
-        this.addButton(new Button(47) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(47);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BARRIER)
@@ -100,7 +108,7 @@ public class MentionSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 config.resetUnsavedConfig(p);
                 player.closeInventory();
             }
@@ -109,7 +117,12 @@ public class MentionSettingsMenu extends Menu {
         /*
          * Save Changes Icon
          */
-        this.addButton(new Button(53) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(53);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.WRITABLE_BOOK)
@@ -119,7 +132,7 @@ public class MentionSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 config.saveUnsavedConfig(p);
                 player.closeInventory();
             }
@@ -129,8 +142,14 @@ public class MentionSettingsMenu extends Menu {
         /*
          * Player Mention
          */
-        this.addButton(new Button(12) {
+        addButton(new Button() {
             final String langPathName = "player_mentions";
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(12);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.PLAYER_HEAD)
@@ -140,7 +159,7 @@ public class MentionSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new MentionTypeSettingsMenu(plugin, player, MentionType.PLAYER, null);
             }
         });
@@ -148,8 +167,14 @@ public class MentionSettingsMenu extends Menu {
         /*
          * Everyone Mention
          */
-        this.addButton(new Button(14) {
+        addButton(new Button() {
             final String langPathName = "everyone_mentions";
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(14);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BEACON)
@@ -159,7 +184,7 @@ public class MentionSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new MentionTypeSettingsMenu(plugin, player, MentionType.EVERYONE, null);
             }
         });
@@ -167,8 +192,14 @@ public class MentionSettingsMenu extends Menu {
         /*
          * Nearby Mention
          */
-        this.addButton(new Button(16) {
+        addButton(new Button() {
             final String langPathName = "nearby_mentions";
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(16);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(plugin.getMaterial(DMaterial.SPYGLASS, DMaterial.TARGET))
@@ -178,7 +209,7 @@ public class MentionSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new MentionTypeSettingsMenu(plugin, player, MentionType.NEARBY, null);
             }
         });
@@ -186,8 +217,14 @@ public class MentionSettingsMenu extends Menu {
         /*
          * Group Mention
          */
-        this.addButton(new Button(30) {
+        addButton(new Button() {
             final String langPathName = "group_mentions";
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(30);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.GREEN_BANNER)
@@ -197,7 +234,7 @@ public class MentionSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new SubChooseGroupMenu(plugin, player);
             }
         });

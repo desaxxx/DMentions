@@ -1,5 +1,6 @@
 package org.nandayo.dmentions.menu;
 
+import com.google.common.collect.Sets;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -8,41 +9,40 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.nandayo.dapi.guimanager.Button;
-import org.nandayo.dapi.guimanager.LazyButton;
-import org.nandayo.dapi.guimanager.Menu;
 import org.nandayo.dapi.ItemCreator;
+import org.nandayo.dapi.guimanager.MenuType;
 import org.nandayo.dapi.object.DEnchantment;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.service.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-public class GeneralSettingsMenu extends Menu {
-
-    private final @NotNull DMentions plugin;
-    private final @NotNull Config config;
-    private final @NotNull Player player;
+public class GeneralSettingsMenu extends BaseMenu {
 
     public GeneralSettingsMenu(@NotNull DMentions plugin, @NotNull Player player) {
-        this.plugin = plugin;
-        this.config = plugin.getConfiguration();
-        this.player = player;
+        super(plugin, player);
         open();
     }
 
-    private void open() {
-        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
+    @Override
+    void open() {
         ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.general_settings_menu");
-        this.createInventory(54, LANGUAGE_MANAGER.getString(menuSection,"title"));
+        createInventory(MenuType.CHEST_6_ROWS, LANGUAGE_MANAGER.getString(menuSection,"title"));
 
         /*
          * Glass Fillers
          */
-        this.addButton(new LazyButton(1,10,19,28,37,46) {
+        addButton(new Button() {
             @Override
-            public ItemStack getItem() {
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(1,10,19,28,37,46);
+            }
+
+            @Override
+            public @Nullable ItemStack getItem() {
                 return ItemCreator.of(Material.GRAY_STAINED_GLASS_PANE)
                         .name(" ")
                         .get();
@@ -52,9 +52,14 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * General Settings Icon
          */
-        this.addButton(new Button(9) {
+        addButton(new Button() {
             @Override
-            public ItemStack getItem() {
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(9);
+            }
+
+            @Override
+            public @Nullable ItemStack getItem() {
                 return ItemCreator.of(Material.COMPASS)
                         .name(LANGUAGE_MANAGER.getString("menu.general_button.display_name"))
                         .lore(LANGUAGE_MANAGER.getStringList("menu.general_button.lore.viewing"))
@@ -62,17 +67,17 @@ public class GeneralSettingsMenu extends Menu {
                         .hideFlag(ItemFlag.values())
                         .get();
             }
-
-            @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
-                // NONE
-            }
         });
 
         /*
          * Mention Settings Icon
          */
-        this.addButton(new Button(27) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(27);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BELL)
@@ -82,7 +87,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new MentionSettingsMenu(plugin, player);
             }
         });
@@ -90,7 +95,12 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Reset Changes Icon
          */
-        this.addButton(new Button(47) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(47);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BARRIER)
@@ -100,7 +110,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 config.resetUnsavedConfig(p);
                 player.closeInventory();
             }
@@ -109,7 +119,12 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Save Changes Icon
          */
-        this.addButton(new Button(53) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(53);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.WRITABLE_BOOK)
@@ -119,7 +134,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 config.saveUnsavedConfig(p);
                 player.closeInventory();
             }
@@ -129,10 +144,16 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Language
          */
-        this.addButton(new Button(12) {
+        addButton(new Button() {
             final String configPath = "lang_file";
             final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = "language";
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(12);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BOOK)
@@ -148,7 +169,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new SubLanguageMenu(plugin, player);
             }
         });
@@ -156,10 +177,16 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Check for Updates
          */
-        this.addButton(new Button(13) {
+        addButton(new Button() {
             final String configPath = "check_for_updates";
             final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(13);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.CLOCK)
@@ -175,7 +202,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
                             config.getUnsavedConfig().set(configPath, Boolean.parseBoolean(text));
@@ -187,10 +214,16 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Prefix
          */
-        this.addButton(new Button(14) {
+        addButton(new Button() {
             final String configPath = "prefix";
             final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(14);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.NAME_TAG)
@@ -206,7 +239,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
                             config.getUnsavedConfig().set(configPath, text);
@@ -218,10 +251,16 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Mention Limit
          */
-        this.addButton(new Button(15) {
+        addButton(new Button() {
             final String configPath = "mention_limit";
             final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(15);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.PAPER)
@@ -237,7 +276,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
                             config.getUnsavedConfig().set(configPath, plugin.parseInt(text));
@@ -249,10 +288,16 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Vanish Respect
          */
-        this.addButton(new Button(16) {
+        addButton(new Button() {
             final String configPath = "vanish_respect";
             final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(16);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.POTION)
@@ -270,7 +315,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
                             config.getUnsavedConfig().set(configPath, Boolean.parseBoolean(text));
@@ -282,10 +327,16 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * AFK Respect
          */
-        this.addButton(new Button(30) {
+        addButton(new Button() {
             final String configPath = "afk_respect";
             final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(30);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.PACKED_ICE)
@@ -301,7 +352,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
                             config.getUnsavedConfig().set(configPath, Boolean.parseBoolean(text));
@@ -313,10 +364,16 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Ignore Respect
          */
-        this.addButton(new Button(31) {
+        addButton(new Button() {
             final String configPath = "ignore_respect";
             final String changed = config.isValueChanged(configPath) ? "changed" : "unchanged";
             final String langPathName = configPath;
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(31);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ENDER_EYE)
@@ -332,7 +389,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
                             config.getUnsavedConfig().set(configPath, Boolean.parseBoolean(text));
@@ -344,8 +401,14 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Suffix Color
          */
-        this.addButton(new Button(32) {
+        addButton(new Button() {
             final String langPathName = "suffix_colors";
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(32);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.CYAN_DYE)
@@ -355,7 +418,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new SubSuffixMenu(plugin, player);
             }
         });
@@ -363,8 +426,14 @@ public class GeneralSettingsMenu extends Menu {
         /*
          * Disabled Worlds
          */
-        this.addButton(new Button(33) {
+        addButton(new Button() {
             final String langPathName = "disabled_worlds";
+
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(33);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.GRASS_BLOCK)
@@ -374,7 +443,7 @@ public class GeneralSettingsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new SubDisabledWorldsMenu(plugin, player);
             }
         });

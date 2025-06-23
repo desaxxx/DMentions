@@ -1,5 +1,6 @@
 package org.nandayo.dmentions.menu;
 
+import com.google.common.collect.Sets;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -7,32 +8,25 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.guimanager.Button;
-import org.nandayo.dapi.guimanager.Menu;
 import org.nandayo.dapi.ItemCreator;
+import org.nandayo.dapi.guimanager.MenuType;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.integration.LP;
-import org.nandayo.dmentions.service.Config;
-import org.nandayo.dmentions.service.LanguageManager;
 
 import java.util.List;
+import java.util.Set;
 
-public class SubDisabledGroupsMenu extends Menu {
-
-    private final @NotNull DMentions plugin;
-    private final @NotNull Config config;
-    private final @NotNull Player player;
+public class SubDisabledGroupsMenu extends BaseMenu {
 
     public SubDisabledGroupsMenu(DMentions plugin, @NotNull Player player) {
-        this.plugin = plugin;
-        this.config = plugin.getConfiguration();
-        this.player = player;
+        super(plugin, player);
         open();
     }
 
-    private void open() {
-        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
+    @Override
+    void open() {
         ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.disabled_groups_menu");
-        this.createInventory(54, LANGUAGE_MANAGER.getString(menuSection, "title"));
+        createInventory(MenuType.CHEST_6_ROWS, LANGUAGE_MANAGER.getString(menuSection, "title"));
 
         int i = 0;
         /*
@@ -40,7 +34,14 @@ public class SubDisabledGroupsMenu extends Menu {
          */
         List<String> disabledList = config.getUnsavedConfig().getStringList("group.disabled_groups");
         for(String group : disabledList) {
-            this.addButton(new Button(i++) {
+            int slot = i++;
+            
+            addButton(new Button() {
+                @Override
+                public @NotNull Set<Integer> getSlots() {
+                    return Sets.newHashSet(slot);
+                }
+
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.RED_BANNER)
@@ -52,7 +53,7 @@ public class SubDisabledGroupsMenu extends Menu {
                 }
 
                 @Override
-                public void onClick(@NotNull Player p, ClickType clickType) {
+                public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                     disabledList.remove(group);
                     config.getUnsavedConfig().set("group.disabled_groups", disabledList);
                     new SubDisabledGroupsMenu(plugin, player);
@@ -67,9 +68,16 @@ public class SubDisabledGroupsMenu extends Menu {
         if(LP.isConnected()) {
             for(String group : LP.getGroups()) {
                 if(disabledList.contains(group)) continue;
+                int slot = i++;
 
-                this.addButton(new Button(i++) {
+                addButton(new Button() {
                     final String langPathName = "non-disabled_group";
+
+                    @Override
+                    public @NotNull Set<Integer> getSlots() {
+                        return Sets.newHashSet(slot);
+                    }
+
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.GREEN_BANNER)
@@ -81,7 +89,7 @@ public class SubDisabledGroupsMenu extends Menu {
                     }
 
                     @Override
-                    public void onClick(@NotNull Player p, ClickType clickType) {
+                    public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                         disabledList.add(group);
                         config.getUnsavedConfig().set("group.disabled_groups", disabledList);
                         new SubDisabledGroupsMenu(plugin, player);
@@ -93,7 +101,12 @@ public class SubDisabledGroupsMenu extends Menu {
         /*
          * Back
          */
-        this.addButton(new Button(45) {
+        addButton(new Button() {
+            @Override
+            public @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(45);
+            }
+
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
@@ -103,7 +116,7 @@ public class SubDisabledGroupsMenu extends Menu {
             }
 
             @Override
-            public void onClick(@NotNull Player p, ClickType clickType) {
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                 new MentionSettingsMenu(plugin, player);
             }
         });
@@ -111,9 +124,9 @@ public class SubDisabledGroupsMenu extends Menu {
         /*
          * Close
          */
-        this.runOnClose(inv -> plugin.setGuiConfigEditor(null));
+        runOnClose(inv -> plugin.setGuiConfigEditor(null));
 
-        this.displayTo(player);
+        displayTo(player);
         plugin.setGuiConfigEditor(player);
     }
 }

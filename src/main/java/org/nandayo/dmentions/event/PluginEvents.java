@@ -131,6 +131,10 @@ public class PluginEvents implements Listener {
             int counter = 0;
             final List<Player> targetList = Arrays.asList(targets);
 
+            final boolean ignoreRespect = plugin.getConfiguration().getConfig().getBoolean("ignore_respect", true);
+            final boolean afkRespect = plugin.getConfiguration().getConfig().getBoolean("afk_respect", false);
+            final boolean vanishRespect = plugin.getConfiguration().getConfig().getBoolean("vanish_respect", true);
+
             @Override
             public void run() {
                 for(int i = 0; i < 30; i++) {
@@ -138,12 +142,11 @@ public class PluginEvents implements Listener {
                         cancel();
                         break;
                     }
-                    Player target = targetList.get(counter);
-                    counter++;
+                    Player target = targetList.get(counter++);
 
-                    boolean isIgnored = plugin.getConfiguration().getConfig().getBoolean("ignore_respect", true) && EssentialsHook.isIgnored(sender, target);
-                    boolean isAFK = plugin.getConfiguration().getConfig().getBoolean("afk_respect", false) && EssentialsHook.isAFK(target);
-                    boolean isVanished = plugin.getConfiguration().getConfig().getBoolean("vanish_respect", true) && EssentialsHook.isVanished(target);
+                    boolean isIgnored = ignoreRespect && EssentialsHook.isIgnored(sender, target);
+                    boolean isAFK = afkRespect && EssentialsHook.isAFK(target);
+                    boolean isVanished = vanishRespect && EssentialsHook.isVanished(target);
                     if(target == null || target.equals(sender) || plugin.isRestricted(sender, target) || isIgnored || isAFK || isVanished) continue;
 
                     if(sound != null) plugin.getWrapper().playSound(target, sound);

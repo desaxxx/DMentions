@@ -1,10 +1,9 @@
 package org.nandayo.dmentions.service;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.nandayo.dapi.HexUtil;
+import org.nandayo.dapi.message.ChannelTitleMessage;
+import org.nandayo.dapi.message.ChannelType;
 import org.nandayo.dmentions.DMentions;
 
 public class MessageManager {
@@ -32,8 +31,7 @@ public class MessageManager {
      */
     static public void sendMessage(@NotNull Player player, String msg) {
         if(msg == null || msg.isEmpty()) return;
-        String formattedText = HexUtil.color(prefixedString(msg));
-        player.sendMessage(formattedText);
+        ChannelType.CHAT.send(player, prefixedString(msg));
     }
 
     /**
@@ -41,11 +39,9 @@ public class MessageManager {
      * @param player Player
      * @param msg Message
      */
-    @SuppressWarnings("deprecation")
     static public void sendActionBar(@NotNull Player player, String msg) {
         if(msg == null || msg.isEmpty()) return;
-        String formattedText = HexUtil.color(prefixedString(msg));
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(formattedText));
+        ChannelType.ACTION_BAR.send(player, prefixedString(msg));
     }
 
     /**
@@ -56,10 +52,10 @@ public class MessageManager {
     static public void sendTitle(@NotNull Player player, String msg) {
         if(msg == null || msg.isEmpty()) return;
         String[] lines = msg.split("\\|\\|");
-        String title = HexUtil.color(prefixedString(lines[0]));
-        String subtitle = lines.length > 1 ? HexUtil.color(prefixedString(lines[1])) : "";
+        String title = prefixedString(lines[0]);
+        String subtitle = lines.length > 1 ? prefixedString(lines[1]) : "";
 
-        player.sendTitle(title, subtitle, 10, 30, 20);
+        ChannelType.TITLE_AND_SUBTITLE.send(player, new ChannelTitleMessage(prefixedString(title), subtitle));
     }
 
     /**

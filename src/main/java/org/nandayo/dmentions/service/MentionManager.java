@@ -8,10 +8,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.HexUtil;
 import org.nandayo.dmentions.enumeration.MentionType;
-import org.nandayo.dmentions.event.MentionEveryoneEvent;
-import org.nandayo.dmentions.event.MentionGroupEvent;
-import org.nandayo.dmentions.event.MentionNearbyEvent;
-import org.nandayo.dmentions.event.MentionPlayerEvent;
+import org.nandayo.dmentions.event.*;
 import org.nandayo.dmentions.integration.EssentialsHook;
 import org.nandayo.dmentions.model.MentionHolder;
 import org.nandayo.dmentions.DMentions;
@@ -204,6 +201,7 @@ public class MentionManager {
                     Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getPluginManager().callEvent(new MentionGroupEvent(sender, group, LP.getOnlinePlayersInGroup(group))));
                     break;
             }
+
             mentionCounter++;
             cooldownManager.updateLastUse(mentionHolder.getType(), mentionHolder.getTarget());
 
