@@ -7,11 +7,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.nandayo.dapi.guimanager.Button;
-import org.nandayo.dapi.ItemCreator;
+import org.nandayo.dapi.util.ItemCreator;
 import org.nandayo.dapi.guimanager.MenuType;
+import org.nandayo.dapi.guimanager.button.Button;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.integration.LP;
+import org.nandayo.dmentions.integration.LuckPermsHook;
 import org.nandayo.dmentions.enumeration.MentionType;
 
 import java.util.List;
@@ -19,24 +19,26 @@ import java.util.Set;
 
 public class SubMentionAddGroupMenu extends BaseMenu {
 
+    private final LuckPermsHook luckPermsHook;
     public SubMentionAddGroupMenu(@NotNull DMentions plugin, @NotNull Player player) {
         super(plugin, player);
+        this.luckPermsHook = plugin.getLuckPermsHook();
         open();
     }
 
     @Override
-    void open() {
-        ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.add_group_menu");
-        createInventory(MenuType.CHEST_6_ROWS, LANGUAGE_MANAGER.getString(menuSection, "title"));
+    protected void open() {
+        ConfigurationSection menuSection = guiRegistry.getSection("menu.add_group_menu");
+        createInventory(MenuType.CHEST_6_ROWS, guiRegistry.getString(menuSection, "title"));
 
         /*
          * List groups that are not added in MentionInsideSettings.
          */
         ConfigurationSection section = config.getUnsavedConfig().getConfigurationSection("group.list");
         List<String> disabledGroups = config.getUnsavedConfig().getStringList("group.disabled_groups");
-        if(LP.isConnected() && section != null) {
+        if(!luckPermsHook.isMaskNull() && section != null) {
             int i = 0;
-            for(String group : LP.getGroups()) {
+            for(String group : luckPermsHook.getGroups()) {
                 if(section.contains(group) || disabledGroups.contains(group)) continue;
                 int slot = i++;
 
@@ -51,17 +53,17 @@ public class SubMentionAddGroupMenu extends BaseMenu {
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.YELLOW_BANNER)
-                                .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name")
+                                .name(guiRegistry.getString(menuSection, langPathName + ".display_name")
                                         .replace("{group}", group)
                                 )
-                                .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
+                                .lore(guiRegistry.getStringList(menuSection, langPathName + ".lore"))
                                 .get();
                     }
 
                     @Override
                     public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                         config.getUnsavedConfig().set("group.list." + group + ".sound", "block.note_block.pling");
-                        config.getUnsavedConfig().set("group.list." + group + ".display", "<#73c7dc>@{group}");
+                        config.getUnsavedConfig().set("group.list." + group + ".display", "&#73c7dc@{group}");
                         config.getUnsavedConfig().set("group.list." + group + ".cooldown", 5);
                         new MentionTypeSettingsMenu(plugin, player, MentionType.GROUP, group);
                     }
@@ -81,8 +83,8 @@ public class SubMentionAddGroupMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
-                        .name(LANGUAGE_MANAGER.getString("menu.back.display_name"))
-                        .lore(LANGUAGE_MANAGER.getStringList("menu.back.lore"))
+                        .name(guiRegistry.getString("menu.back.display_name"))
+                        .lore(guiRegistry.getStringList("menu.back.lore"))
                         .get();
             }
 
@@ -92,10 +94,6 @@ public class SubMentionAddGroupMenu extends BaseMenu {
             }
         });
 
-        /*
-         * Close
-         */
-        runOnClose(inv -> plugin.setGuiConfigEditor(null));
 
         displayTo(player);
         plugin.setGuiConfigEditor(player);

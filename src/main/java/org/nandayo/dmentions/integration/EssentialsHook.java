@@ -3,21 +3,35 @@ package org.nandayo.dmentions.integration;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.User;
 import net.ess3.api.events.VanishStatusChangeEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.service.MessageManager;
+import org.nandayo.dmentions.provider.VanishProvider;
+import org.nandayo.dmentions.service.message.Message;
 
-public class EssentialsHook {
+public class EssentialsHook implements IHook, VanishProvider {
 
-    static private Essentials ess = null;
-    public EssentialsHook() {
-        Plugin plugin = Bukkit.getPluginManager().getPlugin("Essentials");
-        if (plugin instanceof Essentials) ess = (Essentials) plugin;
+    private final @NotNull DMentions plugin;
+    private Object mask = null;
+    public EssentialsHook(@NotNull DMentions plugin) {
+        this.plugin = plugin;
+        pluginCondition("Essentials", ess -> this.mask = ess);
+    }
+
+    @Override
+    public Object mask() {
+        return this.mask;
+    }
+
+    /**
+     * Get Essentials. Use with caution as it may not be present. Check with {@link #isMaskNull()} beforehand.
+     * @return Essentials
+     * @since 1.8.3
+     */
+    private Essentials getAPI() {
+        return (Essentials) this.mask;
     }
 
     /**
@@ -26,9 +40,9 @@ public class EssentialsHook {
      * @param player Player
      * @return whether ignored or not
      */
-    static public boolean isIgnored(@NotNull Player suspected, @NotNull Player player) {
-        if(ess == null) return false;
-        User user = ess.getUser(player);
+    public boolean isIgnored(@NotNull Player suspected, @NotNull Player player) {
+        if(isMaskNull()) return false;
+        User user = getAPI().getUser(player);
         return user._getIgnoredPlayers().contains(suspected.getUniqueId());
     }
 
@@ -37,9 +51,9 @@ public class EssentialsHook {
      * @param player Player
      * @return whether AFK or not
      */
-    static public boolean isAFK(@NotNull Player player) {
-        if(ess == null) return false;
-        return ess.getUser(player).isAfk();
+    public boolean isAFK(@NotNull Player player) {
+        if(isMaskNull()) return false;
+        return getAPI().getUser(player).isAfk();
     }
 
     /**
@@ -47,14 +61,16 @@ public class EssentialsHook {
      * @param player Player
      * @return whether vanished or not
      */
-    static public boolean isVanished(@NotNull Player player) {
-        if(ess == null) return false;
-        return ess.getUser(player).isVanished();
+    @Override
+    public boolean isVanished(Player player) {
+        if(isMaskNull() || player == null) return false;
+        return getAPI().getUser(player).isVanished();
     }
 
 
 
-    public static class EssentialsListener implements Listener {
+
+    static public class EssentialsListener implements Listener {
 
         private final @NotNull DMentions plugin;
         public EssentialsListener(@NotNull DMentions plugin) {
@@ -72,7 +88,7 @@ public class EssentialsHook {
             }else {
                 plugin.getMentionManager().addPlayer(player);
             }
-            MessageManager.sendSortedMessage(player, plugin.getLanguageManager().getString("vanish_notify." + value));
+            Message.VANISH_NOTIFY_X.replaceKey("{x}", String.valueOf(value)).sendMessage(player);
         }
     }
 }

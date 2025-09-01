@@ -9,13 +9,14 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.nandayo.dapi.ItemCreator;
-import org.nandayo.dapi.guimanager.Button;
 import org.nandayo.dapi.guimanager.MenuType;
+import org.nandayo.dapi.guimanager.button.Button;
 import org.nandayo.dapi.object.DEnchantment;
 import org.nandayo.dapi.object.DMaterial;
+import org.nandayo.dapi.util.ItemCreator;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.enumeration.MentionType;
+import org.nandayo.dmentions.util.DUtil;
 
 import java.util.*;
 
@@ -37,11 +38,11 @@ public class MentionTypeSettingsMenu extends BaseMenu {
     }
 
     @Override
-    void open() {
-        ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.mention_type_settings_menu");
+    protected void open() {
+        ConfigurationSection menuSection = guiRegistry.getSection("menu.mention_type_settings_menu");
         final String langMentionKey = mentionType == MentionType.GROUP ? "group" : "other";
         createInventory(MenuType.CHEST_6_ROWS,
-                LANGUAGE_MANAGER.getString(menuSection, "title." + langMentionKey)
+                guiRegistry.getString(menuSection, "title." + langMentionKey)
                         .replace("{mentionType}", mentionType.name().toLowerCase(Locale.ENGLISH))
                         .replace("{group}", group == null ? "?" : group));
 
@@ -74,8 +75,8 @@ public class MentionTypeSettingsMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.COMPASS)
-                        .name(LANGUAGE_MANAGER.getString("menu.general_button.display_name"))
-                        .lore(LANGUAGE_MANAGER.getStringList("menu.general_button.lore.not_viewing"))
+                        .name(guiRegistry.getString("menu.general_button.display_name"))
+                        .lore(guiRegistry.getStringList("menu.general_button.lore.not_viewing"))
                         .get();
             }
 
@@ -97,10 +98,10 @@ public class MentionTypeSettingsMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(mentionType.getIconMaterial())
-                        .name(LANGUAGE_MANAGER.getString("menu.mention_button.display_name"))
-                        .lore(LANGUAGE_MANAGER.getStringList("menu.mention_button.lore.go_back"))
-                        .enchant(plugin.getEnchantment(DEnchantment.UNBREAKING, DEnchantment.DURABILITY), 1)
-                        .hideFlag(ItemFlag.values())
+                        .name(guiRegistry.getString("menu.mention_button.display_name"))
+                        .lore(guiRegistry.getStringList("menu.mention_button.lore.go_back"))
+                        .enchant(DUtil.getEnchantment(DEnchantment.UNBREAKING, DEnchantment.DURABILITY), 1)
+                        .flags(ItemFlag.values())
                         .get();
             }
 
@@ -122,8 +123,8 @@ public class MentionTypeSettingsMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.BARRIER)
-                        .name(LANGUAGE_MANAGER.getString("menu.reset_changes.display_name"))
-                        .lore(LANGUAGE_MANAGER.getStringList("menu.reset_changes.lore"))
+                        .name(guiRegistry.getString("menu.reset_changes.display_name"))
+                        .lore(guiRegistry.getStringList("menu.reset_changes.lore"))
                         .get();
             }
 
@@ -146,8 +147,8 @@ public class MentionTypeSettingsMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.WRITABLE_BOOK)
-                        .name(LANGUAGE_MANAGER.getString("menu.save_changes.display_name"))
-                        .lore(LANGUAGE_MANAGER.getStringList("menu.save_changes.lore"))
+                        .name(guiRegistry.getString("menu.save_changes.display_name"))
+                        .lore(guiRegistry.getStringList("menu.save_changes.lore"))
                         .get();
             }
 
@@ -175,10 +176,10 @@ public class MentionTypeSettingsMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.LEVER)
-                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name." + langMentionKey))
+                        .name(guiRegistry.getString(menuSection, langPathName + ".display_name." + langMentionKey))
                         .lore(() -> {
                             List<String> lore = new ArrayList<>();
-                            for(String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                            for(String line : guiRegistry.getStringList(menuSection, langPathName + ".lore." + changed)) {
                                 lore.add(config.getValueDisplayMessage(line, configPath));
                             }
                             return lore;
@@ -188,7 +189,7 @@ public class MentionTypeSettingsMenu extends BaseMenu {
 
             @Override
             public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
-                new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                new AnvilManager(plugin, player, configPath, guiRegistry.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
                             config.getUnsavedConfig().set(configPath, Boolean.parseBoolean(text));
                             new MentionTypeSettingsMenu(plugin, player, mentionType, group);
@@ -212,10 +213,10 @@ public class MentionTypeSettingsMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.PAPER)
-                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name." + langMentionKey))
+                        .name(guiRegistry.getString(menuSection, langPathName + ".display_name." + langMentionKey))
                         .lore(() -> {
                             List<String> lore = new ArrayList<>();
-                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                            for (String line : guiRegistry.getStringList(menuSection, langPathName + ".lore." + changed)) {
                                 lore.add(config.getValueDisplayMessage(line, configPath));
                             }
                             return lore;
@@ -225,7 +226,7 @@ public class MentionTypeSettingsMenu extends BaseMenu {
 
             @Override
             public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
-                new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                new AnvilManager(plugin, player, configPath, guiRegistry.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
                             config.getUnsavedConfig().set(configPath, text);
                             new MentionTypeSettingsMenu(plugin, player, mentionType, group);
@@ -249,10 +250,10 @@ public class MentionTypeSettingsMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.NOTE_BLOCK)
-                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .name(guiRegistry.getString(menuSection, langPathName + ".display_name"))
                         .lore(() -> {
                             List<String> lore = new ArrayList<>();
-                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                            for (String line : guiRegistry.getStringList(menuSection, langPathName + ".lore." + changed)) {
                                 lore.add(config.getValueDisplayMessage(line, configPath));
                             }
                             return lore;
@@ -262,7 +263,7 @@ public class MentionTypeSettingsMenu extends BaseMenu {
 
             @Override
             public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
-                new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                new AnvilManager(plugin, player, configPath, guiRegistry.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
                             config.getUnsavedConfig().set(configPath, text);
                             new MentionTypeSettingsMenu(plugin, player, mentionType, group);
@@ -287,20 +288,20 @@ public class MentionTypeSettingsMenu extends BaseMenu {
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.NAME_TAG)
-                            .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name." + langMentionKey))
+                            .name(guiRegistry.getString(menuSection, langPathName + ".display_name." + langMentionKey))
                             .lore(() -> {
-                            List<String> lore = new ArrayList<>();
-                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
-                                lore.add(config.getValueDisplayMessage(line, configPath));
-                            }
-                            return lore;
-                        })
+                                List<String> lore = new ArrayList<>();
+                                for (String line : guiRegistry.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                                    lore.add(config.getValueDisplayMessage(line, configPath));
+                                }
+                                return lore;
+                            })
                             .get();
                 }
 
                 @Override
                 public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
-                    new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                    new AnvilManager(plugin, player, configPath, guiRegistry.getString(menuSection, langPathName + ".edit_title"),
                             ((text) -> {
                                 config.getUnsavedConfig().set(configPath, text);
                                 new MentionTypeSettingsMenu(plugin, player, mentionType, group);
@@ -325,10 +326,10 @@ public class MentionTypeSettingsMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ITEM_FRAME)
-                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .name(guiRegistry.getString(menuSection, langPathName + ".display_name"))
                         .lore(() -> {
                             List<String> lore = new ArrayList<>();
-                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                            for (String line : guiRegistry.getStringList(menuSection, langPathName + ".lore." + changed)) {
                                 lore.add(config.getValueDisplayMessage(line, configPath));
                             }
                             return lore;
@@ -338,7 +339,7 @@ public class MentionTypeSettingsMenu extends BaseMenu {
 
             @Override
             public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
-                new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                new AnvilManager(plugin, player, configPath, guiRegistry.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
                             config.getUnsavedConfig().set(configPath, text);
                             new MentionTypeSettingsMenu(plugin, player, mentionType, group);
@@ -362,10 +363,10 @@ public class MentionTypeSettingsMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.CLOCK)
-                        .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                        .name(guiRegistry.getString(menuSection, langPathName + ".display_name"))
                         .lore(() -> {
                             List<String> lore = new ArrayList<>();
-                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                            for (String line : guiRegistry.getStringList(menuSection, langPathName + ".lore." + changed)) {
                                 lore.add(config.getValueDisplayMessage(line, configPath));
                             }
                             return lore;
@@ -375,9 +376,9 @@ public class MentionTypeSettingsMenu extends BaseMenu {
 
             @Override
             public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
-                new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                new AnvilManager(plugin, player, configPath, guiRegistry.getString(menuSection, langPathName + ".edit_title"),
                         ((text) -> {
-                            config.getUnsavedConfig().set(configPath, plugin.parseInt(text));
+                            config.getUnsavedConfig().set(configPath, DUtil.parseInt(text,0));
                             new MentionTypeSettingsMenu(plugin, player, mentionType, group);
                         }));
             }
@@ -399,21 +400,21 @@ public class MentionTypeSettingsMenu extends BaseMenu {
 
                 @Override
                 public ItemStack getItem() {
-                    return ItemCreator.of(plugin.getMaterial(DMaterial.GLOW_ITEM_FRAME, DMaterial.PAINTING))
-                            .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                    return ItemCreator.of(DUtil.getMaterial(DMaterial.GLOW_ITEM_FRAME, DMaterial.PAINTING))
+                            .name(guiRegistry.getString(menuSection, langPathName + ".display_name"))
                             .lore(() -> {
-                            List<String> lore = new ArrayList<>();
-                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
-                                lore.add(config.getValueDisplayMessage(line, configPath));
-                            }
-                            return lore;
-                        })
+                                List<String> lore = new ArrayList<>();
+                                for (String line : guiRegistry.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                                    lore.add(config.getValueDisplayMessage(line, configPath));
+                                }
+                                return lore;
+                            })
                             .get();
                 }
 
                 @Override
                 public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
-                    new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                    new AnvilManager(plugin, player, configPath, guiRegistry.getString(menuSection, langPathName + ".edit_title"),
                             ((text) -> {
                                 config.getUnsavedConfig().set(configPath, text);
                                 new MentionTypeSettingsMenu(plugin, player, mentionType, group);
@@ -437,8 +438,8 @@ public class MentionTypeSettingsMenu extends BaseMenu {
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.BLACK_BANNER)
-                            .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
-                            .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
+                            .name(guiRegistry.getString(menuSection, langPathName + ".display_name"))
+                            .lore(guiRegistry.getStringList(menuSection, langPathName + ".lore"))
                             .get();
                 }
 
@@ -467,8 +468,8 @@ public class MentionTypeSettingsMenu extends BaseMenu {
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.REDSTONE)
-                            .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
-                            .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
+                            .name(guiRegistry.getString(menuSection, langPathName + ".display_name"))
+                            .lore(guiRegistry.getStringList(menuSection, langPathName + ".lore"))
                             .get();
                 }
 
@@ -496,32 +497,28 @@ public class MentionTypeSettingsMenu extends BaseMenu {
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.ENDER_PEARL)
-                            .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name"))
+                            .name(guiRegistry.getString(menuSection, langPathName + ".display_name"))
                             .lore(() -> {
-                            List<String> lore = new ArrayList<>();
-                            for (String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
-                                lore.add(config.getValueDisplayMessage(line, configPath));
-                            }
-                            return lore;
-                        })
+                                List<String> lore = new ArrayList<>();
+                                for (String line : guiRegistry.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                                    lore.add(config.getValueDisplayMessage(line, configPath));
+                                }
+                                return lore;
+                            })
                             .get();
                 }
 
                 @Override
                 public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
-                    new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                    new AnvilManager(plugin, player, configPath, guiRegistry.getString(menuSection, langPathName + ".edit_title"),
                             ((text) -> {
-                                config.getUnsavedConfig().set(configPath, plugin.parseInt(text));
+                                config.getUnsavedConfig().set(configPath, DUtil.parseInt(text,0));
                                 new MentionTypeSettingsMenu(plugin, player, mentionType, group);
                             }));
                 }
             });
         }
 
-        /*
-         * Close
-         */
-        this.runOnClose(inv -> plugin.setGuiConfigEditor(null));
 
         this.displayTo(player);
         plugin.setGuiConfigEditor(player);

@@ -5,33 +5,36 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.jetbrains.annotations.NotNull;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.integration.LP;
+import org.nandayo.dmentions.integration.LuckPermsHook;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PermissionManager {
+    static private final Set<String> LOADED_PERMISSIONS = new HashSet<>();
 
     private final @NotNull DMentions plugin;
     private final @NotNull Config config;
+    private final LuckPermsHook luckPermsHook;
     public PermissionManager(@NotNull DMentions plugin) {
         this.plugin = plugin;
         this.config = plugin.getConfiguration();
+        this.luckPermsHook = plugin.getLuckPermsHook();
     }
+
     //PERMISSION SETUP
     public void setupPermissions() {
-        String playerPermission = plugin.getPermission(config.getConfig().getString("player.permission", "dmentions.mention.player"));
-        String everyonePermission = plugin.getPermission(config.getConfig().getString("everyone.permission", "dmentions.mention.everyone"));
-        String nearbyPermission = plugin.getPermission(config.getConfig().getString("nearby.permission", "dmentions.mention.nearby"));
+        String playerPermission = config.getConfig().getString("player.permission", "dmentions.mention.player");
+        String everyonePermission = config.getConfig().getString("everyone.permission", "dmentions.mention.everyone");
+        String nearbyPermission = config.getConfig().getString("nearby.permission", "dmentions.mention.nearby");
 
         Bukkit.getPluginManager().addPermission(new Permission(playerPermission, PermissionDefault.OP));
         Bukkit.getPluginManager().addPermission(new Permission(nearbyPermission, PermissionDefault.OP));
         Bukkit.getPluginManager().addPermission(new Permission(everyonePermission, PermissionDefault.OP));
-        plugin.afterLoadPermissions.add(playerPermission);
-        plugin.afterLoadPermissions.add(nearbyPermission);
-        plugin.afterLoadPermissions.add(everyonePermission);
+        LOADED_PERMISSIONS.add(playerPermission);
+        LOADED_PERMISSIONS.add(nearbyPermission);
+        LOADED_PERMISSIONS.add(everyonePermission);
 
-        if (LP.isConnected()) {
+        if(!luckPermsHook.isMaskNull()) {
             Permission adminPermission = Bukkit.getPluginManager().getPermission("dmentions.admin");
             if(adminPermission == null) return;
 
@@ -39,11 +42,11 @@ public class PermissionManager {
             children.put(playerPermission, true);
             children.put(everyonePermission, true);
 
-            for (String group : LP.getGroups()) {
-                String groupPermission = plugin.getPermission(config.getConfig().getString("group.permission", "")).replace("{group}", group);
+            for (String group : luckPermsHook.getGroups()) {
+                String groupPermission = config.getConfig().getString("group.permission", "dmentions.mention.group.{group}").replace("{group}", group);
                 // REGISTERING GROUP PERMISSIONS
                 Bukkit.getPluginManager().addPermission(new Permission(groupPermission, PermissionDefault.OP));
-                plugin.afterLoadPermissions.add(groupPermission);
+                LOADED_PERMISSIONS.add(groupPermission);
                 // ADDING GROUP PERMISSIONS AS CHILDREN TO 'dmentions.admin'
                 children.put(groupPermission, true);
             }
@@ -52,9 +55,9 @@ public class PermissionManager {
         }
     }
     public void clearAfterLoadPermissions() {
-        if(plugin.afterLoadPermissions.isEmpty()) return;
+        if(LOADED_PERMISSIONS.isEmpty()) return;
         Permission adminPermission = Bukkit.getPluginManager().getPermission("dmentions.admin");
-        for(String perm : plugin.afterLoadPermissions) {
+        for(String perm : LOADED_PERMISSIONS) {
             Permission permission = Bukkit.getPluginManager().getPermission(perm);
             if(permission != null) {
                 Bukkit.getPluginManager().removePermission(permission);
@@ -64,6 +67,15 @@ public class PermissionManager {
                 adminPermission.recalculatePermissibles();
             }
         }
-        plugin.afterLoadPermissions.clear();
+        LOADED_PERMISSIONS.clear();
+    }
+
+    /**
+     * Get a copy of {@link #LOADED_PERMISSIONS}.
+     * @return Set of Permission name
+     * @since 1.8.3
+     */
+    public Set<String> getLoadedPermissions() {
+        return new HashSet<>(LOADED_PERMISSIONS);
     }
 }

@@ -6,17 +6,21 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
-import org.nandayo.dapi.HexUtil;
-import org.nandayo.dapi.Util;
+import org.nandayo.dapi.util.Util;
 import org.nandayo.dmentions.DMentions;
+import org.nandayo.dmentions.service.message.Message;
+import org.nandayo.dmentions.util.DUtil;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("CallToPrintStackTrace")
 @Getter
 public class Config {
+    private static final SimpleDateFormat backupDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 
     private FileConfiguration config;
     private FileConfiguration unsavedConfig;
@@ -36,7 +40,9 @@ public class Config {
      * Update configuration file.
      */
     public Config updateConfig() {
-        if(compareVersions()) return this;
+        String version = plugin.getDescription().getVersion();
+        String configVersion = config.getString("config_version", "0");
+        if(version.equals(configVersion)) return this;
 
         FileConfiguration defConfig = getSourceConfiguration();
         if(defConfig == null) return this;
@@ -62,6 +68,13 @@ public class Config {
 
         handleSpecialCases(defConfig);
 
+        // Adapter for 1.8.2 to 1.8.3
+        int oldVersion = parseVersion(configVersion);
+        // oldVersion may be 0 if it's the first time loading.
+        if(oldVersion != 0 && oldVersion < 10803 && parseVersion(version) >= 10803) {
+            ADAPTER_1_8_3.update(config, defConfig);
+        }
+
         defConfig.set("config_version", plugin.getDescription().getVersion());
         config = defConfig;
         resetUnsavedConfig();
@@ -86,6 +99,23 @@ public class Config {
     }
 
     /**
+     * Parse a version to an Integer.<br>
+     * <p>
+     *     Example: 1.8.3 -> 10803
+     * </p>
+     * @param version Version
+     * @return Integer
+     * @since 1.8.3
+     */
+    private int parseVersion(@NotNull String version) {
+        String[] parts = version.split("\\.");
+        int major = DUtil.parseInt(parts[0],0);
+        int minor = parts.length > 1 ? DUtil.parseInt(parts[1],0) : 0;
+        int patch = parts.length > 2 ? DUtil.parseInt(parts[2],0) : 0;
+        return major * 10000 + minor * 100 + patch;
+    }
+
+    /**
      * Get the default configuration from source of plugin.
      * @return FileConfiguration
      */
@@ -107,7 +137,7 @@ public class Config {
             //noinspection ResultOfMethodCallIgnored
             backupDir.mkdirs();
         }
-        String date = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+        String date = backupDateFormat.format(new Date());
         File backupFile = new File(backupDir, "config_" + date + ".yml");
         try {
             config.save(backupFile);
@@ -162,7 +192,7 @@ public class Config {
     public void resetUnsavedConfig(CommandSender sender) {
         unsavedConfig = YamlConfiguration.loadConfiguration(new StringReader(config.saveToString()));
         if(sender != null) {
-            sender.sendMessage(HexUtil.color(plugin.getLanguageManager().getString("command.config.reset_changes")));
+            Message.COMMAND_CONFIG_RESET_CHANGES.sendMessage(sender);
         }
     }
 
@@ -176,7 +206,7 @@ public class Config {
     public void saveUnsavedConfig(CommandSender sender) {
         config = YamlConfiguration.loadConfiguration(new StringReader(unsavedConfig.saveToString()));
         if(sender != null) {
-            sender.sendMessage(HexUtil.color(plugin.getLanguageManager().getString("command.config.save_changes")));
+            Message.COMMAND_CONFIG_SAVE_CHANGES.sendMessage(sender);
             Util.log("&eUpdated config keys in-game by player " + sender.getName() + ".");
         }
         try {
@@ -209,5 +239,65 @@ public class Config {
     public String getValueDisplayMessage(@NotNull String message, @NotNull String configPath) {
         return message.replace("{value}", config.getString(configPath,""))
                 .replace("{unsaved_value}", unsavedConfig.getString(configPath,""));
+    }
+
+
+
+
+
+    /**
+     * @since 1.8.3
+     */
+    static private class ADAPTER_1_8_3 {
+
+        /**
+         * Adapt old config file keys and values to new one.
+         * @param oldConfig Updated configuration file upon old one.
+         * @param defConfig Default latest configuration of the plugin
+         * @since 1.8.3
+         */
+        static private void update(@NotNull FileConfiguration oldConfig, @NotNull FileConfiguration defConfig) {
+
+            // #1(update hex patterns)
+            for(Map.Entry<String, Object> entry : defConfig.getValues(true).entrySet()) {
+                String key = entry.getKey();
+                if (defConfig.isConfigurationSection(key)) {
+                    continue; // Skip parent keys
+                }
+                Object value = entry.getValue();
+                if(value instanceof String) {
+                    String str = (String) value;
+                    defConfig.set(key, replaceHexPatterns(str));
+                }else if(value instanceof List<?>) {
+                    List<?> list = (List<?>) value;
+                    List<Object> updated = new ArrayList<>();
+                    for(Object o : list) {
+                        if(o instanceof String) {
+                            String str = (String) o;
+                            updated.add(replaceHexPatterns(str));
+                        }else {
+                            updated.add(o);
+                        }
+                    }
+                    defConfig.set(key, updated);
+                }
+            }
+        }
+
+        private static final Pattern OLD_HEX_PATTERN = Pattern.compile("<(#[0-9A-Fa-f]{6})>");
+
+        private static String replaceHexPatterns(final String input) {
+            if(input == null || input.isEmpty()) return "";
+            String output = input;
+
+            Matcher matcher = OLD_HEX_PATTERN.matcher(input);
+            while(matcher.find()) {
+                String original = matcher.group(); // -> <#RRGGBB>
+                String hex = matcher.group(1); // -> #RRGGBB
+
+                output = output.replace(original, "&" + hex); // -> &#RRGGBB
+            }
+            return output;
+        }
     }
 }

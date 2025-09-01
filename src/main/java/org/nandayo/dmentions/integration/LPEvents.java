@@ -1,6 +1,5 @@
 package org.nandayo.dmentions.integration;
 
-import net.luckperms.api.LuckPerms;
 import net.luckperms.api.event.EventBus;
 import net.luckperms.api.event.node.NodeAddEvent;
 import net.luckperms.api.event.node.NodeClearEvent;
@@ -14,15 +13,15 @@ import org.nandayo.dmentions.DMentions;
 public class LPEvents {
 
     private final DMentions plugin;
-    private final LuckPerms api;
+    private final LuckPermsHook luckPermsHook;
 
-    public LPEvents(DMentions plugin, LuckPerms api) {
+    public LPEvents(DMentions plugin, LuckPermsHook luckPermsHook) {
         this.plugin = plugin;
-        this.api = api;
+        this.luckPermsHook = luckPermsHook;
     }
 
     public void register() {
-        EventBus eventBus = api.getEventBus();
+        EventBus eventBus = luckPermsHook.getAPI().getEventBus();
         eventBus.subscribe(plugin, NodeAddEvent.class, this::onAdd);
         eventBus.subscribe(plugin, NodeRemoveEvent.class, this::onRemove);
         eventBus.subscribe(plugin, NodeClearEvent.class, this::onClear);
@@ -35,10 +34,8 @@ public class LPEvents {
         Bukkit.getScheduler().runTask(plugin, () -> {
             if(event.getNode() instanceof InheritanceNode) {
                 Player player = Bukkit.getPlayer(user.getUniqueId());
-                if(player == null) {
-                    return;
-                }
-                LP.updatePlayerGroupCache(player);
+                if(player == null) return;
+                luckPermsHook.updatePlayerGroupCache(player);
             }
         });
     }
@@ -53,7 +50,7 @@ public class LPEvents {
                 if(player == null) {
                     return;
                 }
-                LP.updatePlayerGroupCache(player);
+                luckPermsHook.updatePlayerGroupCache(player);
             }
         });
     }
@@ -67,7 +64,7 @@ public class LPEvents {
             if(player == null) {
                 return;
             }
-            LP.updatePlayerGroupCache(player);
+            luckPermsHook.updatePlayerGroupCache(player);
         });
     }
 }

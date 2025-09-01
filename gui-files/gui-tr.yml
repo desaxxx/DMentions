@@ -1,0 +1,316 @@
+# (!) v1.8.3 itibariyle hex formatı &#RRGGBB destekleniyor.
+# (!) v1.8.3 itibariyle gradient renk formatı <&#RRGGBB>içerik</&#RRGGBB> destekleniyor.
+menu:
+  general_button:
+    display_name: "&3Genel Ayarlar"
+    lore:
+      viewing:
+        - "&eBu ayarı görüntülüyorsun."
+      not_viewing:
+        - "&eGörüntülemek için tıkla!"
+  mention_button:
+    display_name: "&3Etiket Ayarları"
+    lore:
+      viewing:
+        - "&eBu ayarı görüntülüyorsun."
+      not_viewing:
+        - "&eGörüntülemek için tıkla!"
+      go_back:
+        - "&eGeri dönmek için tıkla!"
+  reset_changes:
+    display_name: "&cDeğişiklikleri Sıfırla"
+    lore:
+      - "&eUygulamak için tıkla!"
+  save_changes:
+    display_name: "&aDeğişiklikleri Kaydet"
+    lore:
+      - "&eUygulamak için tıkla!"
+  back:
+    display_name: "&eGeri"
+    lore:
+      - ""
+  general_settings_menu:
+    title: "&8Genel Ayarlar"
+    language:
+      display_name: "&3Dil"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eBaşka bir dil seçmek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eBaşka bir dil seçmek için tıkla!"
+    check_for_updates:
+      display_name: "&3Güncellemeleri Kontrol Et"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Güncelleme Bildirimini Düzenle"
+    prefix:
+      display_name: "&3Önek"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Öneki Düzenle"
+    mention_limit:
+      display_name: "&3Etiket Limiti"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Etiket Limitini Düzenle"
+    vanish_respect:
+      display_name: "&3Görünmezlere Saygı"
+      lore:
+        unchanged:
+          - "&7Essentials ile görünmez olmuş"
+          - "&7oyuncuları etiketlemeyi engeller."
+          - ""
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&7Essentials ile görünmez olmuş"
+          - "&7oyuncuları etiketlemeyi engeller."
+          - ""
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Görünmezlere Saygıyı Düzenle"
+    afk_respect:
+      display_name: "&3AFK Oyunculara Saygı"
+      lore:
+        unchanged:
+          - "&7Essentials ile AFK olmuş"
+          - "&7oyuncuları etiketlemeyi engeller."
+          - ""
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&7Essentials ile AFK olmuş"
+          - "&7oyuncuları etiketlemeyi engeller."
+          - ""
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "AFK Oyunculara Saygıyı Düzenle"
+    ignore_respect:
+      display_name: "&3Engelleyenlere Saygı"
+      lore:
+        unchanged:
+          - "&7Essentials ile göndericiyi engellemiş"
+          - "&7oyuncuların etiketlemesini engeller."
+          - ""
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&7Essentials ile göndericiyi engellemiş"
+          - "&7oyuncuların etiketlemesini engeller."
+          - ""
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Engelleyenlere Saygıyı Düzenle"
+    suffix_colors:
+      display_name: "&3Sonek Renkleri"
+      lore:
+        - "&eRenkleri düzenlemek için tıkla!"
+    disabled_worlds:
+      display_name: "&3Engelli Dünyalar"
+      lore:
+        - "&eDüzenlemek için tıkla!"
+
+  mention_settings_menu:
+    title: "&8Etiket Ayarları"
+    player_mentions:
+      display_name: "&3Oyuncu Etiketleri"
+      lore:
+        - "&eDüzenlemek için tıkla!"
+    everyone_mentions:
+      display_name: "&3Herkes Etiketleri"
+      lore:
+        - "&eDüzenlemek için tıkla!"
+    nearby_mentions:
+      display_name: "&3Yakındakiler Etiketleri"
+      lore:
+        - "&eDüzenlemek için tıkla!"
+    group_mentions:
+      display_name: "&3Grup Etiketleri"
+      lore:
+        - "&eDüzenlemek için tıkla!"
+
+  mention_type_settings_menu:
+    title:
+      # If it is a group setting
+      group: "&8Etiket Ayarları ({mentionType}={group})"
+      # Other mention type settings
+      other: "&8Etiket Ayarları ({mentionType})"
+    enabled:
+      display_name:
+        group: "&3Etkinleştirme (Tüm Gruplar)"
+        other: "&3Etkinleştirme"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Etkinleştirmeyi Düzenle"
+    permission:
+      display_name:
+        group: "&3Yetki (Tüm Gruplar)"
+        other: "&3Yetki"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Yetkiyi Düzenle"
+    sound:
+      display_name: "&3Ses"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Sesi Düzenle"
+    # Except player mention setting
+    keyword:
+      display_name:
+        group: "&3Anahtar Kelime (Tüm Gruplar)"
+        other: "&3Anahtar Kelime"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Anahtar Kelimeyi Düzenle"
+    display:
+      display_name: "&3Görüntü"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Görüntüyü Düzenle"
+    cooldown:
+      display_name: "&3Bekleme Süresi (saniye)"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Bekleme Süresini Düzenle"
+    # Only player mention setting
+    customized_display:
+      display_name: "&3Özelleştirilmiş Görüntü"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Özelleştirilmiş Görüntüyü Düzenle"
+    # Only group mention setting
+    add_delete_group:
+      display_name: "&3Grup Ekle | Sil"
+      lore:
+        - "&eGrup seçmek için sol tıkla!"
+        - "&cBu grubu listeden çıkarmak için sağ tıkla!"
+    # Only group mention setting
+    disabled_groups:
+      display_name: "&3Engelli Gruplar"
+      lore:
+        - "&eDüzenlemek için tıkla!"
+    # Only nearby mention setting
+    radius:
+      display_name: "&3Yarıçap"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value}"
+          - "&eDüzenlemek için tıkla!"
+        changed:
+          - "&eDeğer: &7{value} &a⇒ &f{unsaved_value}"
+          - "&eDüzenlemek için tıkla!"
+      edit_title: "Yarıçapı Düzenle"
+
+  language_menu:
+    title: "&8Dil Seçimi"
+    language:
+      display_name: "&3{language}"
+      lore:
+        - "&eSeçmek için tıkla!"
+
+  suffix_menu:
+    title: "&8Renk Yönetimi"
+    existent_group:
+      display_name: "&3{group}"
+      lore:
+        unchanged:
+          - "&eDeğer: &f{value} color"
+          - "&eDüzenlemek için sol tıkla!"
+          - "&eListeden çıkarmak için sağ tıkla!"
+        changed:
+          - "&eDeğer: &7{value} color &a⇒ &f{unsaved_value} color"
+          - "&eDüzenlemek için sol tıkla!"
+          - "&eListeden çıkarmak için sağ tıkla!"
+      edit_title: "Sonek Rengini Düzenle"
+    nonexistent_group:
+      display_name: "&3{group}"
+      lore:
+        - "&eEklemek için tıkla!"
+
+  disabled_worlds_menu:
+    title: "&8Engelli Dünyalar"
+    disabled_world:
+      display_name: "&3{world}"
+      lore:
+        - "&eEngelli dünyalardan çıkarmak için tıkla!"
+    non-disabled_world:
+      display_name: "&3{world}"
+      lore:
+        - "&eEngelli dünyalara eklemek için tıkla!"
+
+  disabled_groups_menu:
+    title: "&8Engelli Gruplar"
+    disabled_group:
+      display_name: "&3{group}"
+      lore:
+        - "&eEngelli gruplardan çıkarmak için tıkla!"
+    non-disabled_group:
+      display_name: "&3{group}"
+      lore:
+        - "&eEngelli gruplara eklemek için tıkla!"
+
+  choose_group_menu:
+    title: "&8Yönlendiriliyor | Grup Seç"
+    group:
+      display_name: "&3{group}"
+      lore:
+        - "&eDüzenlemek için tıkla!"
+
+  add_group_menu:
+    title: "&8Yönlendiriliyor | Grup Ekle"
+    not_added_group:
+      display_name: "&3{group}"
+      lore:
+        - "&eEklemek için tıkla!"

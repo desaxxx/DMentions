@@ -2,86 +2,51 @@ package org.nandayo.dmentions.integration;
 
 import lombok.Getter;
 import net.luckperms.api.LuckPerms;
-import net.luckperms.api.model.group.Group;
-import net.luckperms.api.model.user.User;
-import net.luckperms.api.node.NodeType;
-import net.luckperms.api.node.types.InheritanceNode;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.RegisteredServiceProvider;
+import org.nandayo.dmentions.DMentions;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
+@Deprecated(since = "1.8.3", forRemoval = true)
 public class LP {
 
     @Getter
-    private static LuckPerms api = null;
+    @Deprecated(since = "1.8.3", forRemoval = true)
+    private static final LuckPerms api = null;
 
+    @Deprecated(since = "1.8.3", forRemoval = true)
     private static final Map<UUID, String> playerGroupCache = new HashMap<>();
 
-    public LP() {
-        RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-        if (provider != null) {
-            api = provider.getProvider();
-        }
-    }
+    @Deprecated(since = "1.8.3", forRemoval = true)
+    public LP() {}
 
+    @Deprecated(since = "1.8.3", forRemoval = true)
     public static boolean isConnected() {
-        return api != null;
+        return !DMentions.inst().getLuckPermsHook().isMaskNull();
     }
 
-    //GET GROUPS
+    @Deprecated(since = "1.8.3", forRemoval = true)
     public static List<String> getGroups() {
-        if(api == null) return new ArrayList<>();
-        return api.getGroupManager().getLoadedGroups().stream()
-                .map(Group::getName)
-                .collect(Collectors.toList());
+        return DMentions.inst().getLuckPermsHook().getGroups();
     }
 
-    //GET ONLINE GROUP MEMBERS
+    @Deprecated(since = "1.8.3", forRemoval = true)
     public static Player[] getOnlinePlayersInGroup(String groupName) {
-        if (api == null || groupName == null || groupName.isEmpty()) return new Player[0];
-        return Bukkit.getOnlinePlayers().stream()
-                .filter(player -> {
-                    User user = api.getUserManager().getUser(player.getUniqueId());
-                    if (user == null) return false;
-
-                    return getGroup(player).equals(groupName);
-                })
-                .toArray(Player[]::new);
+        return DMentions.inst().getLuckPermsHook().getOnlinePlayersInGroup(groupName);
     }
 
-    //GET PLAYER PRIMARY GROUP
+    @Deprecated(since = "1.8.3", forRemoval = true)
     public static String getGroup(Player player) {
-        String group = playerGroupCache.get(player.getUniqueId());
-        if(group == null) {
-            updatePlayerGroupCache(player);
-            group = playerGroupCache.get(player.getUniqueId());
-        }
-        return group;
+        return DMentions.inst().getLuckPermsHook().getGroup(player);
     }
 
-    /*
-     * CACHING THE PLAYER GROUP WITH UTMOST WEIGHT
-     */
+    @Deprecated(since = "1.8.3", forRemoval = true)
     public static void updatePlayerGroupCache(Player player) {
-        String group = getHighestPriorityGroup(player);
-        playerGroupCache.put(player.getUniqueId(), group);
+        DMentions.inst().getLuckPermsHook().updatePlayerGroupCache(player);
     }
 
+    @Deprecated(since = "1.8.3", forRemoval = true)
     private static String getHighestPriorityGroup(Player player) {
-        if (api == null) return "";
-
-        User user = api.getUserManager().getUser(player.getUniqueId());
-        if (user == null) return "";
-
-        return user.getNodes(NodeType.INHERITANCE).stream()
-                .map(InheritanceNode::getGroupName)
-                .map(groupName -> api.getGroupManager().getGroup(groupName))
-                .filter(group -> group != null && group.getWeight().isPresent())
-                .max(Comparator.comparingInt(group -> group.getWeight().orElse(0)))
-                .map(Group::getName)
-                .orElse(user.getPrimaryGroup());
+        return null;
     }
 }

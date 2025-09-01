@@ -6,37 +6,38 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.nandayo.dmentions.integration.EssentialsHook;
+import org.jetbrains.annotations.NotNull;
+import org.nandayo.dmentions.model.SoundProperty;
+import org.nandayo.dmentions.provider.VanishProvider;
 import org.nandayo.dmentions.service.Config;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.service.LanguageManager;
-import org.nandayo.dmentions.service.MessageManager;
+import org.nandayo.dmentions.service.message.Message;
+import org.nandayo.dmentions.util.DUtil;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class PluginEvents implements Listener {
+    static public final PluginEvents INSTANCE = new PluginEvents();
+
+    private PluginEvents() {}
 
     @EventHandler
     public void onPlayerMention(MentionPlayerEvent e) {
         Player sender = e.getSender();
         Player target = e.getTarget();
         Config config = DMentions.inst().getConfiguration();
-        LanguageManager LANGUAGE_MANAGER = DMentions.inst().getLanguageManager();
 
-        String soundName = config.getConfig().getString("player.sound", "");
+        SoundProperty soundProperty = SoundProperty.deserialize(config.getConfig().getString("player.sound", ""));
 
-        String targetBar = LANGUAGE_MANAGER.getString("player.action_bar.target_message")
-                .replace("{p}", sender.getName());
-        String targetTitle = LANGUAGE_MANAGER.getString("player.title.target_message")
-                .replace("{p}", sender.getName());
+        Message targetMessage = Message.PLAYER_TARGET_MESSAGE
+                .replaceValue("{sender}", sender.getName())
+                .replaceValue("{target}", target.getName());
+        Message senderMessage = Message.PLAYER_SENDER_MESSAGE
+                .replaceValue("{target}", target.getName())
+                .replaceValue("{sender}", sender.getName());
 
-        String senderBar = LANGUAGE_MANAGER.getString("player.action_bar.sender_message")
-                .replace("{p}", target.getName());
-        String senderTitle = LANGUAGE_MANAGER.getString("player.title.sender_message")
-                .replace("{p}", target.getName());
-
-        mention(sender, new Player[]{target}, soundName, targetBar, targetTitle, senderBar, senderTitle);
+        mention(sender, new Player[]{target}, soundProperty, targetMessage, senderMessage);
     }
 
     @EventHandler
@@ -44,19 +45,13 @@ public class PluginEvents implements Listener {
         Player sender = e.getSender();
         Player[] targets = e.getTargets();
         Config config = DMentions.inst().getConfiguration();
-        LanguageManager LANGUAGE_MANAGER = DMentions.inst().getLanguageManager();
 
-        String soundName = config.getConfig().getString("nearby.sound", "");
+        SoundProperty soundProperty = SoundProperty.deserialize(config.getConfig().getString("nearby.sound", ""));
 
-        String targetBar = LANGUAGE_MANAGER.getString("nearby.action_bar.target_message")
-                .replace("{p}", sender.getName());
-        String targetTitle = LANGUAGE_MANAGER.getString("nearby.title.target_message")
-                .replace("{p}", sender.getName());
+        Message targetMessage = Message.NEARBY_TARGET_MESSAGE.replaceValue("{sender}", sender.getName());
+        Message senderMessage = Message.NEARBY_SENDER_MESSAGE.replaceValue("{sender}", sender.getName());
 
-        String senderBar = LANGUAGE_MANAGER.getString("nearby.action_bar.sender_message");
-        String senderTitle = LANGUAGE_MANAGER.getString("nearby.title.sender_message");
-
-        mention(sender, targets, soundName, targetBar, targetTitle, senderBar, senderTitle);
+        mention(sender, targets, soundProperty, targetMessage, senderMessage);
     }
 
     @EventHandler
@@ -64,19 +59,13 @@ public class PluginEvents implements Listener {
         Player sender = e.getSender();
         Player[] targets = e.getTargets();
         Config config = DMentions.inst().getConfiguration();
-        LanguageManager LANGUAGE_MANAGER = DMentions.inst().getLanguageManager();
 
-        String soundName = config.getConfig().getString("everyone.sound", "");
+        SoundProperty soundProperty = SoundProperty.deserialize(config.getConfig().getString("everyone.sound", ""));
 
-        String targetBar = LANGUAGE_MANAGER.getString("everyone.action_bar.target_message")
-                .replace("{p}", sender.getName());
-        String targetTitle = LANGUAGE_MANAGER.getString("everyone.title.target_message")
-                .replace("{p}", sender.getName());
+        Message targetMessage = Message.EVERYONE_TARGET_MESSAGE.replaceValue("{sender}", sender.getName());
+        Message senderMessage = Message.EVERYONE_SENDER_MESSAGE.replaceValue("{sender}", sender.getName());
 
-        String senderBar = LANGUAGE_MANAGER.getString("everyone.action_bar.sender_message");
-        String senderTitle = LANGUAGE_MANAGER.getString("everyone.title.sender_message");
-
-        mention(sender, targets, soundName, targetBar, targetTitle, senderBar, senderTitle);
+        mention(sender, targets, soundProperty, targetMessage, senderMessage);
     }
 
     @EventHandler
@@ -85,46 +74,36 @@ public class PluginEvents implements Listener {
         String group = e.getGroup();
         Player[] targets = e.getTargets();
 
-        LanguageManager LANGUAGE_MANAGER = DMentions.inst().getLanguageManager();
-
         //GROUP CONFIG SECTION
-        ConfigurationSection configSection = DMentions.inst().getConfigGroupSection(group);
-        ConfigurationSection languageSection = DMentions.inst().getLanguageGroupSection(group);
-        if(configSection == null || languageSection == null) return;
+        String groupLanguageKey = DUtil.getGroupLanguageKey(group);
+        ConfigurationSection configSection = DUtil.getGroupConfigSection(group);
+        if(configSection == null) return;
 
-        String soundName = configSection.getString("sound", "");
+        SoundProperty soundProperty = SoundProperty.deserialize(configSection.getString("sound", ""));
 
-        String targetBar = LANGUAGE_MANAGER.getString(languageSection,"action_bar.target_message")
-                .replace("{p}", sender.getName())
-                .replace("{group}", group);
-        String targetTitle = LANGUAGE_MANAGER.getString(languageSection,"title.target_message")
-                .replace("{p}", sender.getName())
-                .replace("{group}", group);
+        Message targetMessage = Message.GROUP_X_TARGET_MESSAGE
+                .replaceKey("{x}", groupLanguageKey)
+                .replaceValue("{sender}", sender.getName())
+                .replaceValue("{group}", group);
+        Message senderMessage = Message.GROUP_X_SENDER_MESSAGE
+                .replaceKey("{x}", groupLanguageKey)
+                .replaceValue("{sender}", sender.getName())
+                .replaceValue("{group}", group);
 
-        String senderBar = LANGUAGE_MANAGER.getString(languageSection,"action_bar.sender_message")
-                .replace("{group}", group);
-        String senderTitle = LANGUAGE_MANAGER.getString(languageSection,"title.sender_message")
-                .replace("{group}", group);
-
-        mention(sender, targets, soundName, targetBar, targetTitle, senderBar, senderTitle);
+        mention(sender, targets, soundProperty, targetMessage, senderMessage);
     }
 
     /*
      * General mention method
      */
-    private void mention(Player sender, Player[] targets, String soundName, String targetBar, String targetTitle, String senderBar, String senderTitle) {
+    private void mention(@NotNull Player sender, @NotNull Player[] targets, @NotNull SoundProperty soundProperty,
+                         @NotNull Message targetMessage, @NotNull Message senderMessage) {
         DMentions plugin = DMentions.inst();
-        Sound sound;
-        if(soundName != null && !soundName.isEmpty()) {
-            sound = plugin.getWrapper().getSound(soundName);
-        } else {
-            sound = null;
-        }
+        Sound sound = plugin.getWrapper().getSound(soundProperty.getKey());
 
         //SENDER
-        MessageManager.sendActionBar(sender, senderBar);
-        MessageManager.sendTitle(sender, senderTitle);
-        if(sound != null) plugin.getWrapper().playSound(sender, sound);
+        senderMessage.sendMessage(sender);
+        if(sound != null) plugin.getWrapper().playSound(sender, sound, soundProperty.getVolume(), soundProperty.getPitch());
 
         //TARGET
         new BukkitRunnable() {
@@ -144,14 +123,13 @@ public class PluginEvents implements Listener {
                     }
                     Player target = targetList.get(counter++);
 
-                    boolean isIgnored = ignoreRespect && EssentialsHook.isIgnored(sender, target);
-                    boolean isAFK = afkRespect && EssentialsHook.isAFK(target);
-                    boolean isVanished = vanishRespect && EssentialsHook.isVanished(target);
-                    if(target == null || target.equals(sender) || plugin.isRestricted(sender, target) || isIgnored || isAFK || isVanished) continue;
+                    boolean isIgnored = ignoreRespect && plugin.getEssentialsHook().isIgnored(sender, target);
+                    boolean isAFK = afkRespect && plugin.getEssentialsHook().isAFK(target);
+                    boolean isVanished = vanishRespect && VanishProvider.get().isVanished(target);
+                    if(target == null || target.equals(sender) || DUtil.isRestricted(sender, target) || isIgnored || isAFK || isVanished) continue;
 
-                    if(sound != null) plugin.getWrapper().playSound(target, sound);
-                    MessageManager.sendActionBar(target, targetBar);
-                    MessageManager.sendTitle(target, targetTitle);
+                    if(sound != null) plugin.getWrapper().playSound(target, sound, soundProperty.getVolume(), soundProperty.getPitch());
+                    targetMessage.sendMessage(target);
                 }
             }
         }.runTaskTimer(plugin, 0, 10L);

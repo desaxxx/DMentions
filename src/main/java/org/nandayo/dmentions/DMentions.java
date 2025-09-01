@@ -19,39 +19,58 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.nandayo.dapi.DAPI;
-import org.nandayo.dapi.Util;
 import org.nandayo.dapi.object.DEnchantment;
 import org.nandayo.dapi.object.DMaterial;
+import org.nandayo.dapi.service.YAMLRegistry;
+import org.nandayo.dapi.util.Util;
+import org.nandayo.dmentions.command.MainCommand;
 import org.nandayo.dmentions.integration.EssentialsHook;
+import org.nandayo.dmentions.integration.LuckPermsHook;
+import org.nandayo.dmentions.integration.StaffPPHook;
+import org.nandayo.dmentions.provider.VanishProvider;
 import org.nandayo.dmentions.service.UserManager;
-import org.nandayo.dmentions.integration.LP;
 import org.nandayo.dmentions.integration.LPEvents;
 import org.nandayo.dmentions.service.MentionManager;
 import org.nandayo.dmentions.enumeration.MentionType;
 import org.nandayo.dmentions.event.PluginEvents;
 import org.nandayo.dmentions.service.*;
+import org.nandayo.dmentions.service.message.Message;
+import org.nandayo.dmentions.service.registry.GUIRegistry;
+import org.nandayo.dmentions.util.DUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Getter
 public final class DMentions extends JavaPlugin implements Listener {
 
+    private Wrapper wrapper;
+    private Config configuration;
+    private MentionManager mentionManager;
+    private UserManager userManager;
+    private CooldownManager cooldownManager;
+    private LanguageManager languageManager;
+    private GUIRegistry guiRegistry;
+    private PermissionManager permissionManager = null;
+    @Setter
+    private Player guiConfigEditor = null;
+    private EssentialsHook essentialsHook;
+    private LuckPermsHook luckPermsHook;
+    private StaffPPHook staffPPHook;
+
+    private VanishProvider vanishProvider;
+
     private static DMentions plugin;
     public static DMentions inst() {
         return plugin;
     }
-
-    //AFTER LOAD PERMISSIONS
-    public final List<String> afterLoadPermissions = new ArrayList<>();
 
     @Override
     public void onEnable() {
         plugin = this;
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(this, this);
-        pm.registerEvents(new PluginEvents(), this);
+        pm.registerEvents(PluginEvents.INSTANCE, this);
 
         Objects.requireNonNull(getCommand("dmentions")).setExecutor(new MainCommand());
 
@@ -61,17 +80,9 @@ public final class DMentions extends JavaPlugin implements Listener {
 
         updateVariables();
 
-        //UPDATE CHECK
-        if(configuration.getConfig().getBoolean("check_for_updates", true)) {
-            //SPIGOT RESOURCE ID
-            new UpdateChecker(this, 121452).getVersion(version -> {
-                if (this.getDescription().getVersion().equals(version)) {
-                    Util.log("&aPlugin is up-to-date.");
-                } else {
-                    Util.log("&fThere is a new version update. (&e" + version + "&f)");
-                }
-            });
-        }
+        setupProviders();
+
+        UpdateChecker.INSTANCE.check(this);
 
         //bStats
         new Metrics(this, 24381);
@@ -83,35 +94,27 @@ public final class DMentions extends JavaPlugin implements Listener {
     }
 
     private void setupDAPI() {
-        DAPI dapi = new DAPI(plugin);
-        dapi.registerMenuListener();
+        DAPI.registerMenuListener();
         Util.PREFIX = "&7[&eDMentions&7]&r ";
     }
 
-    @SuppressWarnings("InstantiationOfUtilityClass")
     private void setupIntegrations() {
-        if(Bukkit.getPluginManager().getPlugin("LuckPerms") != null) {
-            new LP();
-            new LPEvents(this, LP.getApi()).register();
+        luckPermsHook = new LuckPermsHook(this);
+        if(!luckPermsHook.isMaskNull()) {
+            new LPEvents(plugin, luckPermsHook).register();
             Util.log("&aLuckPerms integration has been enabled. Make sure you are using v5.1 or newer.");
         }
-        if(Bukkit.getPluginManager().getPlugin("Essentials") != null) {
-            new EssentialsHook();
+        essentialsHook = new EssentialsHook(this);
+        if(!essentialsHook.isMaskNull()) {
             Bukkit.getPluginManager().registerEvents(new EssentialsHook.EssentialsListener(this), this);
-            Util.log("&aEssentialX integration has been enabled. Make sure you are using v2.19.2 or newer.");
+            Util.log("&aEssentialsX integration has been enabled. Make sure you are using v2.19.2 or newer.");
+        }
+        staffPPHook = new StaffPPHook(this);
+        if(!staffPPHook.isMaskNull()) {
+            Bukkit.getPluginManager().registerEvents(new StaffPPHook.StaffPlusPlusListener(this), this);
+            Util.log("&aStaff++ integration has been enabled.");
         }
     }
-
-    //MANAGERS
-    private Wrapper wrapper;
-    private Config configuration;
-    private MentionManager mentionManager;
-    private UserManager userManager;
-    private CooldownManager cooldownManager;
-    private LanguageManager languageManager;
-    private PermissionManager permissionManager = null;
-    @Setter
-    private Player guiConfigEditor = null;
 
     public void updateVariables() {
         //MANAGERS
@@ -124,7 +127,11 @@ public final class DMentions extends JavaPlugin implements Listener {
         userManager = new UserManager(this);
         cooldownManager = new CooldownManager(this);
         cooldownManager.updateConfigCooldowns();
+
         languageManager = new LanguageManager(this, configuration.getConfig().getString("lang_file","en-US"));
+        guiRegistry = new GUIRegistry(this).updateConfiguration();
+        YAMLRegistry.loadRegistries();
+        Message.init(languageManager);
 
         //PERMISSION
         if(permissionManager == null) {
@@ -133,6 +140,23 @@ public final class DMentions extends JavaPlugin implements Listener {
             permissionManager.setupPermissions();
         }
     }
+
+    private void setupProviders() {
+        String vanishProvider = configuration.getConfig().getString("vanish_provider", "auto");
+        boolean isAuto = vanishProvider.equals("auto");
+        if(!staffPPHook.isMaskNull() && (isAuto || vanishProvider.equalsIgnoreCase("staff++"))) {
+            this.vanishProvider = staffPPHook;
+            Util.log("&aUsing Staff++ as VanishProvider.");
+        }
+        else if(!essentialsHook.isMaskNull() && (isAuto || vanishProvider.equalsIgnoreCase("essentials"))) {
+            this.vanishProvider = essentialsHook;
+            Util.log("&aUsing EssentialsX as VanishProvider.");
+        }
+        else {
+            this.vanishProvider = player -> false;
+        }
+    }
+
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
@@ -144,15 +168,17 @@ public final class DMentions extends JavaPlugin implements Listener {
         cooldownManager.removeCooldown(MentionType.PLAYER, event.getPlayer().getName());
     }
 
-    @EventHandler (priority = EventPriority.HIGH)
+    @EventHandler (priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onChat(AsyncPlayerChatEvent e) {
         Player sender = e.getPlayer();
         String message = e.getMessage();
-        if(e.isCancelled()) return;
 
         List<String> disabledWorlds = configuration.getConfig().getStringList("disabled_worlds");
-        if(disabledWorlds.contains(sender.getWorld().getName())) {
-            MessageManager.sendSortedMessage(sender, languageManager.getString("disabled_world_warn"));
+        String worldName = sender.getWorld().getName();
+        if(disabledWorlds.contains(worldName)) {
+            Message.DISABLED_WORLD_WARN
+                    .replaceValue("{world}", worldName)
+                    .sendMessage(sender);
             return;
         }
         String mentionedString = mentionManager.getMentionedString(this, sender, message);
@@ -160,90 +186,79 @@ public final class DMentions extends JavaPlugin implements Listener {
     }
 
     /**
-     * Get cross-version material
-     *
-     * @param dMaterial DMaterial
-     * @param def Default DMaterial
-     * @return Material
+     * @deprecated in favor of {@link DUtil#getMaterial(DMaterial, DMaterial)}.
      */
+    @Deprecated(since = "1.8.3", forRemoval = true)
     public Material getMaterial(@NotNull DMaterial dMaterial, @NotNull DMaterial def) {
-        Material mat = dMaterial.parseMaterial();
-        if (mat != null) return mat;
-        else return def.parseMaterial();
+        return DUtil.getMaterial(dMaterial, def);
     }
 
     /**
-     * Get cross-version enchantment
-     * @param dEnchantment DEnchantment
-     * @param def Default DEnchantment
-     * @return Enchantment
+     * @deprecated in favor of {@link DUtil#getEnchantment(DEnchantment, DEnchantment)}.
      */
+    @Deprecated(since = "1.8.3", forRemoval = true)
     public Enchantment getEnchantment(@NotNull DEnchantment dEnchantment, @NotNull DEnchantment def) {
-        Enchantment mat = dEnchantment.get();
-        if (mat != null) return mat;
-        else return def.get();
-    }
-
-    //CHECK RESTRICTED PERMISSIONS
-    public boolean isRestricted(@NotNull Player sender, @NotNull Player target) {
-        if(target.hasPermission("dmentions.mention.restricted")) {
-            return !sender.hasPermission("dmentions.mention.restricted.bypass");
-        }
-        return false;
-    }
-
-    //CONFIG GROUP SECTION
-    public ConfigurationSection getConfigGroupSection(@NotNull String groupName) {
-        if(groupName.isEmpty()) return null;
-        if(configuration.getConfig().getStringList("group.disabled_groups").contains(groupName)) return null;
-        return configuration.getConfig().getConfigurationSection("group.list." + getGroupConfigTitle(groupName));
-    }
-
-    //LANG GROUP SECTION
-    public ConfigurationSection getLanguageGroupSection(@NotNull String groupName) {
-        return languageManager.getSection("group." + getGroupConfigTitle(groupName));
+        return DUtil.getEnchantment(dEnchantment, def);
     }
 
     /**
-     * Get group's config title within "group.list"
-     * @param groupName Group name
-     * @return Group name if found, or __OTHER__
+     * @deprecated in favor of {@link DUtil#isRestricted(Player, Player)}.
      */
+    @Deprecated(since = "1.8.3", forRemoval = true)
+    public boolean isRestricted(@NotNull Player sender, @NotNull Player target) {
+        return DUtil.isRestricted(sender, target);
+    }
+
+    /**
+     * @deprecated in favor of {@link DUtil#getGroupConfigSection(String)}.
+     */
+    @Deprecated(since = "1.8.3", forRemoval = true)
+    @Nullable
+    public ConfigurationSection getConfigGroupSection(String groupName) {
+        return DUtil.getGroupConfigSection(groupName);
+    }
+
+    /**
+     * @deprecated in favor of {@link DUtil#getGroupLanguageSection(String)}.
+     */
+    @Deprecated(since = "1.8.3", forRemoval = true)
+    @Nullable
+    public ConfigurationSection getLanguageGroupSection(String groupName) {
+        return DUtil.getGroupLanguageSection(groupName);
+    }
+
+    /**
+     * @deprecated in favor of {@link DUtil#getGroupConfigKey(String)}.
+     */
+    @Deprecated(since = "1.8.3", forRemoval = true)
     @NotNull
     public String getGroupConfigTitle(@Nullable String groupName) {
-        if(groupName == null) return "__OTHER__";
-        ConfigurationSection section = configuration.getConfig().getConfigurationSection("group.list");
-        if(section == null || !section.contains(groupName)) return "__OTHER__";
-        return groupName;
+        return DUtil.getGroupConfigKey(groupName);
     }
 
-    //GET PERMISSION
+    /**
+     * @deprecated redundant
+     */
+    @Deprecated(since = "1.8.3", forRemoval = true)
+    @NotNull
     public String getPermission(String str) {
-        return (str == null || str.isEmpty()) ? "" : str;
+        return str == null ? "" : str;
     }
 
-    //FORMATTED TIME
+    /**
+     * @deprecated in favor of {@link DUtil#formattedTime(long)}.
+     */
+    @Deprecated(since = "1.8.3", forRemoval = true)
+    @NotNull
     public String formattedTime(long millisecond) {
-        long seconds = millisecond / 1000;
-        long minutes = seconds / 60;
-        long hours = minutes / 60;
-        long days = hours / 24;
-
-        seconds %= 60;
-        minutes %= 60;
-        hours %= 24;
-
-        if (days > 0) return String.format("%d d, %d h", days, hours);
-        if (hours > 0) return String.format("%d h, %d m", hours, minutes);
-        if (minutes > 0) return String.format("%d m, %d s", minutes, seconds);
-        return String.format("%d s", seconds);
+        return DUtil.formattedTime(millisecond);
     }
 
-    public int parseInt(@NotNull String str) {
-        try {
-            return Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
+    /**
+     * @deprecated in favor of {@link DUtil#parseInt(String, int)}
+     */
+    @Deprecated(since = "1.8.3", forRemoval = true)
+    public int parseInt(String str) {
+        return DUtil.parseInt(str,0);
     }
 }

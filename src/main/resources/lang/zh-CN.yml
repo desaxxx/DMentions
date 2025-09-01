@@ -1,55 +1,56 @@
-# (!) 消息文本支持使用 hex 彩色. 用法: <#RRGGBB>
-#
-# 你可以在消息文本中使用 '||' 使其显示标题与副标题. (仅对 TITLE 类消息有效)
-# 可用类型: CHAT, ACTION_BAR, TITLE.
-# Examples:
-#   "ACTION_BAR=&cThat's no good."
-#   "TITLE=<#4bbdbc>Mention||&fYou have been mentioned by a player."
-#   "CHAT={PREFIX} &7This is a prefixed message which you configured at config.yml"
+# (!) 可用类型: CHAT, ACTION_BAR, TITLE.
+#     Usage: "CHANNEL_TYPE=Any message"
+#     Examples:
+#       - "ACTION_BAR=&cThat's no good."
+#       - "TITLE=&#4bbdbcMention||&fYou have been mentioned by a player."
+#       - "CHAT={PREFIX} &7This is a prefixed message which you configured at config.yml"
+#     你可以在消息文本中使用 '||' 使其显示标题与副标题. (仅对 TITLE 类消息有效)
+# (!) Supports hex color support &#RRGGBB since v1.8.3.
+# (!) Supports gradient colors <&#RRGGBB>content</&#RRGGBB> since v1.8.3.
 #
 cooldown_warn: "ACTION_BAR=&c你需要等待 {REMAINED} 才可再次提及他人."
 mention_restricted_warn: "ACTION_BAR={PREFIX} &c你没有权限提及该玩家."
 disabled_world_warn: "ACTION_BAR={PREFIX} &c你不能在该世界提及其他人."
+afk_warn: "ACTION_BAR={PREFIX} &cYou can't mention an AFK player."
+ignore_warn: "ACTION_BAR={PREFIX} &cYou can't mention a player that ignores you."
+vanish_notify:
+  true: "CHAT={PREFIX} &cYou won't be mentioned now."
+  false: "CHAT={PREFIX} &aYou will be mentioned now."
 #
 player:
-  action_bar:
-    sender_message: "{PREFIX} <#f4e4c0>你提及了玩家 &e{p}<#f4e4c0>."
-    target_message: "{PREFIX} <#f4e4c0>玩家 <#ddf7a6>{p}<#f4e4c0> 在聊天栏中提到了你."
-  title:
-    sender_message: ""
-    target_message: ""
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0你提及了玩家 &e{p}&#f4e4c0."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0玩家 &#ddf7a6{p}&#f4e4c0 在聊天栏中提到了你."
+    - "TITLE="
 #
 nearby:
-  action_bar:
-    sender_message: "{PREFIX} <#f4e4c0>你提及了邻近的玩家."
-    target_message: "{PREFIX} <#f4e4c0>玩家 <#ddf7a6>{p}<#f4e4c0> 提到了附近的玩家."
-  title:
-    sender_message: ""
-    target_message: "{PREFIX}||<#f4e4c0>你在聊天栏中被他人提到."
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0你提及了邻近的玩家."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0玩家 &#ddf7a6{p}&#f4e4c0 提到了附近的玩家."
+    - "TITLE={PREFIX}||&#f4e4c0你在聊天栏中被他人提到."
 #
 everyone:
-  action_bar:
-    sender_message: "{PREFIX} <#f4e4c0>你提及了所有人."
-    target_message: "{PREFIX} <#f4e4c0>玩家 <#ddf7a6>{p}<#f4e4c0> 提及了所有人."
-  title:
-    sender_message: ""
-    target_message: "{PREFIX}||<#f4e4c0>你在聊天栏中被他人提到."
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0你提及了所有人."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0玩家 &#ddf7a6{p}&#f4e4c0 提及了所有人."
+    - "TITLE={PREFIX}||&#f4e4c0你在聊天栏中被他人提到."
 #
 group:
   default:
-    action_bar:
-      sender_message: "{PREFIX} <#f4e4c0>你提到了 <#ddf7a6>{group}<#f4e4c0> 位玩家."
-      target_message: "{PREFIX} <#f4e4c0>玩家 <#ddf7a6>{p}<#f4e4c0> 提到了你的组成员."
-    title:
-      sender_message: ""
-      target_message: "{PREFIX}||<#f4e4c0>你在聊天栏中被他人提到."
+    sender_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0你提到了 &#ddf7a6{group}&#f4e4c0 位玩家."
+    target_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0玩家 &#ddf7a6{p}&#f4e4c0 提到了你的组成员."
+      - "TITLE={PREFIX}||&#f4e4c0你在聊天栏中被他人提到."
   __OTHER__:
-    action_bar:
-      sender_message: "{PREFIX} <#f4e4c0>你提到了 <#ddf7a6>{group}<#f4e4c0> 位玩家."
-      target_message: "{PREFIX} <#f4e4c0>玩家 <#ddf7a6>{p}<#f4e4c0> 提到了你的组成员."
-    title:
-      sender_message: ""
-      target_message: "{PREFIX}||<#f4e4c0>你在聊天栏中被他人提到."
+    sender_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0你提到了 &#ddf7a6{group}&#f4e4c0 位玩家."
+    target_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0玩家 &#ddf7a6{p}&#f4e4c0 提到了你的组成员."
+      - "TITLE={PREFIX}||&#f4e4c0你在聊天栏中被他人提到."
 
 # Commands
 command:
@@ -81,4 +82,5 @@ command:
     invalid_display: "&c无效显示. 它必须为有效的 Minecraft 昵称表达式."
     success: "&a你将你的提及显示从 &c{old_value}&a 改为了 &e{value}&a."
 #
+
 lang_version: '{version}' #请勿修改.

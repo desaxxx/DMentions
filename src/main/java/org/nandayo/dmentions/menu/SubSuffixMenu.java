@@ -7,11 +7,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.nandayo.dapi.guimanager.Button;
-import org.nandayo.dapi.ItemCreator;
+import org.nandayo.dapi.util.ItemCreator;
 import org.nandayo.dapi.guimanager.MenuType;
+import org.nandayo.dapi.guimanager.button.Button;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.integration.LP;
+import org.nandayo.dmentions.integration.LuckPermsHook;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,15 +19,17 @@ import java.util.Set;
 
 public class SubSuffixMenu extends BaseMenu {
 
+    private final LuckPermsHook luckPermsHook;
     public SubSuffixMenu(@NotNull DMentions plugin, @NotNull Player player) {
         super(plugin, player);
+        this.luckPermsHook = plugin.getLuckPermsHook();
         open();
     }
 
     @Override
-    void open() {
-        ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.suffix_menu");
-        createInventory(MenuType.CHEST_6_ROWS, LANGUAGE_MANAGER.getString(menuSection, "title"));
+    protected void open() {
+        ConfigurationSection menuSection = guiRegistry.getSection("menu.suffix_menu");
+        createInventory(MenuType.CHEST_6_ROWS, guiRegistry.getString(menuSection, "title"));
 
         /*
          * List groups that are within uConfigManager
@@ -51,12 +53,12 @@ public class SubSuffixMenu extends BaseMenu {
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.GREEN_BANNER)
-                                .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name")
+                                .name(guiRegistry.getString(menuSection, langPathName + ".display_name")
                                         .replace("{group}", suffixGroup)
                                 )
                                 .lore(() -> {
                                     List<String> lore = new ArrayList<>();
-                                    for(String line : LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore." + changed)) {
+                                    for(String line : guiRegistry.getStringList(menuSection, langPathName + ".lore." + changed)) {
                                         lore.add(config.getValueDisplayMessage(line, configPath));
                                     }
                                     return lore;
@@ -67,7 +69,7 @@ public class SubSuffixMenu extends BaseMenu {
                     @Override
                     public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
                         if(clickType == ClickType.LEFT) {
-                            new AnvilManager(plugin, player, configPath, LANGUAGE_MANAGER.getString(menuSection, langPathName + ".edit_title"),
+                            new AnvilManager(plugin, player, configPath, guiRegistry.getString(menuSection, langPathName + ".edit_title"),
                                     ((text) -> {
                                         config.getUnsavedConfig().set(configPath, text);
                                         new SubSuffixMenu(plugin, player);
@@ -85,8 +87,8 @@ public class SubSuffixMenu extends BaseMenu {
          * List groups that are not within uConfigManager
          */
         i = i - (i % 9) + 9;
-        if(LP.isConnected() && section != null) {
-            for(String group : LP.getGroups()) {
+        if(!luckPermsHook.isMaskNull() && section != null) {
+            for(String group : luckPermsHook.getGroups()) {
                 if(section.contains(group)) continue;
                 int slot = i++;
 
@@ -101,10 +103,10 @@ public class SubSuffixMenu extends BaseMenu {
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.BLACK_BANNER)
-                                .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name")
+                                .name(guiRegistry.getString(menuSection, langPathName + ".display_name")
                                         .replace("{group}", group)
                                 )
-                                .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
+                                .lore(guiRegistry.getStringList(menuSection, langPathName + ".lore"))
                                 .get();
                     }
 
@@ -129,8 +131,8 @@ public class SubSuffixMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
-                        .name(LANGUAGE_MANAGER.getString("menu.back.display_name"))
-                        .lore(LANGUAGE_MANAGER.getStringList("menu.back.lore"))
+                        .name(guiRegistry.getString("menu.back.display_name"))
+                        .lore(guiRegistry.getStringList("menu.back.lore"))
                         .get();
             }
 
@@ -140,10 +142,6 @@ public class SubSuffixMenu extends BaseMenu {
             }
         });
 
-        /*
-         * Close
-         */
-        runOnClose(inv -> plugin.setGuiConfigEditor(null));
 
         displayTo(player);
         plugin.setGuiConfigEditor(player);

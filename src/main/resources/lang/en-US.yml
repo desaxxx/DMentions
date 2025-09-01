@@ -1,60 +1,56 @@
-# (!) Includes hex color support for messages. Usage: <#RRGGBB>
+# (!) Three types of text channels are supported: CHAT, ACTION_BAR, TITLE.
+#     Usage: "CHANNEL_TYPE=Any message"
+#     Examples:
+#       - "ACTION_BAR=&cThat's no good."
+#       - "TITLE=&#4bbdbcMention||&fYou have been mentioned by a player."
+#       - "CHAT={PREFIX} &7This is a prefixed message which you configured at config.yml"
+#     For the TITLE case, use || as a delimiter to separate the main title from the subtitle.
+# (!) Supports hex color support &#RRGGBB since v1.8.3.
+# (!) Supports gradient colors <&#RRGGBB>content</&#RRGGBB> since v1.8.3.
 #
-# You can use '||' in message to separate title and subtitle. (Only TITLE messages)
-# Available message types: CHAT, ACTION_BAR, TITLE.
-# Examples:
-#   "ACTION_BAR=&cThat's no good."
-#   "TITLE=<#4bbdbc>Mention||&fYou have been mentioned by a player."
-#   "CHAT={PREFIX} &7This is a prefixed message which you configured at config.yml"
-#
-cooldown_warn: "ACTION_BAR=&cYou should wait {REMAINED} before mentioning."
+cooldown_warn: "ACTION_BAR=&cYou must wait {remained} before mentioning."
 mention_restricted_warn: "ACTION_BAR={PREFIX} &cYou don't have permission to mention that player."
 disabled_world_warn: "ACTION_BAR={PREFIX} &cYou can't mention a player in this world."
 afk_warn: "ACTION_BAR={PREFIX} &cYou can't mention an AFK player."
 ignore_warn: "ACTION_BAR={PREFIX} &cYou can't mention a player that ignores you."
 vanish_notify:
-  true: "CHAT={PREFIX} &cYou can't be mentioned now."
-  false: "CHAT={PREFIX} &aYou can be mentioned now."
+  true: "CHAT={PREFIX} &cYou won't be mentioned now."
+  false: "CHAT={PREFIX} &aYou will be mentioned now."
 #
 player:
-  action_bar:
-    sender_message: "{PREFIX} <#f4e4c0>You mentioned player &e{p}<#f4e4c0>."
-    target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned you in chat."
-  title:
-    sender_message: ""
-    target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0You mentioned player &e{target}&#f4e4c0."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0Player &#ddf7a6{sender}&#f4e4c0 mentioned you in chat."
+    - "TITLE={PREFIX}||&#f4e4c0You have been mentioned in chat."
 #
 nearby:
-  action_bar:
-    sender_message: "{PREFIX} <#f4e4c0>You mentioned nearby players."
-    target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned nearby players."
-  title:
-    sender_message: ""
-    target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0You mentioned nearby players."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0Player &#ddf7a6{sender}&#f4e4c0 mentioned nearby players."
+    - "TITLE={PREFIX}||&#f4e4c0You have been mentioned in chat."
 #
 everyone:
-  action_bar:
-    sender_message: "{PREFIX} <#f4e4c0>You mentioned everyone."
-    target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned everyone."
-  title:
-    sender_message: ""
-    target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0You mentioned everyone."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0Player &#ddf7a6{sender}&#f4e4c0 mentioned everyone."
+    - "TITLE={PREFIX}||&#f4e4c0You have been mentioned in chat."
 #
 group:
   default:
-    action_bar:
-      sender_message: "{PREFIX} <#f4e4c0>You mentioned <#ddf7a6>{group}<#f4e4c0> members."
-      target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned your group members."
-    title:
-      sender_message: ""
-      target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
+    sender_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0You mentioned &#ddf7a6{group}&#f4e4c0 members."
+    target_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0Player &#ddf7a6{sender}&#f4e4c0 mentioned your group members."
+      - "TITLE={PREFIX}||&#f4e4c0You have been mentioned in chat."
   __OTHER__:
-    action_bar:
-      sender_message: "{PREFIX} <#f4e4c0>You mentioned <#ddf7a6>{group}<#f4e4c0> members."
-      target_message: "{PREFIX} <#f4e4c0>Player <#ddf7a6>{p}<#f4e4c0> mentioned your group members."
-    title:
-      sender_message: ""
-      target_message: "{PREFIX}||<#f4e4c0>You have been mentioned in chat."
+    sender_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0You mentioned &#ddf7a6{group}&#f4e4c0 members."
+    target_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0Player &#ddf7a6{sender}&#f4e4c0 mentioned your group members."
+      - "TITLE={PREFIX}||&#f4e4c0You have been mentioned in chat."
 
 # Commands
 command:
@@ -71,10 +67,10 @@ command:
   user:
     unknown: "&cUnknown argument."
     mentions:
-      success: "&eMention mode of &f{p}&e set to {value}."
+      success: "&eMention mode of &f{target}&e set to {value}."
     display:
       invalid_display: "&cInvalid display. It must match a Minecraft nickname expression."
-      success: "&eMention display of &f{p}&e set to {value}."
+      success: "&eMention display of &f{target}&e set to {value}."
   help:
     description: "&6Here is the command list:"
     list: "&7{commands}"
@@ -85,322 +81,6 @@ command:
   customize:
     invalid_display: "&cInvalid display. It must match a Minecraft nickname expression."
     success: "&aYou changed your mention display from &c{old_value}&a to &e{value}&a."
-
-# Menus
-menu:
-  general_button:
-    display_name: "&3General Settings"
-    lore:
-      viewing:
-        - "&eYou are viewing this setting."
-      not_viewing:
-        - "&eClick to view!"
-  mention_button:
-    display_name: "&3Mention Settings"
-    lore:
-      viewing:
-        - "&eYou are viewing this setting."
-      not_viewing:
-        - "&eClick to view!"
-      go_back:
-        - "&eClick to go back!"
-  reset_changes:
-    display_name: "&cReset changes"
-    lore:
-      - "&eClick to apply!"
-  save_changes:
-    display_name: "&aSave Changes"
-    lore:
-      - "&eClick to apply!"
-  back:
-    display_name: "&eBack"
-    lore:
-      - ""
-  general_settings_menu:
-    title: "&8General Settings"
-    language:
-      display_name: "&3Language"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to choose another language!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to choose another language!"
-    check_for_updates:
-      display_name: "&3Check for Updates"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Update Notification"
-    prefix:
-      display_name: "&3Prefix"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Prefix"
-    mention_limit:
-      display_name: "&3Mention Limit"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Mention Limit"
-    vanish_respect:
-      display_name: "&3Vanish Respect"
-      lore:
-        unchanged:
-          - "&7Prevents mentioning players who"
-          - "&7are vanished using Essentials."
-          - ""
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&7Prevents mentioning players who"
-          - "&7are vanished using Essentials."
-          - ""
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Vanish Respect"
-    afk_respect:
-      display_name: "&3AFK Respect"
-      lore:
-        unchanged:
-          - "&7Prevents mentioning players who"
-          - "&7are AFK using Essentials."
-          - ""
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&7Prevents mentioning players who"
-          - "&7are AFK using Essentials."
-          - ""
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit AFK Respect"
-    ignore_respect:
-      display_name: "&3Ignore Respect"
-      lore:
-        unchanged:
-          - "&7Prevents mentioning players who"
-          - "&7have ignored the sender using Essentials."
-          - ""
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&7Prevents mentioning players who"
-          - "&7have ignored the sender using Essentials."
-          - ""
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Ignore Respect"
-    suffix_colors:
-      display_name: "&3Suffix Colors"
-      lore:
-        - "&eClick to edit colors!"
-    disabled_worlds:
-      display_name: "&3Disabled Worlds"
-      lore:
-        - "&eClick to edit!"
-
-  mention_settings_menu:
-    title: "&8Mention Settings"
-    player_mentions:
-      display_name: "&3Player Mentions"
-      lore:
-        - "&eClick to edit!"
-    everyone_mentions:
-      display_name: "&3Everyone Mentions"
-      lore:
-        - "&eClick to edit!"
-    nearby_mentions:
-      display_name: "&3Nearby Mentions"
-      lore:
-        - "&eClick to edit!"
-    group_mentions:
-      display_name: "&3Group Mentions"
-      lore:
-        - "&eClick to edit!"
-
-  mention_type_settings_menu:
-    title:
-      # If it is a group setting
-      group: "&8Mention Settings ({mentionType}={group})"
-      # Other mention type settings
-      other: "&8Mention Settings ({mentionType})"
-    enabled:
-      display_name:
-        group: "&3Enabled (All Groups)"
-        other: "&3Enabled"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Enabled State"
-    permission:
-      display_name:
-        group: "&3Permission (All Groups)"
-        other: "&3Permission"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Permission"
-    sound:
-      display_name: "&3Sound"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Sound"
-    # Except player mention setting
-    keyword:
-      display_name:
-        group: "&3Keyword (All Groups)"
-        other: "&3Keyword"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Keyword"
-    display:
-      display_name: "&3Display"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Display"
-    cooldown:
-      display_name: "&3Cooldown (seconds)"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Cooldown"
-    # Only player mention setting
-    customized_display:
-      display_name: "&3Customized Display"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Customized Display"
-    # Only group mention setting
-    add_delete_group:
-      display_name: "&3Add | Delete Group"
-      lore:
-        - "&eLeft click to choose group!"
-        - "&cRight click to remove this group from the list!"
-    # Only group mention setting
-    disabled_groups:
-      display_name: "&3Disabled Groups"
-      lore:
-        - "&eClick to edit!"
-    # Only nearby mention setting
-    radius:
-      display_name: "&3Radius"
-      lore:
-        unchanged:
-          - "&eValue: &f{value}"
-          - "&eClick to edit!"
-        changed:
-          - "&eValue: &7{value} &a⇒ &f{unsaved_value}"
-          - "&eClick to edit!"
-      edit_title: "Edit Radius"
-
-  language_menu:
-    title: "&8Language Chooser"
-    language:
-      display_name: "&3{language}"
-      lore:
-        - "&eClick to choose!"
-
-  suffix_menu:
-    title: "&8Color Manager"
-    existent_group:
-      display_name: "&3{group}"
-      lore:
-        unchanged:
-          - "&eValue: &f{value} color"
-          - "&eLeft click to edit!"
-          - "&eRight click to remove from list!"
-        changed:
-          - "&eValue: &7{value} color &a⇒ &f{unsaved_value} color"
-          - "&eLeft click to edit!"
-          - "&eRight click to remove from list!"
-      edit_title: "Edit Suffix Color"
-    nonexistent_group:
-      display_name: "&3{group}"
-      lore:
-        - "&eClick to add!"
-
-  disabled_worlds_menu:
-    title: "&8Disabled Worlds"
-    disabled_world:
-      display_name: "&3{world}"
-      lore:
-        - "&eClick to remove from disabled worlds!"
-    non-disabled_world:
-      display_name: "&3{world}"
-      lore:
-        - "&eClick to add to disabled worlds!"
-
-  disabled_groups_menu:
-    title: "&8Disabled Groups"
-    disabled_group:
-      display_name: "&3{group}"
-      lore:
-        - "&eClick to remove from disabled groups!"
-    non-disabled_group:
-      display_name: "&3{group}"
-      lore:
-        - "&eClick to add to disabled groups!"
-
-  choose_group_menu:
-    title: "&8Redirecting | Choose Group"
-    group:
-      display_name: "&3{group}"
-      lore:
-        - "&eClick to edit!"
-
-  add_group_menu:
-    title: "&8Redirecting | Add Group"
-    not_added_group:
-      display_name: "&3{group}"
-      lore:
-        - "&eClick to add!"
-
 #
+
 lang_version: "{version}" #DO NOT CHANGE.

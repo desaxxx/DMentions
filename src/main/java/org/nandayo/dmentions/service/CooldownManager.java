@@ -8,6 +8,8 @@ import org.jetbrains.annotations.Nullable;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.enumeration.MentionType;
 import org.nandayo.dmentions.model.Cooldown;
+import org.nandayo.dmentions.service.message.Message;
+import org.nandayo.dmentions.util.DUtil;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -95,7 +97,7 @@ public class CooldownManager {
             case EVERYONE:
                 return CONFIG_COOLDOWN_MS.getOrDefault(mentionType.name().toLowerCase(Locale.ENGLISH), 0L);
             case GROUP:
-                return CONFIG_COOLDOWN_MS.get("group_" + plugin.getGroupConfigTitle(name));
+                return CONFIG_COOLDOWN_MS.get("group_" + DUtil.getGroupConfigKey(name));
         }
         return 0L;
     }
@@ -107,9 +109,8 @@ public class CooldownManager {
      */
     public void cooldownWarn(@NotNull Player sender, long remaining) {
         if(remaining <= 0) return;
-        LanguageManager LANGUAGE_MANAGER = plugin.getLanguageManager();
-        String msg = LANGUAGE_MANAGER.getString("cooldown_warn")
-                .replace("{REMAINED}", plugin.formattedTime(remaining));
-        MessageManager.sendSortedMessage(sender, msg);
+        Message.COOLDOWN_WARN
+                .replaceValue("{remained}", DUtil.formattedTime(remaining))
+                .sendMessage(sender);
     }
 }

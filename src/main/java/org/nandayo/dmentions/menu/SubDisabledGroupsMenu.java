@@ -7,26 +7,28 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.nandayo.dapi.guimanager.Button;
-import org.nandayo.dapi.ItemCreator;
+import org.nandayo.dapi.util.ItemCreator;
 import org.nandayo.dapi.guimanager.MenuType;
+import org.nandayo.dapi.guimanager.button.Button;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.integration.LP;
+import org.nandayo.dmentions.integration.LuckPermsHook;
 
 import java.util.List;
 import java.util.Set;
 
 public class SubDisabledGroupsMenu extends BaseMenu {
 
+    private final LuckPermsHook luckPermsHook;
     public SubDisabledGroupsMenu(DMentions plugin, @NotNull Player player) {
         super(plugin, player);
+        this.luckPermsHook = plugin.getLuckPermsHook();
         open();
     }
 
     @Override
-    void open() {
-        ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.disabled_groups_menu");
-        createInventory(MenuType.CHEST_6_ROWS, LANGUAGE_MANAGER.getString(menuSection, "title"));
+    protected void open() {
+        ConfigurationSection menuSection = guiRegistry.getSection("menu.disabled_groups_menu");
+        createInventory(MenuType.CHEST_6_ROWS, guiRegistry.getString(menuSection, "title"));
 
         int i = 0;
         /*
@@ -45,10 +47,10 @@ public class SubDisabledGroupsMenu extends BaseMenu {
                 @Override
                 public ItemStack getItem() {
                     return ItemCreator.of(Material.RED_BANNER)
-                            .name(LANGUAGE_MANAGER.getString(menuSection, "disabled_group.display_name")
+                            .name(guiRegistry.getString(menuSection, "disabled_group.display_name")
                                     .replace("{group}", group)
                             )
-                            .lore(LANGUAGE_MANAGER.getStringList(menuSection, "disabled_group.lore"))
+                            .lore(guiRegistry.getStringList(menuSection, "disabled_group.lore"))
                             .get();
                 }
 
@@ -64,9 +66,9 @@ public class SubDisabledGroupsMenu extends BaseMenu {
         /*
          * List groups that are not disabled.
          */
-        i = i - (i % 9) + 9;
-        if(LP.isConnected()) {
-            for(String group : LP.getGroups()) {
+        if(!luckPermsHook.isMaskNull()) {
+            i = i - (i % 9) + 9;
+            for(String group : luckPermsHook.getGroups()) {
                 if(disabledList.contains(group)) continue;
                 int slot = i++;
 
@@ -81,10 +83,10 @@ public class SubDisabledGroupsMenu extends BaseMenu {
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.GREEN_BANNER)
-                                .name(LANGUAGE_MANAGER.getString(menuSection, langPathName + ".display_name")
+                                .name(guiRegistry.getString(menuSection, langPathName + ".display_name")
                                         .replace("{group}", group)
                                 )
-                                .lore(LANGUAGE_MANAGER.getStringList(menuSection, langPathName + ".lore"))
+                                .lore(guiRegistry.getStringList(menuSection, langPathName + ".lore"))
                                 .get();
                     }
 
@@ -110,8 +112,8 @@ public class SubDisabledGroupsMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
-                        .name(LANGUAGE_MANAGER.getString("menu.back.display_name"))
-                        .lore(LANGUAGE_MANAGER.getStringList("menu.back.lore"))
+                        .name(guiRegistry.getString("menu.back.display_name"))
+                        .lore(guiRegistry.getStringList("menu.back.lore"))
                         .get();
             }
 
@@ -121,10 +123,6 @@ public class SubDisabledGroupsMenu extends BaseMenu {
             }
         });
 
-        /*
-         * Close
-         */
-        runOnClose(inv -> plugin.setGuiConfigEditor(null));
 
         displayTo(player);
         plugin.setGuiConfigEditor(player);

@@ -1,18 +1,20 @@
 package org.nandayo.dmentions.service;
 
-import lombok.Getter;
+import com.google.common.collect.ImmutableMap;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.nandayo.dapi.HexUtil;
+import org.nandayo.dapi.util.HexUtil;
 import org.nandayo.dmentions.enumeration.MentionType;
 import org.nandayo.dmentions.event.*;
 import org.nandayo.dmentions.integration.EssentialsHook;
 import org.nandayo.dmentions.model.MentionHolder;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.integration.LP;
+import org.nandayo.dmentions.integration.LuckPermsHook;
+import org.nandayo.dmentions.service.message.Message;
+import org.nandayo.dmentions.util.DUtil;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -20,89 +22,100 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MentionManager {
+    /**
+     * Keyword - MentionHolder
+     */
+    static private final Map<String, MentionHolder> MENTION_HOLDERS = new HashMap<>();
+    static private String KEYWORDS_PATTERN = "";
 
-    @Getter
-    private final Set<String> validKeywords = new HashSet<>();
-    private final Map<String, MentionHolder> mentionHolders = new HashMap<>();
 
-    private String keywordPattern = "";
     private final @NotNull DMentions plugin;
     private final @NotNull Config config;
-
     public MentionManager(@NotNull DMentions plugin) {
         this.plugin = plugin;
         this.config = plugin.getConfiguration();
         load();
     }
 
-    public void removePlayer(Player player) {
-        if(!validKeywords.contains(player.getName())) return;
 
-        validKeywords.remove(player.getName());
-        mentionHolders.remove(player.getName());
-        updateKeywordPattern();
+    public void removePlayer(Player player) {
+        if(!MENTION_HOLDERS.containsKey(player.getName())) return;
+        MENTION_HOLDERS.remove(player.getName());
+        updateKeywordsPattern();
     }
     public void addPlayer(Player player) {
-        if(validKeywords.contains(player.getName())) return;
-
-        validKeywords.add(player.getName());
-        String perm = plugin.getPermission(config.getConfig().getString("player.permission", "dmentions.mention.player"));
-        mentionHolders.put(player.getName(), new MentionHolder(MentionType.PLAYER, perm, player.getName()));
-        updateKeywordPattern();
+        if(MENTION_HOLDERS.containsKey(player.getName())) return;
+        String perm = config.getConfig().getString("player.permission", "dmentions.mention.player");
+        MENTION_HOLDERS.put(player.getName(), new MentionHolder(MentionType.PLAYER, perm, player.getName()));
+        updateKeywordsPattern();
     }
 
     public void load() {
-        mentionHolders.clear();
-        validKeywords.clear();
+        MENTION_HOLDERS.clear();
 
         // LOAD PLAYER KEYWORDS
         if (config.getConfig().getBoolean("player.enabled", false)) {
             Bukkit.getOnlinePlayers().forEach(player -> {
                 String keyword = player.getName();
-                String perm = plugin.getPermission(config.getConfig().getString("player.permission", "dmentions.mention.player"));
-                validKeywords.add(keyword);
-                mentionHolders.put(keyword, new MentionHolder(MentionType.PLAYER, perm, keyword));
+                String perm = config.getConfig().getString("player.permission", "dmentions.mention.player");
+                MENTION_HOLDERS.put(keyword, new MentionHolder(MentionType.PLAYER, perm, keyword));
             });
         }
 
         // LOAD NEARBY KEYWORD
         if(config.getConfig().getBoolean("nearby.enabled", false)) {
             String keyword = config.getConfig().getString("nearby.keyword", "@nearby");
-            String perm = plugin.getPermission(config.getConfig().getString("nearby.permission", "dmentions.mention.nearby"));
-            validKeywords.add(keyword);
-            mentionHolders.put(keyword, new MentionHolder(MentionType.NEARBY, perm));
+            String perm = config.getConfig().getString("nearby.permission", "dmentions.mention.nearby");
+            MENTION_HOLDERS.put(keyword, new MentionHolder(MentionType.NEARBY, perm));
         }
 
         // LOAD EVERYONE KEYWORD
         if (config.getConfig().getBoolean("everyone.enabled", false)) {
             String keyword = config.getConfig().getString("everyone.keyword", "@everyone");
-            String perm = plugin.getPermission(config.getConfig().getString("everyone.permission", "dmentions.mention.everyone"));
-            validKeywords.add(keyword);
-            mentionHolders.put(keyword, new MentionHolder(MentionType.EVERYONE, perm));
+            String perm = config.getConfig().getString("everyone.permission", "dmentions.mention.everyone");
+            MENTION_HOLDERS.put(keyword, new MentionHolder(MentionType.EVERYONE, perm));
         }
 
         //LOAD GROUP KEYWORDS
-        if (config.getConfig().getBoolean("group.enabled", false) && LP.isConnected()) {
+        LuckPermsHook luckPermsHook = plugin.getLuckPermsHook();
+        if (config.getConfig().getBoolean("group.enabled", false)) {
             List<String> disabledGroups = config.getConfig().getStringList("group.disabled_groups");
             String keywordTemplate = config.getConfig().getString("group.keyword", "@{group}");
-            LP.getGroups().stream()
+            luckPermsHook.getGroups().stream()
                     .filter(group -> !disabledGroups.contains(group))
                     .forEach(group -> {
                         String keyword = keywordTemplate.replace("{group}", group);
-                        String perm = plugin.getPermission(config.getConfig().getString("group.permission", "dmentions.mention.group.{group}")).replace("{group}", group);
-                        validKeywords.add(keyword);
-                        mentionHolders.put(keyword, new MentionHolder(MentionType.GROUP, perm, group));
+                        String perm = config.getConfig().getString("group.permission", "dmentions.mention.group.{group}").replace("{group}", group);
+                        MENTION_HOLDERS.put(keyword, new MentionHolder(MentionType.GROUP, perm, group));
                     });
         }
 
         //UPDATE PATTERN
-        updateKeywordPattern();
+        updateKeywordsPattern();
     }
 
-    private void updateKeywordPattern() {
-        keywordPattern = validKeywords.stream()
+    private void updateKeywordsPattern() {
+        KEYWORDS_PATTERN = MENTION_HOLDERS.keySet().stream()
                 .map(Pattern::quote)
                 .collect(Collectors.joining("|"));
+    }
+
+    /**
+     * Get immutable map of copy of {@link #MENTION_HOLDERS}.
+     * @return Map of Keyword - MentionHolder
+     * @since 1.8.3
+     */
+    public Map<String, MentionHolder> getMentionHolders() {
+        return ImmutableMap.copyOf(MENTION_HOLDERS);
+    }
+
+    /**
+     * Get instant keyword patterns.
+     * @return Keywords
+     * @since 1.8.3
+     */
+    public String getKeywordsPattern() {
+        return KEYWORDS_PATTERN;
     }
 
     /**
@@ -114,8 +127,9 @@ public class MentionManager {
      */
     public String getMentionedString(@NotNull DMentions plugin, @NotNull Player sender, @NotNull String message) {
         final CooldownManager cooldownManager = plugin.getCooldownManager();
+        final EssentialsHook essHook = plugin.getEssentialsHook();
 
-        Pattern mentionPattern = Pattern.compile(String.format("(?<!\\S)(%s)(?=[\\s\\p{P}]|$)", keywordPattern));
+        Pattern mentionPattern = Pattern.compile(String.format("(?<!\\S)(%s)(?=[\\s\\p{P}]|$)", KEYWORDS_PATTERN));
         Matcher matcher = mentionPattern.matcher(message);
 
         StringBuilder updatedMessage = new StringBuilder();
@@ -129,10 +143,10 @@ public class MentionManager {
                 break;
             }
             String keyword = matcher.group(1);
-            MentionHolder mentionHolder = mentionHolders.get(keyword);
+            MentionHolder mentionHolder = MENTION_HOLDERS.get(keyword);
 
             // MentionHolder and permission check
-            if (mentionHolder == null || !sender.hasPermission(mentionHolder.getPerm())) continue;
+            if (mentionHolder == null || !sender.hasPermission(mentionHolder.getPermission())) continue;
 
             // Cooldown check
             long remainedCooldown = cooldownManager.getRemaining(mentionHolder.getType(), mentionHolder.getTarget());
@@ -149,16 +163,22 @@ public class MentionManager {
                         cooldownManager.cooldownWarn(sender, remainedCooldown);
                         continue;
                     }
-                    if(plugin.isRestricted(sender, target)) {
-                        MessageManager.sendSortedMessage(sender, plugin.getLanguageManager().getString("mention_restricted_warn"));
+                    if(DUtil.isRestricted(sender, target)) {
+                        Message.MENTION_RESTRICTED_WARN
+                                .replaceValue("{target}", target.getName())
+                                .sendMessage(sender);
                         continue;
                     }
-                    if(plugin.getConfiguration().getConfig().getBoolean("ignore_respect", true) && EssentialsHook.isIgnored(sender, target)) {
-                        MessageManager.sendSortedMessage(sender, plugin.getLanguageManager().getString("ignore_warn"));
+                    if(plugin.getConfiguration().getConfig().getBoolean("ignore_respect", true) && essHook.isIgnored(sender, target)) {
+                        Message.IGNORE_WARN
+                                .replaceValue("{target}", target.getName())
+                                .sendMessage(sender);
                         continue;
                     }
-                    if(plugin.getConfiguration().getConfig().getBoolean("afk_respect", false) && EssentialsHook.isAFK(target)) {
-                        MessageManager.sendSortedMessage(sender, plugin.getLanguageManager().getString("afk_warn"));
+                    if(plugin.getConfiguration().getConfig().getBoolean("afk_respect", false) && essHook.isAFK(target)) {
+                        Message.AFK_WARN
+                                .replaceValue("{target}", target.getName())
+                                .sendMessage(sender);
                         continue;
                     }
 
@@ -189,7 +209,7 @@ public class MentionManager {
                 case GROUP:
                     String group = mentionHolder.getTarget();
                     if(group == null) continue;
-                    ConfigurationSection section = plugin.getConfigGroupSection(group);
+                    ConfigurationSection section = DUtil.getGroupConfigSection(group);
                     if(section == null) continue;
                     if(remainedCooldown > 0) {
                         cooldownManager.cooldownWarn(sender, remainedCooldown);
@@ -198,7 +218,7 @@ public class MentionManager {
 
                     //Getting from group section
                     displayText = section.getString("display", "{group}").replace("{group}", group) + suffixColor;
-                    Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getPluginManager().callEvent(new MentionGroupEvent(sender, group, LP.getOnlinePlayersInGroup(group))));
+                    Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getPluginManager().callEvent(new MentionGroupEvent(sender, group, plugin.getLuckPermsHook().getOnlinePlayersInGroup(group))));
                     break;
             }
 
@@ -209,7 +229,7 @@ public class MentionManager {
             updatedMessage.append(message, lastAppendPosition, matcher.start());
             lastAppendPosition = matcher.end();
             // Add matched key
-            updatedMessage.append(HexUtil.color(displayText));
+            updatedMessage.append(HexUtil.colorize(displayText));
         }
 
         // Add the rest of the message to builder
@@ -236,8 +256,9 @@ public class MentionManager {
      * @return Suffix string
      */
     private String getSuffixColor(@NotNull Player sender) {
-        if(LP.isConnected()) {
-            String group = LP.getGroup(sender);
+        LuckPermsHook luckPermsHook = plugin.getLuckPermsHook();
+        if(!luckPermsHook.isMaskNull()) {
+            String group = luckPermsHook.getGroup(sender);
             ConfigurationSection section = config.getConfig().getConfigurationSection("suffix_color.group");
             if(section != null && section.contains(group)) {
                 return section.getString(group,"");

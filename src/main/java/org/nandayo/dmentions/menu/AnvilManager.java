@@ -1,18 +1,24 @@
 package org.nandayo.dmentions.menu;
 
-import net.wesjd.anvilgui.AnvilGUI;
+import com.google.common.collect.Sets;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.nandayo.dapi.guimanager.button.Button;
+import org.nandayo.dapi.guimanager.menu.AnvilMenu;
+import org.nandayo.dapi.util.ItemCreator;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.service.Config;
 
-import java.util.Collections;
+import java.util.Set;
 import java.util.function.Consumer;
 
-public class AnvilManager {
+public class AnvilManager extends AnvilMenu {
 
-    private final DMentions plugin;
     private final Config config;
     private final Player player;
     private final String path;
@@ -20,7 +26,6 @@ public class AnvilManager {
     private final Consumer<String> onFinish;
 
     public AnvilManager(DMentions plugin, Player player, String path, String title, Consumer<String> onFinish) {
-        this.plugin = plugin;
         this.config = plugin.getConfiguration();
         this.player = player;
         this.path = path;
@@ -30,16 +35,46 @@ public class AnvilManager {
         open();
     }
 
-    public void open() {
-        new AnvilGUI.Builder()
-                .plugin(plugin)
-                .itemLeft(new ItemStack(Material.PAPER))
-                .itemOutput(new ItemStack(Material.NAME_TAG))
-                .interactableSlots(AnvilGUI.Slot.OUTPUT)
-                .onClick((slot, stateSnapshot) -> Collections.singletonList(
-                        AnvilGUI.ResponseAction.run(() -> onFinish.accept(stateSnapshot.getText()))))
-                .title(title)
-                .text(config.getUnsavedConfig().getString(path, ""))
-                .open(player);
+    private void open() {
+        createInventory(player, title);
+
+        addButton(new Button() {
+            @Override
+            protected @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(0);
+            }
+
+            @Override
+            public @Nullable ItemStack getItem() {
+                ItemStack item = new ItemStack(Material.PAPER);
+                ItemMeta meta = item.getItemMeta();
+                if(meta != null) {
+                    meta.setDisplayName(config.getUnsavedConfig().getString(path, ""));
+                    item.setItemMeta(meta);
+                }
+                return item;
+            }
+        });
+
+        addButton(new Button() {
+            @Override
+            protected @NotNull Set<Integer> getSlots() {
+                return Sets.newHashSet(2);
+            }
+
+            @Override
+            public @Nullable ItemStack getItem() {
+                return ItemCreator.of(Material.NAME_TAG)
+                        .get();
+            }
+
+            @Override
+            public void onClick(@NotNull Player p, @NotNull ClickType clickType) {
+                String text = getText();
+                onFinish.accept(text == null ? "" : text);
+            }
+        });
+
+        displayTo(player);
     }
 }

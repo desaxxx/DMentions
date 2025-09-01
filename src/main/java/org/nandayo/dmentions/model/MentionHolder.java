@@ -9,14 +9,14 @@ import org.nandayo.dmentions.enumeration.MentionType;
 public class MentionHolder {
 
     /**
-     * As it states
+     * Mention type
      */
     private final @NotNull MentionType type;
 
     /**
-     * Permission to mention
+     * Permission to mention this holder
      */
-    private final @NotNull String perm;
+    private final @NotNull String permission;
 
     /**
      * Case PLAYER -> player name<br>
@@ -25,12 +25,17 @@ public class MentionHolder {
      */
     private final @Nullable String target;
 
-    public MentionHolder(@NotNull MentionType type, @NotNull String perm, @Nullable String target) {
+    public MentionHolder(@NotNull MentionType type, @NotNull String permission, @Nullable String target) {
         this.type = type;
-        this.perm = perm;
+        this.permission = permission;
         this.target = target;
     }
-    public MentionHolder(MentionType type, @NotNull String perm) {
-        this(type, perm, null);
+    public MentionHolder(MentionType type, @NotNull String permission) {
+        this(type, permission, null);
+    }
+
+    @Deprecated(since = "1.8.3")
+    public @NotNull String getPerm() {
+        return permission;
     }
 }

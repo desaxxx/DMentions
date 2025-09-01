@@ -7,9 +7,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.nandayo.dapi.guimanager.Button;
-import org.nandayo.dapi.ItemCreator;
+import org.nandayo.dapi.util.ItemCreator;
 import org.nandayo.dapi.guimanager.MenuType;
+import org.nandayo.dapi.guimanager.button.Button;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.enumeration.MentionType;
 
@@ -23,9 +23,9 @@ public class SubChooseGroupMenu extends BaseMenu {
     }
 
     @Override
-    void open() {
-        ConfigurationSection menuSection = LANGUAGE_MANAGER.getSection("menu.choose_group_menu");
-        createInventory(MenuType.CHEST_6_ROWS, LANGUAGE_MANAGER.getString(menuSection, "title"));
+    protected void open() {
+        ConfigurationSection menuSection = guiRegistry.getSection("menu.choose_group_menu");
+        createInventory(MenuType.CHEST_6_ROWS, guiRegistry.getString(menuSection, "title"));
 
         /*
          * List groups that are within group.list
@@ -45,10 +45,10 @@ public class SubChooseGroupMenu extends BaseMenu {
                     @Override
                     public ItemStack getItem() {
                         return ItemCreator.of(Material.GREEN_BANNER)
-                                .name(LANGUAGE_MANAGER.getString(menuSection, "group.display_name")
+                                .name(guiRegistry.getString(menuSection, "group.display_name")
                                         .replace("{group}", group)
                                 )
-                                .lore(LANGUAGE_MANAGER.getStringList(menuSection, "group.lore"))
+                                .lore(guiRegistry.getStringList(menuSection, "group.lore"))
                                 .get();
                     }
 
@@ -72,8 +72,8 @@ public class SubChooseGroupMenu extends BaseMenu {
             @Override
             public ItemStack getItem() {
                 return ItemCreator.of(Material.ARROW)
-                        .name(LANGUAGE_MANAGER.getString("menu.back.display_name"))
-                        .lore(LANGUAGE_MANAGER.getStringList("menu.back.lore"))
+                        .name(guiRegistry.getString("menu.back.display_name"))
+                        .lore(guiRegistry.getStringList("menu.back.lore"))
                         .get();
             }
 
@@ -83,10 +83,6 @@ public class SubChooseGroupMenu extends BaseMenu {
             }
         });
 
-        /*
-         * Close
-         */
-        this.runOnClose(inv -> plugin.setGuiConfigEditor(null));
 
         this.displayTo(player);
         plugin.setGuiConfigEditor(player);
