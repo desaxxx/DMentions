@@ -1,5 +1,6 @@
 # (!) Supports hex color support &#RRGGBB since v1.8.3.
 # (!) Supports gradient colors <&#RRGGBB>content</&#RRGGBB> since v1.8.3.
+# You can find ready-made gui files at https://github.com/desaxxx/DMentions/tree/main/gui-files
 menu:
   general_button:
     display_name: "&3General Settings"
