@@ -143,12 +143,13 @@ public final class DMentions extends JavaPlugin implements Listener {
 
     private void setupProviders() {
         String vanishProvider = configuration.getConfig().getString("vanish_provider", "auto");
-        boolean isAuto = vanishProvider.equals("auto");
-        if(!staffPPHook.isMaskNull() && (isAuto || vanishProvider.equalsIgnoreCase("staff++"))) {
+        VanishProvider.Type type = VanishProvider.Type.find(vanishProvider);
+        boolean isAuto = type == VanishProvider.Type.AUTO;
+        if(!staffPPHook.isMaskNull() && (isAuto || type == VanishProvider.Type.STAFFPLUSPLUS)) {
             this.vanishProvider = staffPPHook;
             Util.log("&aUsing Staff++ as VanishProvider.");
         }
-        else if(!essentialsHook.isMaskNull() && (isAuto || vanishProvider.equalsIgnoreCase("essentials"))) {
+        else if(!essentialsHook.isMaskNull() && (isAuto || type == VanishProvider.Type.ESSENTIALS)) {
             this.vanishProvider = essentialsHook;
             Util.log("&aUsing EssentialsX as VanishProvider.");
         }

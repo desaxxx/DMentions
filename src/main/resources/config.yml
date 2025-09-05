@@ -21,9 +21,9 @@ check_for_updates: true
 prefix: "&8[&#ffd16dDMentions&8]&r"
 # How many mentions in single message.
 mention_limit: 2
-# Prevents mentioning players who are vanished using Essentials.
+# Prevents mentioning players who are vanished using one of the vanish providers.
 vanish_respect: true
-# Specify vanish provider for your server. Possible cases are auto, essentials or staff++
+# Specify vanish provider for your server. Possible cases are auto, essentials and staff++
 vanish_provider: auto
 # Prevents mentioning players who are marked as AFK via Essentials.
 afk_respect: false
