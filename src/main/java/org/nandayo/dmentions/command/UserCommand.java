@@ -5,8 +5,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.nandayo.dapi.command.SubCommand;
-import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.service.message.Message;
+import org.nandayo.dmentions.user.MentionUser;
+import org.nandayo.dmentions.user.UserManager;
 
 /**
  * @since 1.8.3
@@ -20,11 +21,17 @@ public class UserCommand extends SubCommand {
             Message.COMMAND_PLAYER_NOT_FOUND.sendMessage(sender);
             return true;
         }
+        MentionUser targetUser = UserManager.getInstance().getUser(target.getUniqueId());
+        if(targetUser == null) {
+            Message.COMMAND_USER_NOT_FOUND.sendMessage(sender);
+            return true;
+        }
+
         String var = args[2];
         String value = args[3];
         if(var.equalsIgnoreCase("mentions")) {
             boolean val = Boolean.parseBoolean(value);
-            DMentions.inst().getUserManager().setMentionMode(target, val);
+            targetUser.setMentionMode(val);
             Message.COMMAND_USER_MENTIONS_SUCCESS
                     .replaceValue("{target}", target.getName())
                     .replaceValue("{value}", String.valueOf(val))
@@ -35,7 +42,7 @@ public class UserCommand extends SubCommand {
                 Message.COMMAND_USER_DISPLAY_INVALID_DISPLAY.sendMessage(sender);
                 return true;
             }
-            DMentions.inst().getUserManager().setMentionDisplay(target, value);
+            targetUser.setCustomizedDisplayName(value);
             Message.COMMAND_USER_DISPLAY_SUCCESS
                     .replaceValue("{target}", target.getName())
                     .replaceValue("{value}", value)

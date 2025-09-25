@@ -28,7 +28,10 @@ import org.nandayo.dmentions.integration.EssentialsHook;
 import org.nandayo.dmentions.integration.LuckPermsHook;
 import org.nandayo.dmentions.integration.StaffPPHook;
 import org.nandayo.dmentions.provider.VanishProvider;
-import org.nandayo.dmentions.service.UserManager;
+import org.nandayo.dmentions.user.MentionUser;
+import org.nandayo.dmentions.user.SingleFolderMigrator;
+import org.nandayo.dmentions.user.UserListener;
+import org.nandayo.dmentions.user.UserManager;
 import org.nandayo.dmentions.integration.LPEvents;
 import org.nandayo.dmentions.service.MentionManager;
 import org.nandayo.dmentions.enumeration.MentionType;
@@ -71,6 +74,7 @@ public final class DMentions extends JavaPlugin implements Listener {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(this, this);
         pm.registerEvents(PluginEvents.INSTANCE, this);
+        pm.registerEvents(UserListener.INSTANCE, this);
 
         Objects.requireNonNull(getCommand("dmentions")).setExecutor(new MainCommand());
 
@@ -82,6 +86,9 @@ public final class DMentions extends JavaPlugin implements Listener {
 
         setupProviders();
 
+        SingleFolderMigrator.migrate();
+        loadOnlinePlayers();
+
         UpdateChecker.INSTANCE.check(this);
 
         //bStats
@@ -90,7 +97,7 @@ public final class DMentions extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        userManager.saveChanges();
+        userManager.saveAllToFile();
     }
 
     private void setupDAPI() {
@@ -122,9 +129,9 @@ public final class DMentions extends JavaPlugin implements Listener {
         configuration = new Config(this).updateConfig();
         mentionManager = new MentionManager(this);
         if(userManager != null) {
-            userManager.saveChanges();
+            userManager.saveAllToFile();
         }
-        userManager = new UserManager(this);
+        userManager = new UserManager();
         cooldownManager = new CooldownManager(this);
         cooldownManager.updateConfigCooldowns();
 
@@ -155,6 +162,14 @@ public final class DMentions extends JavaPlugin implements Listener {
         }
         else {
             this.vanishProvider = player -> false;
+        }
+    }
+
+    private void loadOnlinePlayers() {
+        UserManager manager = UserManager.getInstance();
+        for(Player player : Bukkit.getOnlinePlayers()) {
+            MentionUser user = manager.loadUser(player.getUniqueId());
+            manager.register(user);
         }
     }
 

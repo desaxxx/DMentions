@@ -1,0 +1,8 @@
+"==":
+  uuid: xxxxx
+  mention_mode: true
+  customized_display_name: "animeboi"
+  module_data:
+    statistics:
+      mentioned: 10
+      mentionedBy: 4

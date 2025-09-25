@@ -56,6 +56,7 @@ group:
 command:
   must_be_player: "&cBu komudu kullanmak için oyuncu olmalısın!"
   player_not_found: "&cOyuncu bulunamadı."
+  user_not_found: "&cKullanıcı bulunamadı."
   unknown: "&cBilinmeyen komut."
   toggle:
     no_longer_mentioned: "&eArtık etiketlenmeyeceksin."

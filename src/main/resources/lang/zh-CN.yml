@@ -56,6 +56,7 @@ group:
 command:
   must_be_player: "&c你必须是玩家才可使用此命令!"
   player_not_found: "&c玩家不存在."
+  user_not_found: "&cUser not found."
   unknown: "&c未知命令."
   toggle:
     no_longer_mentioned: "&e你将不会被提及."

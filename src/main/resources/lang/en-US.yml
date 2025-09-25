@@ -56,6 +56,7 @@ group:
 command:
   must_be_player: "&cYou must be a player to use this command!"
   player_not_found: "&cPlayer not found."
+  user_not_found: "&cUser not found."
   unknown: "&cUnknown command."
   toggle:
     no_longer_mentioned: "&eYou will no longer be mentioned."

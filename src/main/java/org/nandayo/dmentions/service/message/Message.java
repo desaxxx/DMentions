@@ -48,6 +48,7 @@ public class Message {
 
     public static final Message COMMAND_MUST_BE_PLAYER = create("command.must_be_player");
     public static final Message COMMAND_PLAYER_NOT_FOUND = create("command.player_not_found");
+    public static final Message COMMAND_USER_NOT_FOUND = create("command.user_not_found");
     public static final Message COMMAND_UNKNOWN = create("command.unknown");
     public static final Message COMMAND_TOGGLE_NO_LONGER_MENTIONED = create("command.toggle.no_longer_mentioned");
     public static final Message COMMAND_TOGGLE_WILL_NOW_MENTIONED = create("command.toggle.will_now_mentioned");

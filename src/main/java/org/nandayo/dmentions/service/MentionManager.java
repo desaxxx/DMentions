@@ -14,6 +14,8 @@ import org.nandayo.dmentions.model.MentionHolder;
 import org.nandayo.dmentions.DMentions;
 import org.nandayo.dmentions.integration.LuckPermsHook;
 import org.nandayo.dmentions.service.message.Message;
+import org.nandayo.dmentions.user.MentionUser;
+import org.nandayo.dmentions.user.UserManager;
 import org.nandayo.dmentions.util.DUtil;
 
 import java.util.*;
@@ -158,7 +160,9 @@ public class MentionManager {
                 case PLAYER:
                     if(mentionHolder.getTarget() == null) continue;
                     Player target = Bukkit.getPlayerExact(mentionHolder.getTarget());
-                    if(target == null || !plugin.getUserManager().getMentionMode(target)) continue;
+                    if(target == null) continue;
+                    MentionUser targetUser = UserManager.getInstance().getUser(target.getUniqueId());
+                    if(targetUser == null || !targetUser.isMentionMode()) continue;
                     if(remainedCooldown > 0) {
                         cooldownManager.cooldownWarn(sender, remainedCooldown);
                         continue;
@@ -243,9 +247,10 @@ public class MentionManager {
      * @return Display string
      */
     private String getPlayerDisplay(@NotNull Player target) {
-        String mentionDisplay = plugin.getUserManager().getMentionDisplay(target);
-        if(mentionDisplay == null || mentionDisplay.isEmpty() || mentionDisplay.equalsIgnoreCase(target.getName())) {
-            return config.getConfig().getString("player.display", "{p}").replace("{p}", plugin.getUserManager().getMentionDisplay(target));
+        MentionUser user = UserManager.getInstance().getUser(target.getUniqueId());
+        String mentionDisplay = user == null ? target.getDisplayName() : user.getDisplayName();
+        if(mentionDisplay.isEmpty() || mentionDisplay.equalsIgnoreCase(target.getName())) {
+            return config.getConfig().getString("player.display", "{p}").replace("{p}", mentionDisplay);
         }
         return config.getConfig().getString("player.customized_display", "{display}").replace("{display}", mentionDisplay);
     }
