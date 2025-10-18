@@ -117,7 +117,7 @@
         <dependency>
             <groupId>com.github.desaxxx</groupId>
             <artifactId>AnvilMenu</artifactId>
-            <version>58a65991a7</version> <!-- 0.3 candidate -->
+            <version>0.3</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
