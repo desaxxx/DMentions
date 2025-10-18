@@ -93,32 +93,32 @@ public class UserManager {
 
 
 
-    @Deprecated(since = "1.9")
+    @Deprecated(since = "1.8.4")
     public UserManager(DMentions ignore) {}
 
-    @Deprecated(since = "1.9", forRemoval = true)
+    @Deprecated(since = "1.8.4", forRemoval = true)
     public void saveChanges() {}
 
-    @Deprecated(since = "1.9", forRemoval = true)
+    @Deprecated(since = "1.8.4", forRemoval = true)
     public boolean getMentionMode(Player player) {
         MentionUser user = getUser(player.getUniqueId());
         return user != null && user.isMentionMode();
     }
 
-    @Deprecated(since = "1.9", forRemoval = true)
+    @Deprecated(since = "1.8.4", forRemoval = true)
     public void setMentionMode(Player player, boolean mode) {
         MentionUser user = getUser(player.getUniqueId());
         if(user == null) return;
         user.setMentionMode(mode);
     }
 
-    @Deprecated(since = "1.9", forRemoval = true)
+    @Deprecated(since = "1.8.4", forRemoval = true)
     public String getMentionDisplay(Player player) {
         MentionUser user = getUser(player.getUniqueId());
         return user == null ? player.getDisplayName() : user.getDisplayName();
     }
 
-    @Deprecated(since = "1.9", forRemoval = true)
+    @Deprecated(since = "1.8.4", forRemoval = true)
     public void setMentionDisplay(Player player, String display) {
         MentionUser user = getUser(player.getUniqueId());
         if(user == null) return;

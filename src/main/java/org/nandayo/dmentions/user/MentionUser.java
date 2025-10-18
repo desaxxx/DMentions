@@ -14,10 +14,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 /**
- * @since 1.9
+ * @since 1.8.4
  */
 @Getter
-public final class MentionUser extends AbstractModuleDataHolder implements ConfigurationSerializable {
+public final class MentionUser implements ConfigurationSerializable {
 
     private final @NotNull UUID uuid;
     @Setter
@@ -38,7 +38,7 @@ public final class MentionUser extends AbstractModuleDataHolder implements Confi
     /**
      * Get display name of the user.
      * @return {@link #customizedDisplayName} if the user customized it, {@link OfflinePlayer#getName()} otherwise.
-     * @since 1.9
+     * @since 1.8.4
      */
     @NotNull
     public String getDisplayName() {
@@ -50,7 +50,7 @@ public final class MentionUser extends AbstractModuleDataHolder implements Confi
     /**
      * Get the player from user.
      * @return Option of Player
-     * @since 1.9
+     * @since 1.8.4
      */
     public Optional<Player> getPlayer() {
         return Optional.ofNullable(Bukkit.getPlayer(uuid));
@@ -59,7 +59,7 @@ public final class MentionUser extends AbstractModuleDataHolder implements Confi
     /**
      * Get the offline player from user.
      * @return OfflinePlayer
-     * @since 1.9
+     * @since 1.8.4
      */
     @NotNull
     public OfflinePlayer getOfflinePlayer() {
@@ -70,7 +70,7 @@ public final class MentionUser extends AbstractModuleDataHolder implements Confi
      * Get name of the player.
      * @return Name of the player. This might return null in case the player never joined -which shouldn't happen
      * for a user object-. You can use {@link #getDisplayName()} instead to get a nonnull result.
-     * @since 1.9
+     * @since 1.8.4
      */
     @Nullable
     public String getName() {
