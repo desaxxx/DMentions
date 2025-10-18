@@ -145,6 +145,10 @@
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
+                    <groupId>io.papermc.paper</groupId>
+                    <artifactId>paper-api</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>io.papermc</groupId>
                     <artifactId>paperlib</artifactId>
                 </exclusion>
