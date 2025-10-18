@@ -9,7 +9,7 @@ softdepend:
   - StaffPlusPlus
 commands:
   dmentions:
-    aliases: dms
+    aliases: [dms, mentions]
     usage: /dms
 permissions:
   dmentions.admin:
