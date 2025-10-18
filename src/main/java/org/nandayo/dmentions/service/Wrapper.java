@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.nandayo.dapi.util.Util;
+import org.nandayo.dapi.util.VersionUtil;
 import org.nandayo.dmentions.DMentions;
 
 import java.util.Locale;
@@ -26,22 +27,12 @@ public class Wrapper {
 
     private int fetchVersion() {
         int version = org.nandayo.dapi.util.Wrapper.getMinecraftVersion();
-        if(version < 165) {
-            Util.log(String.format("&cYou are using an unsupported server version '%s'!", toVersion(version)),
+        if (version < 1605) {
+            Util.log(String.format("&cYou are using an unsupported server version '%s'!", VersionUtil.stringify(10000 + version)),
                     "&cPlease use v1.16.5 or newer.");
             Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getPluginManager().disablePlugin(plugin));
         }
         return version;
-    }
-
-    /**
-     * Integer to version.
-     * @param v Integer version
-     * @return String
-     * @since 1.8.3
-     */
-    private String toVersion(int v) {
-        return "1." + (v / 10) + "." + v % 10;
     }
 
 
@@ -60,7 +51,7 @@ public class Wrapper {
      * @since 1.8.3
      */
     public void playSound(@NotNull Player player, @NotNull Sound sound, float volume, float pitch) {
-        if(version >= 181) {
+        if(version >= 1801) {
             player.playSound(player, sound, volume, pitch);
         }else {
             player.playSound(player.getLocation(), sound, volume, pitch);

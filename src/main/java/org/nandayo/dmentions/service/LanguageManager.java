@@ -6,8 +6,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.nandayo.dapi.util.Util;
+import org.nandayo.dapi.util.VersionUtil;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.util.DUtil;
 
 import java.io.File;
 import java.io.InputStream;
@@ -147,11 +147,7 @@ public class LanguageManager {
      * @since 1.8.3
      */
     private int parseVersion(@NotNull String version) {
-        String[] parts = version.split("\\.");
-        int major = DUtil.parseInt(parts[0],0);
-        int minor = parts.length > 1 ? DUtil.parseInt(parts[1],0) : 0;
-        int patch = parts.length > 2 ? DUtil.parseInt(parts[2],0) : 0;
-        return major * 10000 + minor * 100 + patch;
+        return VersionUtil.intify(version,3);
     }
 
     /**
