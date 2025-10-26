@@ -27,6 +27,7 @@ import org.nandayo.dmentions.command.MainCommand;
 import org.nandayo.dmentions.integration.EssentialsHook;
 import org.nandayo.dmentions.integration.LuckPermsHook;
 import org.nandayo.dmentions.integration.StaffPPHook;
+import org.nandayo.dmentions.module.ModuleManager;
 import org.nandayo.dmentions.provider.VanishProvider;
 import org.nandayo.dmentions.user.MentionUser;
 import org.nandayo.dmentions.user.SingleFolderMigrator;
@@ -88,6 +89,7 @@ public final class DMentions extends JavaPlugin implements Listener {
 
         SingleFolderMigrator.migrate();
         loadOnlinePlayers();
+        ModuleManager.INSTANCE.loadModules();
 
         UpdateChecker.INSTANCE.check(this);
 
@@ -98,6 +100,7 @@ public final class DMentions extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         userManager.saveAllToFile();
+        ModuleManager.INSTANCE.unloadModules();
     }
 
     private void setupDAPI() {
