@@ -3,6 +3,7 @@ package org.nandayo.dmentions.event;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 @Getter
@@ -22,6 +23,7 @@ public class MentionPlayerEvent extends MentionEvent {
 
     private final @NotNull Player target;
 
+    @ApiStatus.Internal
     public MentionPlayerEvent(@NotNull Player sender, @NotNull Player target) {
         super(sender);
         this.target = target;

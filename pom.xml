@@ -6,7 +6,7 @@
 
     <groupId>org.nandayo</groupId>
     <artifactId>DMentions</artifactId>
-    <version>1.8.4</version>
+    <version>1.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>DMentions</name>
@@ -93,26 +93,8 @@
         <dependency>
             <groupId>com.github.desaxxx</groupId>
             <artifactId>DAPI</artifactId>
-            <version>5e0208fab7</version> <!-- 1.4.3 candidate -->
+            <version>64bfdfc393</version> <!-- 1.5.2 candidate -->
             <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.kyori</groupId>
-                    <artifactId>adventure-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.kyori</groupId>
-                    <artifactId>adventure-platform-bukkit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.kyori</groupId>
-                    <artifactId>adventure-text-minimessage</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.objecthunter</groupId>
-                    <artifactId>exp4j</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.github.desaxxx</groupId>
@@ -135,7 +117,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.38</version>
+            <version>1.18.42</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -145,20 +127,8 @@
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>io.papermc.paper</groupId>
-                    <artifactId>paper-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.papermc</groupId>
-                    <artifactId>paperlib</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.mojang</groupId>
-                    <artifactId>brigadier</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.md-5</groupId>
-                    <artifactId>bungeecord-chat</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 @Getter
@@ -23,6 +24,7 @@ public class MentionEvent extends Event {
 
     private final @NotNull Player sender;
 
+    @ApiStatus.Internal
     public MentionEvent(@NotNull Player sender) {
         this.sender = sender;
     }

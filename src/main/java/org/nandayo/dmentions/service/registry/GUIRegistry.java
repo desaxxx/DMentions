@@ -5,10 +5,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.nandayo.dapi.service.YAMLRegistry;
+import org.nandayo.dapi.configuration.YAMLRegistry;
 import org.nandayo.dapi.util.Util;
 import org.nandayo.dmentions.DMentions;
-import org.nandayo.dmentions.util.DUtil;
 
 import java.io.File;
 import java.io.InputStream;
@@ -91,22 +90,6 @@ public class GUIRegistry extends YAMLRegistry {
         return this;
     }
 
-    /**
-     * Parse a version to an Integer.<br>
-     * <p>
-     *     Example: 1.8.3 -> 10803
-     * </p>
-     * @param version Version
-     * @return Integer
-     * @since 1.8.3
-     */
-    private int parseVersion(@NotNull String version) {
-        String[] parts = version.split("\\.");
-        int major = DUtil.parseInt(parts[0],0);
-        int minor = parts.length > 1 ? DUtil.parseInt(parts[1],0) : 0;
-        int patch = parts.length > 2 ? DUtil.parseInt(parts[2],0) : 0;
-        return major * 10000 + minor * 100 + patch;
-    }
 
     /**
      * Get the default configuration from source of plugin.
