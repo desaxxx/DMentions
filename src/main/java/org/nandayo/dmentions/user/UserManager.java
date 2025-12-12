@@ -1,6 +1,7 @@
 package org.nandayo.dmentions.user;
 
 import com.google.common.base.Preconditions;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -28,12 +29,35 @@ public class UserManager {
     public void register(MentionUser user) {
         Preconditions.checkNotNull(user, "User cannot be null.");
         USERS.put(user.getUuid(), user);
+        user.onRegister();
     }
 
     @ApiStatus.Internal
-    public void unregister(UUID uuid) {
-        Preconditions.checkNotNull(uuid, "User uuid cannot be null.");
-        USERS.remove(uuid);
+    public void unregister(MentionUser user) {
+        Preconditions.checkNotNull(user.getUuid(), "User uuid cannot be null.");
+        USERS.remove(user.getUuid());
+        user.onUnregister();
+    }
+
+    /**
+     * @since 1.9
+     */
+    @ApiStatus.Internal
+    public void registerAll() {
+        for(Player player : Bukkit.getOnlinePlayers()) {
+            MentionUser user = loadUser(player.getUniqueId());
+            register(user);
+        }
+    }
+
+    /**
+     * @since 1.9
+     */
+    @ApiStatus.Internal
+    public void unregisterAll() {
+        for(MentionUser user : getUsers()) {
+            unregister(user);
+        }
     }
 
     @NotNull
@@ -50,7 +74,7 @@ public class UserManager {
     public MentionUser loadUser(UUID uuid) {
         Preconditions.checkNotNull(uuid, "User uuid cannot be null.");
         File file = new File(DMentions.inst().getDataFolder(), "players/" + uuid + ".yml");
-        if(!file.exists()) {
+        if(!file.getParentFile().exists()) {
             //noinspection ResultOfMethodCallIgnored
             file.getParentFile().mkdirs();
         }
@@ -66,7 +90,7 @@ public class UserManager {
     public void saveToFile(MentionUser user) {
         Preconditions.checkNotNull(user, "User cannot be null.");
         File file = new File(DMentions.inst().getDataFolder(), "players/" + user.getUuid() + ".yml");
-        if(!file.exists()) {
+        if(!file.getParentFile().exists()) {
             //noinspection ResultOfMethodCallIgnored
             file.getParentFile().mkdirs();
         }

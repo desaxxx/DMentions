@@ -24,7 +24,6 @@ public class UserListener implements Listener {
         MentionUser user = manager.getUser(event.getPlayer().getUniqueId());
         if(user == null) return;
 
-        manager.unregister(user.getUuid());
-        manager.saveToFile(user);
+        manager.unregister(user);
     }
 }

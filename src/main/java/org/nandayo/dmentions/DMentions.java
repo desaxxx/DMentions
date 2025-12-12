@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import org.nandayo.dapi.DAPI;
 import org.nandayo.dapi.object.DEnchantment;
 import org.nandayo.dapi.object.DMaterial;
-import org.nandayo.dapi.service.YAMLRegistry;
+import org.nandayo.dapi.configuration.YAMLRegistry;
 import org.nandayo.dapi.util.Util;
 import org.nandayo.dmentions.command.MainCommand;
 import org.nandayo.dmentions.integration.EssentialsHook;
@@ -29,7 +29,6 @@ import org.nandayo.dmentions.integration.LuckPermsHook;
 import org.nandayo.dmentions.integration.StaffPPHook;
 import org.nandayo.dmentions.module.ModuleManager;
 import org.nandayo.dmentions.provider.VanishProvider;
-import org.nandayo.dmentions.user.MentionUser;
 import org.nandayo.dmentions.user.SingleFolderMigrator;
 import org.nandayo.dmentions.user.UserListener;
 import org.nandayo.dmentions.user.UserManager;
@@ -88,8 +87,14 @@ public final class DMentions extends JavaPlugin implements Listener {
         setupProviders();
 
         SingleFolderMigrator.migrate();
-        loadOnlinePlayers();
+
+        /*
+         Method call order:
+         onEnable()
+         onUserLogin()
+         */
         ModuleManager.INSTANCE.loadModules();
+        userManager.registerAll();
 
         UpdateChecker.INSTANCE.check(this);
 
@@ -99,7 +104,12 @@ public final class DMentions extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        userManager.saveAllToFile();
+        /*
+         Method call order:
+         onUserLogout()
+         onDisable()
+         */
+        userManager.unregisterAll();
         ModuleManager.INSTANCE.unloadModules();
     }
 
@@ -168,14 +178,6 @@ public final class DMentions extends JavaPlugin implements Listener {
         }
     }
 
-    private void loadOnlinePlayers() {
-        UserManager manager = UserManager.getInstance();
-        for(Player player : Bukkit.getOnlinePlayers()) {
-            MentionUser user = manager.loadUser(player.getUniqueId());
-            manager.register(user);
-        }
-    }
-
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
@@ -203,6 +205,12 @@ public final class DMentions extends JavaPlugin implements Listener {
         String mentionedString = mentionManager.getMentionedString(this, sender, message);
         e.setMessage(mentionedString);
     }
+
+
+
+
+    @Deprecated(since = "1.9", forRemoval = true)
+    private void loadOnlinePlayers() {}
 
     /**
      * @deprecated in favor of {@link DUtil#getMaterial(DMaterial, DMaterial)}.
