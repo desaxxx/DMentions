@@ -48,11 +48,6 @@ public class ModuleManager {
 
     @ApiStatus.Internal
     public void loadModules() {
-        // DEBUG,
-        TestModule test = new TestModule();
-        loadedModules.add(test);
-        test.onEnable();
-
         File modulesDir = new File(DMentions.inst().getDataFolder(), "modules");
         if (!modulesDir.exists()) {
             //noinspection ResultOfMethodCallIgnored
