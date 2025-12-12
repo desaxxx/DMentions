@@ -87,7 +87,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.21.10-R0.1-SNAPSHOT</version>
+            <version>1.21.11-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -99,7 +99,7 @@
         <dependency>
             <groupId>com.github.desaxxx</groupId>
             <artifactId>AnvilMenu</artifactId>
-            <version>0.3</version>
+            <version>c2c5194b03</version> <!-- 0.4 candidate -->
             <scope>compile</scope>
         </dependency>
         <dependency>
