@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.nandayo.dmentions.module.ModuleManager;
 
 import java.util.*;
 
@@ -26,12 +27,30 @@ public final class MentionUser implements ConfigurationSerializable {
     private @Nullable String customizedDisplayName;
 
     @ApiStatus.Internal
-    public MentionUser(UUID uuid, boolean mentionMode, String customizedDisplayName) {
+    public MentionUser(@NotNull UUID uuid, boolean mentionMode, @Nullable String customizedDisplayName) {
         Preconditions.checkNotNull(uuid);
 
         this.uuid = uuid;
         this.mentionMode = mentionMode;
         this.customizedDisplayName = customizedDisplayName;
+    }
+
+
+    /**
+     * @since 1.9
+     */
+    @ApiStatus.Internal
+    public void onRegister() {
+        ModuleManager.INSTANCE.callLogin(this);
+    }
+
+    /**
+     * @since 1.9
+     */
+    @ApiStatus.Internal
+    public void onUnregister() {
+        ModuleManager.INSTANCE.callLogout(this);
+        UserManager.getInstance().saveToFile(this);
     }
 
 
