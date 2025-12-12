@@ -1,7 +1,9 @@
 package org.nandayo.dmentions.module;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.nandayo.dapi.util.Util;
 import org.nandayo.dmentions.DMentions;
+import org.nandayo.dmentions.user.MentionUser;
 
 import java.io.File;
 import java.net.URL;
@@ -10,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 
+/**
+ * @since 1.9
+ */
 public class ModuleManager {
     public static final ModuleManager INSTANCE = new ModuleManager();
     private ModuleManager() {}
@@ -17,7 +22,37 @@ public class ModuleManager {
     private final List<BaseModule> loadedModules = new ArrayList<>();
     private URLClassLoader moduleClassLoader;
 
+    @ApiStatus.Internal
+    public void callLogin(MentionUser user) {
+        for (BaseModule module : loadedModules) {
+            try {
+                module.onUserLogin(user);
+            } catch (Exception e) {
+                Util.log("&cFailed to call login for user " + user.getUuid() + " from module " + module.getClass().getSimpleName() + ", skipping. " + e);
+            }
+        }
+    }
+
+    @ApiStatus.Internal
+    public void callLogout(MentionUser user) {
+        for (BaseModule module : loadedModules) {
+            try {
+                module.onUserLogout(user);
+            } catch (Exception e) {
+                Util.log("6cFailed to call logout for user " + user.getUuid() + " from module " + module.getClass().getSimpleName() + ", skipping. " + e);
+            }
+        }
+    }
+
+
+
+    @ApiStatus.Internal
     public void loadModules() {
+        // DEBUG,
+        TestModule test = new TestModule();
+        loadedModules.add(test);
+        test.onEnable();
+
         File modulesDir = new File(DMentions.inst().getDataFolder(), "modules");
         if (!modulesDir.exists()) {
             //noinspection ResultOfMethodCallIgnored
@@ -26,7 +61,6 @@ public class ModuleManager {
 
         File[] jarFiles = modulesDir.listFiles((dir, name) -> name.endsWith(".jar"));
         if (jarFiles == null || jarFiles.length == 0) {
-            Util.log("Debug, No modules found to load.");
             return;
         }
 
@@ -34,7 +68,6 @@ public class ModuleManager {
         for (File jarFile : jarFiles) {
             try {
                 urls.add(jarFile.toURI().toURL());
-                Util.log("Debug, Found module JAR: " + jarFile.getName());
             } catch (Exception e) {
                 Util.log("Could not get URL for module: " + jarFile.getName());
                 e.printStackTrace();
@@ -54,22 +87,19 @@ public class ModuleManager {
             try {
                 module.onEnable();
                 loadedModules.add(module);
-                Util.log("Debug, Successfully loaded and enabled module: " + module.getClass().getSimpleName());
             } catch (Exception e) {
-                Util.log("Failed to enable module: " + module.getClass().getSimpleName());
-                e.printStackTrace();
+                Util.log("Failed to enable module: " + module.getClass().getSimpleName() + ", skipping. " + e);
             }
         }
     }
 
+    @ApiStatus.Internal
     public void unloadModules() {
         for (BaseModule module : loadedModules) {
             try {
                 module.onDisable();
-                Util.log("Debug, Disabled module: " + module.getClass().getSimpleName());
             } catch (Exception e) {
-                Util.log("Error disabling module " + module.getClass().getSimpleName());
-                e.printStackTrace();
+                Util.log("Error disabling module " + module.getClass().getSimpleName() + ", skipping. " + e);
             }
         }
         loadedModules.clear();
