@@ -28,12 +28,27 @@ public abstract class BaseMenu extends Menu {
 
     /**
      * Reset gui config editor player.
+     *
      * @return Inventory close consumer
      * @param <T> Inventory
      * @since 1.8.3
+     * @deprecated See {@link #onClose(Inventory)}.
      */
+    @SuppressWarnings("deprecation")
+    @Deprecated(since = "1.9", forRemoval = true)
     @Override
     public <T extends Inventory> Consumer<T> onClose() {
-        return inv -> plugin.setGuiConfigEditor(null);
+        return inv -> {};
+    }
+
+    /**
+     * Reset gui config editor player.
+     *
+     * @param inventory Menu inventory
+     * @since 1.9
+     */
+    @Override
+    public void onClose(@NotNull Inventory inventory) {
+        plugin.setGuiConfigEditor(null);
     }
 }
