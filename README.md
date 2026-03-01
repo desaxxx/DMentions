@@ -3,6 +3,9 @@ DMentions is a versatile chat plugin that allows you to mention players effortle
 Compatible with various chat plugins, it enhances your in-game communication with ease.\
 [![](https://img.shields.io/badge/Powered_with-DAPI-5B9AB5?style=flat&labelColor=345869)](https://github.com/desaxxx/DAPI/)
 
+## Notice
+I am archiving the repository at the moment and have no plan on updating it for a while. You can modify and use the plugin yourself. Please **change the version of the forked plugin to something that's different than current versioning system** (e.g. 1.8.4-fork-author, 1.8.4-somethingunique, ...) and make sure to **read and accept the repository license**.
+
 ## Download Links
 - [Spigot](https://www.spigotmc.org/resources/dmentions-%E2%9C%A8-advanced-player-mention.121452/)
 - [BuiltByBit](https://builtbybit.com/resources/dmentions.57545/)
