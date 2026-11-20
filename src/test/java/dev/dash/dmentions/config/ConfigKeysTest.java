@@ -13,6 +13,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,6 +51,19 @@ class ConfigKeysTest {
         assertTrue(config.get(ConfigKeys.PLAYER_ENABLED));
         assertEquals("<player>", config.get(ConfigKeys.PLAYER_KEYWORD));
         assertEquals("<#a9e871>@<player>", config.get(ConfigKeys.PLAYER_DISPLAY));
+        assertEquals(Duration.ofSeconds(5), config.get(ConfigKeys.PLAYER_COOLDOWN));
+        assertEquals("<#f4e4c0>You mentioned <#ddf7a6><target>", config.get(ConfigKeys.PLAYER_SENDER_MESSAGE));
+        assertEquals("<#ddf7a6><sender> <#f4e4c0>mentioned you", config.get(ConfigKeys.PLAYER_TARGET_MESSAGE));
+        assertEquals("<red>Wait <remaining> before mentioning again", config.get(ConfigKeys.PLAYER_COOLDOWN_WARN));
+    }
+
+    @Test
+    void customCooldownIsRead() throws IOException {
+        write("""
+                player:
+                  cooldown: 30s
+                """);
+        assertEquals(Duration.ofSeconds(30), load().get(ConfigKeys.PLAYER_COOLDOWN));
     }
 
     @Test
@@ -57,7 +71,8 @@ class ConfigKeysTest {
         load();
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(dir.resolve("config.yml").toFile());
         for (String path : new String[]{"mention_limit", "case_sensitive",
-                "player.enabled", "player.keyword", "player.display"}) {
+                "player.enabled", "player.keyword", "player.display", "player.sound", "player.cooldown",
+                "player.sender_message", "player.target_message", "player.cooldown_warn"}) {
             assertTrue(yaml.contains(path), "missing path: " + path);
         }
     }
