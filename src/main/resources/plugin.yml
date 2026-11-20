@@ -1,40 +1,8 @@
 name: DMentions
-version: ${project.version}
-main: org.nandayo.dmentions.DMentions
-api-version: '1.16'
+version: '${version}'
+
+main: dev.dash.dmentions.DMentions
+api-version: '1.21.11'
+load: POSTWORLD
+
 authors: [ desaxx ]
-softdepend:
-  - LuckPerms
-  - Essentials
-  - StaffPlusPlus
-commands:
-  dmentions:
-    aliases: [dms, mentions]
-    usage: /dms
-permissions:
-  dmentions.admin:
-    default: op
-    children:
-      dmentions.reload: true
-      dmentions.configure: true
-      dmentions.help: true
-      dmentions.toggle: true
-      dmentions.customize: true
-      dmentions.send: true
-      dmentions.mention.restricted.bypass: true
-  dmentions.reload:
-    default: op
-  dmentions.configure:
-    default: op
-  dmentions.help:
-    default: op
-  dmentions.toggle:
-    default: op
-  dmentions.customize:
-    default: op
-  dmentions.send:
-    default: op
-  dmentions.mention.restricted:
-    default: false
-  dmentions.mention.restricted.bypass:
-    default: op
