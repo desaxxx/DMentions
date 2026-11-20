@@ -1,8 +1,9 @@
 name: DMentions
 version: '${version}'
-
 main: dev.dash.dmentions.DMentions
 api-version: '1.21.11'
 load: POSTWORLD
-
 authors: [ desaxx ]
+permissions:
+  dmentions.cooldown.bypass:
+    default: op
