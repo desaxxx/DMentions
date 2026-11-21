@@ -6,6 +6,8 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.title.Title;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -16,8 +18,15 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,16 +43,53 @@ class ChatMentionIntegrationTest {
     private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
     private static final TextColor MENTION_COLOR = TextColor.fromHexString("#a9e871");
 
+    private static final String PREFIX = "[DMentions] ";
+
     private ServerMock server;
-    private PlayerMock alex;
-    private PlayerMock steve;
+    private DMentions plugin;
+    private TitlePlayer alex;
+    private TitlePlayer steve;
+
+    /** MockBukkit does not record Adventure titles, so the test players keep them. */
+    static final class TitlePlayer extends PlayerMock {
+        final List<Title> titles = new ArrayList<>();
+
+        TitlePlayer(ServerMock server, String name) {
+            super(server, name, UUID.nameUUIDFromBytes(name.getBytes()));
+        }
+
+        @Override
+        public void showTitle(Title title) {
+            titles.add(title);
+        }
+    }
 
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
-        MockBukkit.load(DMentions.class);
-        alex = server.addPlayer("Alex");
-        steve = server.addPlayer("Steve");
+        plugin = MockBukkit.load(DMentions.class);
+        alex = addPlayer("Alex");
+        steve = addPlayer("Steve");
+    }
+
+    private TitlePlayer addPlayer(String name) {
+        TitlePlayer player = new TitlePlayer(server, name);
+        server.addPlayer(player);
+        return player;
+    }
+
+    /** Writes files into the plugin folder and restarts the plugin so onEnable reads them. */
+    private void restartWith(String configYaml, String... bundledLangs) throws IOException {
+        Path data = plugin.getDataPath();
+        Files.writeString(data.resolve("config.yml"), configYaml);
+        Files.createDirectories(data.resolve("lang"));
+        for (String langFile : bundledLangs) {
+            try (InputStream in = getClass().getResourceAsStream("/lang/" + langFile + ".yml")) {
+                Files.copy(in, data.resolve("lang/" + langFile + ".yml"));
+            }
+        }
+        Bukkit.getPluginManager().disablePlugin(plugin);
+        Bukkit.getPluginManager().enablePlugin(plugin);
     }
 
     @AfterEach
@@ -79,9 +125,90 @@ class ChatMentionIntegrationTest {
         assertEquals("hi @Steve!", plain(event.message()));
         assertEquals(1, soundsHeard(steve));
         assertTrue(steve.getHeardSounds().getFirst().getSound().contains("block.note_block.pling"));
-        assertEquals("Alex mentioned you", plain(steve.nextActionBar()));
-        assertEquals("You mentioned Steve", plain(alex.nextActionBar()));
+        assertEquals(PREFIX + "Alex mentioned you.", plain(steve.nextActionBar()));
+        assertEquals(PREFIX + "You mentioned Steve.", plain(alex.nextActionBar()));
         assertEquals(0, soundsHeard(alex));
+    }
+
+    @Test
+    void targetGetsTitleWithPrefixAndSubtitle() throws InterruptedException {
+        chat(alex, "hi Steve");
+
+        assertEquals(1, steve.titles.size());
+        Title title = steve.titles.getFirst();
+        assertEquals(PREFIX.strip(), plain(title.title()));
+        assertEquals("You have been mentioned in chat.", plain(title.subtitle()));
+        assertTrue(alex.titles.isEmpty());
+    }
+
+    @Test
+    void prefixKeepsItsColours() throws InterruptedException {
+        chat(alex, "Steve");
+        Component bar = steve.nextActionBar();
+        // <dark_gray>[<#ffd16d>DMentions<dark_gray>]
+        assertEquals(TextColor.fromHexString("#ffd16d"), colourOf(bar, "DMentions"));
+    }
+
+    /** Colour of the first text node with exactly this content, inheriting from parents. */
+    private static TextColor colourOf(Component component, String content) {
+        return colourOf(component, content, null);
+    }
+
+    private static TextColor colourOf(Component component, String content, TextColor inherited) {
+        TextColor colour = component.color() != null ? component.color() : inherited;
+        if (component instanceof net.kyori.adventure.text.TextComponent text && text.content().equals(content)) {
+            return colour;
+        }
+        for (Component child : component.children()) {
+            TextColor found = colourOf(child, content, colour);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    @Test
+    void turkishLanguageFileIsUsed() throws Exception {
+        restartWith("lang_file: tr-TR\n", "tr-TR");
+
+        chat(alex, "selam Steve");
+
+        assertEquals(1, soundsHeard(steve));
+        assertEquals(PREFIX + "Alex adlı oyuncu sohbette senden bahsetti.", plain(steve.nextActionBar()));
+        assertEquals(PREFIX + "Steve adlı oyuncudan bahsettin.", plain(alex.nextActionBar()));
+        assertEquals("Sohbette biri senden bahsetti.", plain(steve.titles.getFirst().subtitle()));
+    }
+
+    @Test
+    void missingLanguageFileFallsBackToEnglish() throws Exception {
+        restartWith("lang_file: xx-XX\n");
+
+        chat(alex, "Steve");
+
+        assertEquals(PREFIX + "Alex mentioned you.", plain(steve.nextActionBar()));
+        assertTrue(Files.exists(plugin.getDataPath().resolve("lang/en-US.yml")));
+        assertTrue(Files.notExists(plugin.getDataPath().resolve("lang/xx-XX.yml")));
+    }
+
+    @Test
+    void customChannelsAndDisabledMessagesAreHonoured() throws Exception {
+        Path lang = plugin.getDataPath().resolve("lang");
+        Files.createDirectories(lang);
+        Files.writeString(lang.resolve("custom.yml"), """
+                player:
+                  sender_message: []
+                  target_message:
+                    - "CHAT=<prefix> <sender> pinged you"
+                """);
+        restartWith("lang_file: custom\nprefix: \"<red>!\"\n");
+
+        chat(alex, "Steve");
+
+        assertEquals("! Alex pinged you", plain(steve.nextComponentMessage()));
+        assertNull(steve.nextActionBar());
+        assertTrue(steve.titles.isEmpty());
+        assertNull(alex.nextActionBar());
+        assertNull(alex.nextComponentMessage());
+        assertEquals(1, soundsHeard(steve));
     }
 
     @Test
@@ -116,8 +243,8 @@ class ChatMentionIntegrationTest {
 
     @Test
     void mentionLimitIsRespected() throws InterruptedException {
-        PlayerMock bob = server.addPlayer("Bob");
-        PlayerMock carl = server.addPlayer("Carl");
+        PlayerMock bob = addPlayer("Bob");
+        PlayerMock carl = addPlayer("Carl");
 
         AsyncChatEvent event = chat(alex, "Steve Bob Carl");
 
@@ -134,13 +261,13 @@ class ChatMentionIntegrationTest {
 
         assertEquals("Steve again", plain(second.message()));
         assertEquals(1, soundsHeard(steve));
-        assertEquals("You mentioned Steve", plain(alex.nextActionBar()));
-        assertEquals("Wait 5s before mentioning again", plain(alex.nextActionBar()));
+        assertEquals(PREFIX + "You mentioned Steve.", plain(alex.nextActionBar()));
+        assertEquals("You must wait 5s before mentioning.", plain(alex.nextActionBar()));
     }
 
     @Test
     void cooldownIsPerSender() throws InterruptedException {
-        PlayerMock bob = server.addPlayer("Bob");
+        PlayerMock bob = addPlayer("Bob");
 
         chat(alex, "Steve");
         AsyncChatEvent fromBob = chat(bob, "Steve");

@@ -52,9 +52,8 @@ class ConfigKeysTest {
         assertEquals("<player>", config.get(ConfigKeys.PLAYER_KEYWORD));
         assertEquals("<#a9e871>@<player>", config.get(ConfigKeys.PLAYER_DISPLAY));
         assertEquals(Duration.ofSeconds(5), config.get(ConfigKeys.PLAYER_COOLDOWN));
-        assertEquals("<#f4e4c0>You mentioned <#ddf7a6><target>", config.get(ConfigKeys.PLAYER_SENDER_MESSAGE));
-        assertEquals("<#ddf7a6><sender> <#f4e4c0>mentioned you", config.get(ConfigKeys.PLAYER_TARGET_MESSAGE));
-        assertEquals("<red>Wait <remaining> before mentioning again", config.get(ConfigKeys.PLAYER_COOLDOWN_WARN));
+        assertEquals("en-US", config.get(ConfigKeys.LANG_FILE));
+        assertEquals("<dark_gray>[<#ffd16d>DMentions<dark_gray>]<reset>", config.get(ConfigKeys.PREFIX));
     }
 
     @Test
@@ -70,10 +69,13 @@ class ConfigKeysTest {
     void generatedFileUsesExpectedPaths() {
         load();
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(dir.resolve("config.yml").toFile());
-        for (String path : new String[]{"mention_limit", "case_sensitive",
-                "player.enabled", "player.keyword", "player.display", "player.sound", "player.cooldown",
-                "player.sender_message", "player.target_message", "player.cooldown_warn"}) {
+        for (String path : new String[]{"lang_file", "prefix", "mention_limit", "case_sensitive",
+                "player.enabled", "player.keyword", "player.display", "player.sound", "player.cooldown"}) {
             assertTrue(yaml.contains(path), "missing path: " + path);
+        }
+        // Messages live in the language file now.
+        for (String path : new String[]{"player.sender_message", "player.target_message", "player.cooldown_warn"}) {
+            assertFalse(yaml.contains(path), "message key still in config.yml: " + path);
         }
     }
 
