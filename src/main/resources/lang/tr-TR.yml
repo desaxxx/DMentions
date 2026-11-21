@@ -21,3 +21,10 @@ player:
   target_message:
     - "ACTION_BAR=<prefix> <#ddf7a6><sender><#f4e4c0> adlı oyuncu sohbette senden bahsetti."
     - "TITLE=<prefix>||<#f4e4c0>Sohbette biri senden bahsetti."
+
+everyone:
+  sender_message:
+    - "ACTION_BAR=<prefix> <#f4e4c0>Herkesten bahsettin."
+  target_message:
+    - "ACTION_BAR=<prefix> <#ddf7a6><sender><#f4e4c0> adlı oyuncu herkesten bahsetti."
+    - "TITLE=<prefix>||<#f4e4c0>Sohbette biri senden bahsetti."
