@@ -34,7 +34,8 @@ class LangKeysTest {
     }
 
     private static final List<ConfigKey<List<Notification>>> ALL_KEYS = List.of(
-            LangKeys.PLAYER_SENDER_MESSAGE, LangKeys.PLAYER_TARGET_MESSAGE, LangKeys.COOLDOWN_WARN);
+            LangKeys.PLAYER_SENDER_MESSAGE, LangKeys.PLAYER_TARGET_MESSAGE, LangKeys.COOLDOWN_WARN,
+            LangKeys.DISABLED_WORLD_WARN);
 
     private Path file() {
         return dir.resolve("lang.yml");
@@ -61,6 +62,9 @@ class LangKeysTest {
         assertEquals(List.of(new Notification(Channel.ACTION_BAR,
                         "<red>You must wait <remaining> before mentioning.", "")),
                 lang.get(LangKeys.COOLDOWN_WARN));
+        assertEquals(List.of(new Notification(Channel.ACTION_BAR,
+                        "<prefix> <red>You can't mention a player in this world.", "")),
+                lang.get(LangKeys.DISABLED_WORLD_WARN));
     }
 
     @Test
@@ -75,6 +79,8 @@ class LangKeysTest {
         assertEquals(List.of("ACTION_BAR=<red>You must wait <remaining> before mentioning."),
                 yaml.getStringList("cooldown_warn"));
         assertFalse(yaml.contains("player.cooldown_warn"));
+        assertEquals(List.of("ACTION_BAR=<prefix> <red>You can't mention a player in this world."),
+                yaml.getStringList("disabled_world_warn"));
     }
 
     @Test

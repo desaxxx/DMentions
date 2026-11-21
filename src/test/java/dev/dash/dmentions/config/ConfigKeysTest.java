@@ -54,6 +54,33 @@ class ConfigKeysTest {
         assertEquals(Duration.ofSeconds(5), config.get(ConfigKeys.PLAYER_COOLDOWN));
         assertEquals("en-US", config.get(ConfigKeys.LANG_FILE));
         assertEquals("<dark_gray>[<#ffd16d>DMentions<dark_gray>]<reset>", config.get(ConfigKeys.PREFIX));
+        assertEquals(java.util.List.of("no_mention_world_1", "no_mention_world_2"), config.get(ConfigKeys.DISABLED_WORLDS));
+        assertFalse(config.get(ConfigKeys.PLAYER_PERMISSION).isEmpty());
+    }
+
+    @Test
+    void customDisabledWorldsAndPermissionAreRead() throws IOException {
+        write("""
+                disabled_worlds:
+                  - lobby
+                player:
+                  permission: "server.mention"
+                """);
+        XConfig config = load();
+        assertEquals(java.util.List.of("lobby"), config.get(ConfigKeys.DISABLED_WORLDS));
+        assertEquals("server.mention", config.get(ConfigKeys.PLAYER_PERMISSION));
+    }
+
+    @Test
+    void emptyDisabledWorldsAndPermissionStayEmpty() throws IOException {
+        write("""
+                disabled_worlds: []
+                player:
+                  permission: ""
+                """);
+        XConfig config = load();
+        assertTrue(config.get(ConfigKeys.DISABLED_WORLDS).isEmpty());
+        assertEquals("", config.get(ConfigKeys.PLAYER_PERMISSION));
     }
 
     @Test
@@ -70,7 +97,7 @@ class ConfigKeysTest {
         load();
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(dir.resolve("config.yml").toFile());
         for (String path : new String[]{"lang_file", "prefix", "mention_limit", "case_sensitive",
-                "player.enabled", "player.keyword", "player.display", "player.sound", "player.cooldown"}) {
+                "disabled_worlds", "player.enabled", "player.permission", "player.keyword", "player.display", "player.sound", "player.cooldown"}) {
             assertTrue(yaml.contains(path), "missing path: " + path);
         }
         // Messages live in the language file now.

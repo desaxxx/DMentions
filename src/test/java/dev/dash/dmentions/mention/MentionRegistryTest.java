@@ -6,6 +6,13 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionDefault;
+import org.bukkit.plugin.Plugin;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Nested;
+import org.mockbukkit.mockbukkit.MockBukkit;
+import org.mockbukkit.mockbukkit.ServerMock;
+import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -17,6 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MentionRegistryTest {
@@ -26,12 +34,18 @@ class MentionRegistryTest {
         private final String id;
         private final boolean enabled;
         private final List<String> keywords;
+        String permission = "";
         int candidateCalls;
 
         FakeType(String id, boolean enabled, String... keywords) {
             this.id = id;
             this.enabled = enabled;
             this.keywords = Arrays.asList(keywords);
+        }
+
+        FakeType withPermission(String permission) {
+            this.permission = permission;
+            return this;
         }
 
         @Override public String id() { return id; }
@@ -41,6 +55,8 @@ class MentionRegistryTest {
             return keywords.stream().map(k -> new MentionCandidate(k, this, id + ":" + k, k)).toList();
         }
         @Override public Component display(MentionCandidate candidate) { return Component.text(candidate.keyword()); }
+        @Override public String permission() { return permission; }
+        @Override public PermissionDefault permissionDefault() { return PermissionDefault.TRUE; }
         @Override public Duration cooldown() { return Duration.ZERO; }
         @Override public Optional<Sound> sound() { return Optional.empty(); }
         @Override public Collection<Player> resolveTargets(Player sender, MentionCandidate candidate) { return List.of(); }
@@ -107,5 +123,71 @@ class MentionRegistryTest {
         registry.candidatesFor(null);
 
         assertEquals(2, player.candidateCalls);
+    }
+
+    @Test
+    void typesKeepsRegistrationOrderAndIsReadOnly() {
+        FakeType everyone = new FakeType("everyone", true);
+        FakeType player = new FakeType("player", true);
+        MentionRegistry registry = new MentionRegistry(everyone, player);
+
+        assertEquals(List.of(everyone, player), registry.types());
+        assertThrows(UnsupportedOperationException.class, () -> registry.types().add(player));
+    }
+
+    @Nested
+    class Permissions {
+
+        private ServerMock server;
+        private Plugin plugin;
+        private PlayerMock alex;
+
+        @org.junit.jupiter.api.BeforeEach
+        void setUp() {
+            server = MockBukkit.mock();
+            plugin = MockBukkit.createMockPlugin();
+            alex = server.addPlayer("Alex");
+        }
+
+        @AfterEach
+        void tearDown() {
+            MockBukkit.unmock();
+        }
+
+        @Test
+        void senderWithoutPermissionGetsNoCandidatesOfThatType() {
+            FakeType everyone = new FakeType("everyone", true, "@everyone").withPermission("test.everyone");
+            FakeType player = new FakeType("player", true, "Steve");
+
+            Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(alex);
+
+            assertEquals(List.of("Steve"), List.copyOf(candidates.keySet()));
+            assertEquals(0, everyone.candidateCalls, "candidates of a forbidden type should not even be built");
+        }
+
+        @Test
+        void senderWithPermissionGetsCandidates() {
+            FakeType everyone = new FakeType("everyone", true, "@everyone").withPermission("test.everyone");
+            alex.addAttachment(plugin, "test.everyone", true);
+
+            assertTrue(new MentionRegistry(everyone).candidatesFor(alex).containsKey("@everyone"));
+        }
+
+        @Test
+        void negatedPermissionBlocksEvenAnOperator() {
+            FakeType player = new FakeType("player", true, "Steve").withPermission("test.player");
+            alex.setOp(true);
+            alex.addAttachment(plugin, "test.player", false);
+
+            assertTrue(new MentionRegistry(player).candidatesFor(alex).isEmpty());
+        }
+
+        @Test
+        void forbiddenTypeDoesNotBlockAConflictingKeyword() {
+            FakeType everyone = new FakeType("everyone", true, "@everyone").withPermission("test.everyone");
+            FakeType player = new FakeType("player", true, "@everyone");
+
+            assertSame(player, new MentionRegistry(everyone, player).candidatesFor(alex).get("@everyone").type());
+        }
     }
 }

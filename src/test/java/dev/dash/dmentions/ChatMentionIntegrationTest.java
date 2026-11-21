@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -381,5 +382,158 @@ class ChatMentionIntegrationTest {
 
         assertEquals(0, soundsHeard(steve));
         assertNull(alex.nextActionBar());
+    }
+
+    // ---- Stage 4b: permissions ----
+
+    /** The permission node the generated config.yml uses for player mentions. */
+    private String playerPermission() {
+        return org.bukkit.configuration.file.YamlConfiguration
+                .loadConfiguration(plugin.getDataPath().resolve("config.yml").toFile())
+                .getString("player.permission");
+    }
+
+    @Test
+    void playerPermissionIsRegisteredForEveryone() {
+        String node = playerPermission();
+        org.bukkit.permissions.Permission permission = server.getPluginManager().getPermission(node);
+
+        assertNotNull(permission, "player permission was not registered: " + node);
+        assertEquals(org.bukkit.permissions.PermissionDefault.TRUE, permission.getDefault());
+        assertTrue(alex.hasPermission(node));
+    }
+
+    @Test
+    void senderWithoutPermissionCannotMention() throws InterruptedException {
+        alex.addAttachment(plugin, playerPermission(), false);
+
+        AsyncChatEvent event = chat(alex, "hi Steve");
+
+        assertEquals(Component.text("hi Steve"), event.message());
+        assertEquals(0, soundsHeard(steve));
+        assertNull(alex.nextActionBar(), "a forbidden mention should be silent");
+    }
+
+    @Test
+    void permissionOnlyRestrictsTheSender() throws InterruptedException {
+        steve.addAttachment(plugin, playerPermission(), false);
+
+        assertEquals("hi @Steve", plain(chat(alex, "hi Steve").message()));
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void customPermissionFromConfigIsRegisteredAndOldOneRemoved() throws Exception {
+        String oldNode = playerPermission();
+        restartWith("""
+                player:
+                  permission: "server.mention"
+                """);
+
+        assertNotNull(server.getPluginManager().getPermission("server.mention"));
+        assertNull(server.getPluginManager().getPermission(oldNode), "old node survived the restart");
+
+        alex.addAttachment(plugin, "server.mention", false);
+        assertEquals("hi Steve", plain(chat(alex, "hi Steve").message()));
+        assertEquals("hi @Alex", plain(chat(steve, "hi Alex").message()));
+    }
+
+    @Test
+    void emptyPermissionLetsEveryoneMention() throws Exception {
+        String oldNode = playerPermission();
+        restartWith("""
+                player:
+                  permission: ""
+                """);
+        alex.addAttachment(plugin, oldNode, false);
+
+        assertEquals("hi @Steve", plain(chat(alex, "hi Steve").message()));
+    }
+
+    @Test
+    void disablingThePluginRemovesItsPermission() {
+        String node = playerPermission();
+        Bukkit.getPluginManager().disablePlugin(plugin);
+
+        assertNull(server.getPluginManager().getPermission(node));
+    }
+
+    // ---- Stage 4b: disabled worlds ----
+
+    private org.bukkit.World disableWorld(String name) throws IOException {
+        restartWith("disabled_worlds:\n  - " + name + "\n");
+        return server.addSimpleWorld(name);
+    }
+
+    @Test
+    void mentionInDisabledWorldIsBlockedAndWarnedOnce() throws Exception {
+        alex.teleport(disableWorld("nomention").getSpawnLocation());
+        PlayerMock bob = addPlayer("Bob");
+
+        AsyncChatEvent event = chat(alex, "hi Steve and Bob");
+
+        assertEquals(Component.text("hi Steve and Bob"), event.message());
+        assertEquals(0, soundsHeard(steve));
+        assertEquals(0, soundsHeard(bob));
+        assertEquals(PREFIX + "You can't mention a player in this world.", plain(alex.nextActionBar()));
+        assertNull(alex.nextActionBar(), "warned more than once");
+    }
+
+    @Test
+    void chatWithoutMentionInDisabledWorldIsNotWarned() throws Exception {
+        alex.teleport(disableWorld("nomention").getSpawnLocation());
+
+        AsyncChatEvent event = chat(alex, "hello everyone");
+
+        assertEquals(Component.text("hello everyone"), event.message());
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void blockedMentionStartsNoCooldown() throws Exception {
+        org.bukkit.World normal = server.getWorlds().getFirst();
+        alex.teleport(disableWorld("nomention").getSpawnLocation());
+        chat(alex, "Steve");
+        alex.nextActionBar();
+
+        alex.teleport(normal.getSpawnLocation());
+        AsyncChatEvent event = chat(alex, "Steve");
+
+        assertEquals("@Steve", plain(event.message()));
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void targetInDisabledWorldCanStillBeMentioned() throws Exception {
+        steve.teleport(disableWorld("nomention").getSpawnLocation());
+
+        assertEquals("hi @Steve", plain(chat(alex, "hi Steve").message()));
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void disabledWorldWarnFillsWorldPlaceholder() throws Exception {
+        Path lang = plugin.getDataPath().resolve("lang");
+        Files.createDirectories(lang);
+        Files.writeString(lang.resolve("custom.yml"), """
+                disabled_world_warn:
+                  - "CHAT=no mentions in <world>"
+                """);
+        restartWith("""
+                lang_file: custom
+                disabled_worlds:
+                  - nomention
+                """);
+        alex.teleport(server.addSimpleWorld("nomention").getSpawnLocation());
+
+        chat(alex, "Steve");
+
+        assertEquals("no mentions in nomention", plain(alex.nextComponentMessage()));
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void defaultConfigDoesNotDisableTheMainWorld() throws InterruptedException {
+        assertEquals("@Steve", plain(chat(alex, "Steve").message()));
     }
 }
