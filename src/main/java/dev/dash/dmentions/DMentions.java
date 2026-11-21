@@ -4,7 +4,9 @@ import dev.dash.dmentions.config.ConfigKeys;
 import dev.dash.dmentions.config.LangKeys;
 import dev.dash.dmentions.listener.ChatListener;
 import dev.dash.dmentions.mention.CooldownTracker;
+import dev.dash.dmentions.mention.MentionRegistry;
 import dev.dash.dmentions.mention.PendingMentions;
+import dev.dash.dmentions.mention.type.PlayerMentionType;
 import dev.dash.dmentions.message.MessageService;
 import dev.dash.dmentions.notify.MentionNotifier;
 import dev.yoshi.xconfig.XConfig;
@@ -49,8 +51,9 @@ public class DMentions extends JavaPlugin {
         CooldownTracker cooldownTracker = new CooldownTracker();
         PendingMentions pendingMentions = new PendingMentions();
         MessageService messageService = new MessageService(config, lang);
-        MentionNotifier mentionNotifier = new MentionNotifier(this, config, messageService);
-        getServer().getPluginManager().registerEvents(new ChatListener(config, cooldownTracker, pendingMentions, mentionNotifier), this);
+        MentionNotifier mentionNotifier = new MentionNotifier(this, messageService);
+        MentionRegistry mentionRegistry = new MentionRegistry(new PlayerMentionType(config));
+        getServer().getPluginManager().registerEvents(new ChatListener(config, cooldownTracker, pendingMentions, mentionNotifier, mentionRegistry), this);
     }
 
     private void saveBundledLanguages() {
