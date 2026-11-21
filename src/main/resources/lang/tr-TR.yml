@@ -12,6 +12,9 @@
 cooldown_warn:
   - "ACTION_BAR=<red>Tekrar etiketlemek için <remaining> beklemelisin."
 
+disabled_world_warn:
+  - "ACTION_BAR=<prefix> <red>Bu dünyada oyuncu etiketleyemezsin."
+
 player:
   sender_message:
     - "ACTION_BAR=<prefix> <#ddf7a6><target><#f4e4c0> adlı oyuncudan bahsettin."

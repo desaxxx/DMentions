@@ -1,8 +1,10 @@
 package dev.dash.dmentions.config;
 
 import dev.yoshi.xconfig.ConfigKey;
+import dev.yoshi.xconfig.TypeToken;
 
 import java.time.Duration;
+import java.util.List;
 
 public final class ConfigKeys {
 
@@ -24,6 +26,11 @@ public final class ConfigKeys {
     public static final ConfigKey<Boolean> CASE_SENSITIVE = ConfigKey.builder("case_sensitive", Boolean.class)
             .comment("Whether mentions are case sensitive.")
             .defaultValue(false)
+            .build();
+
+    public static final ConfigKey<List<String>> DISABLED_WORLDS = ConfigKey.builder("disabled_worlds", new TypeToken<List<String>>() {})
+            .comment("Worlds that players cannot mention anybody.")
+            .defaultValue(List.of("no_mention_world_1","no_mention_world_2"))
             .build();
 
     public static final ConfigKey<Boolean> PLAYER_ENABLED = ConfigKey.builder("player.enabled", Boolean.class)

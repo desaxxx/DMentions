@@ -50,6 +50,10 @@ public final class MentionNotifier {
         messageService.send(sender, LangKeys.COOLDOWN_WARN, Placeholder.unparsed("remaining", formatTime(remainingMs)));
     }
 
+    public void disabledWorldWarn(Player sender, String world) {
+        messageService.send(sender, LangKeys.DISABLED_WORLD_WARN, Placeholder.unparsed("world", world));
+    }
+
     static String formatTime(long ms) {
         long totalSeconds = Math.max(1, (ms + 999) / 1000);
         long hours = totalSeconds / 3600;

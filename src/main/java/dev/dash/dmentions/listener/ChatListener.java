@@ -47,6 +47,11 @@ public final class ChatListener implements Listener {
         List<KeywordMatch> matches = KeywordFinder.find(styled.plain(), candidates.keySet(), caseSensitive, limit);
         if (matches.isEmpty()) return;
 
+        if (config.get(ConfigKeys.DISABLED_WORLDS).contains(sender.getWorld().getName())) {
+            mentionNotifier.disabledWorldWarn(sender, sender.getWorld().getName());
+            return;
+        }
+
         List<PendingMention> pending = new ArrayList<>();
         List<Replacement> replacements = new ArrayList<>();
         for (KeywordMatch m : matches) {

@@ -25,6 +25,10 @@ public final class LangKeys {
             .defaultValue(List.of(new Notification(Channel.ACTION_BAR, "<red>You must wait <remaining> before mentioning.", "")))
             .build();
 
+    public static final ConfigKey<List<Notification>> DISABLED_WORLD_WARN = ConfigKey.elementList("disabled_world_warn", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.ACTION_BAR, "<prefix> <red>You can't mention a player in this world.","")))
+            .build();
+
     public static final ConfigKey<List<Notification>> PLAYER_SENDER_MESSAGE = ConfigKey.elementList("player.sender_message", Notification.class, NotificationAdapter.INSTANCE)
             .defaultValue(List.of(new Notification(Channel.ACTION_BAR, "<prefix> <#f4e4c0>You mentioned <#ddf7a6><target><#f4e4c0>.", "")))
             .build();
