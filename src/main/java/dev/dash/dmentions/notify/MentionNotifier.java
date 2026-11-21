@@ -1,11 +1,12 @@
 package dev.dash.dmentions.notify;
 
 import dev.dash.dmentions.config.ConfigKeys;
+import dev.dash.dmentions.config.LangKeys;
 import dev.dash.dmentions.mention.PendingMention;
 import dev.dash.dmentions.mention.SoundSpec;
+import dev.dash.dmentions.message.MessageService;
 import dev.yoshi.xconfig.XConfig;
 import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -15,14 +16,14 @@ import java.util.Optional;
 
 public final class MentionNotifier {
 
-    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
-
     private final JavaPlugin plugin;
     private final XConfig config;
+    private final MessageService messageService;
 
-    public MentionNotifier(JavaPlugin plugin, XConfig config) {
+    public MentionNotifier(JavaPlugin plugin, XConfig config, MessageService messageService) {
         this.plugin = plugin;
         this.config = config;
+        this.messageService = messageService;
     }
 
     public void notify(PendingMention mention) {
@@ -37,23 +38,16 @@ public final class MentionNotifier {
 
             Player sender = mention.sender();
 
-            String targetMessage = config.get(ConfigKeys.PLAYER_TARGET_MESSAGE);
-            if (targetMessage != null) {
-                target.sendActionBar(MINI_MESSAGE.deserialize(targetMessage, Placeholder.unparsed("sender", sender.getName())));
-            }
+            messageService.send(target, LangKeys.PLAYER_TARGET_MESSAGE, Placeholder.unparsed("sender", sender.getName()));
 
-            String senderMessage = config.get(ConfigKeys.PLAYER_SENDER_MESSAGE);
-            if (sender.isOnline() && senderMessage != null) {
-                sender.sendActionBar(MINI_MESSAGE.deserialize(senderMessage, Placeholder.unparsed("target", target.getName())));
+            if (sender.isOnline()) {
+                messageService.send(sender, LangKeys.PLAYER_SENDER_MESSAGE, Placeholder.unparsed("target", target.getName()));
             }
         });
     }
 
     public void cooldownWarn(Player sender, long remainingMs) {
-        String cooldownMessage = config.get(ConfigKeys.PLAYER_COOLDOWN_WARN);
-        if (cooldownMessage != null) {
-            sender.sendActionBar(MINI_MESSAGE.deserialize(cooldownMessage, Placeholder.unparsed("remaining", formatTime(remainingMs))));
-        }
+        messageService.send(sender, LangKeys.PLAYER_COOLDOWN_WARN, Placeholder.unparsed("remaining", formatTime(remainingMs)));
     }
 
     /**

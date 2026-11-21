@@ -1,14 +1,19 @@
 package dev.dash.dmentions;
 
 import dev.dash.dmentions.config.ConfigKeys;
+import dev.dash.dmentions.config.LangKeys;
 import dev.dash.dmentions.listener.ChatListener;
 import dev.dash.dmentions.mention.CooldownTracker;
 import dev.dash.dmentions.mention.PendingMentions;
+import dev.dash.dmentions.message.MessageService;
 import dev.dash.dmentions.notify.MentionNotifier;
 import dev.yoshi.xconfig.XConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 
 public class DMentions extends JavaPlugin {
@@ -25,9 +30,40 @@ public class DMentions extends JavaPlugin {
             return;
         }
 
+        saveBundledLanguages();
+
+        String langFile = config.get(ConfigKeys.LANG_FILE);
+        if (!getDataPath().resolve("lang/" + langFile + ".yml").toFile().exists() && !langFile.equals("en-US")) {
+            getLogger().warning("Could not find language file '%s', using default 'en-US'.".formatted(langFile));
+            langFile = "en-US";
+        }
+        XConfig lang;
+        try {
+            lang = XConfig.builder(getDataPath().resolve("lang/" + langFile + ".yml")).keys(LangKeys.class).logger(getLogger()).build();
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Could not load lang file, disabling the plugin.", e);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+
         CooldownTracker cooldownTracker = new CooldownTracker();
         PendingMentions pendingMentions = new PendingMentions();
-        MentionNotifier mentionNotifier = new MentionNotifier(this, config);
+        MessageService messageService = new MessageService(config, lang);
+        MentionNotifier mentionNotifier = new MentionNotifier(this, config, messageService);
         getServer().getPluginManager().registerEvents(new ChatListener(config, cooldownTracker, pendingMentions, mentionNotifier), this);
+    }
+
+    private void saveBundledLanguages() {
+        try (JarFile jarFile = new JarFile(getFile())) {
+            jarFile.stream()
+                    .filter(entry -> !entry.isDirectory() && entry.getName().startsWith("lang/") && entry.getName().endsWith(".yml"))
+                    .forEach(entry -> {
+                        if (getDataPath().resolve(entry.getName()).toFile().exists()) return;
+
+                        saveResource(entry.getName(), false);
+                    });
+        } catch (IOException e) {
+            getLogger().log(Level.WARNING, "Could not save bundled languages.", e);
+        }
     }
 }
