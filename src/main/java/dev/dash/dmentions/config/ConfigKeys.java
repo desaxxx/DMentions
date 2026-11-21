@@ -7,6 +7,7 @@ import java.time.Duration;
 public final class ConfigKeys {
 
     public static final ConfigKey<String> LANG_FILE = ConfigKey.builder("lang_file", String.class)
+            .comment("This file should exist within lang directory.")
             .defaultValue("en-US")
             .build();
 
@@ -15,11 +16,13 @@ public final class ConfigKeys {
             .build();
 
     public static final ConfigKey<Integer> MENTION_LIMIT = ConfigKey.builder("mention_limit", Integer.class)
+            .comment("Maximum number of mentions per message.")
             .defaultValue(2)
             .validate(limit -> limit >= 0, "Mention limit must be 0 or greater")
             .build();
 
     public static final ConfigKey<Boolean> CASE_SENSITIVE = ConfigKey.builder("case_sensitive", Boolean.class)
+            .comment("Whether mentions are case sensitive.")
             .defaultValue(false)
             .build();
 
@@ -43,5 +46,4 @@ public final class ConfigKeys {
     public static final ConfigKey<Duration> PLAYER_COOLDOWN = ConfigKey.builder("player.cooldown", Duration.class)
             .defaultValue(Duration.ofSeconds(5))
             .build();
-
 }
