@@ -9,11 +9,12 @@
 # (!) Mesajlar MiniMessage formatındadır: https://docs.papermc.io/adventure/minimessage/format
 # (!) Bir mesajı kapatmak için listeyi boş bırak: sender_message: []
 #
+cooldown_warn:
+  - "ACTION_BAR=<red>Tekrar etiketlemek için <remaining> beklemelisin."
+
 player:
   sender_message:
     - "ACTION_BAR=<prefix> <#ddf7a6><target><#f4e4c0> adlı oyuncudan bahsettin."
   target_message:
     - "ACTION_BAR=<prefix> <#ddf7a6><sender><#f4e4c0> adlı oyuncu sohbette senden bahsetti."
     - "TITLE=<prefix>||<#f4e4c0>Sohbette biri senden bahsetti."
-  cooldown_warn:
-    - "ACTION_BAR=<red>Tekrar etiketlemek için <remaining> beklemelisin."

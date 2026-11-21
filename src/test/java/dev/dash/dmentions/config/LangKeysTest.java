@@ -34,7 +34,7 @@ class LangKeysTest {
     }
 
     private static final List<ConfigKey<List<Notification>>> ALL_KEYS = List.of(
-            LangKeys.PLAYER_SENDER_MESSAGE, LangKeys.PLAYER_TARGET_MESSAGE, LangKeys.PLAYER_COOLDOWN_WARN);
+            LangKeys.PLAYER_SENDER_MESSAGE, LangKeys.PLAYER_TARGET_MESSAGE, LangKeys.COOLDOWN_WARN);
 
     private Path file() {
         return dir.resolve("lang.yml");
@@ -60,7 +60,7 @@ class LangKeysTest {
                 lang.get(LangKeys.PLAYER_TARGET_MESSAGE));
         assertEquals(List.of(new Notification(Channel.ACTION_BAR,
                         "<red>You must wait <remaining> before mentioning.", "")),
-                lang.get(LangKeys.PLAYER_COOLDOWN_WARN));
+                lang.get(LangKeys.COOLDOWN_WARN));
     }
 
     @Test
@@ -73,7 +73,19 @@ class LangKeysTest {
                         "TITLE=<prefix>||<#f4e4c0>You have been mentioned in chat."),
                 yaml.getStringList("player.target_message"));
         assertEquals(List.of("ACTION_BAR=<red>You must wait <remaining> before mentioning."),
-                yaml.getStringList("player.cooldown_warn"));
+                yaml.getStringList("cooldown_warn"));
+        assertFalse(yaml.contains("player.cooldown_warn"));
+    }
+
+    @Test
+    void oldCooldownWarnPathIsStillRead() throws IOException {
+        write("""
+                player:
+                  cooldown_warn:
+                    - "CHAT=<gray>wait <remaining>"
+                """);
+        assertEquals(List.of(new Notification(Channel.CHAT, "<gray>wait <remaining>", "")),
+                load().get(LangKeys.COOLDOWN_WARN));
     }
 
     @Test

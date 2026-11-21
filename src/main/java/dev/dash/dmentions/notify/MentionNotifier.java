@@ -47,7 +47,7 @@ public final class MentionNotifier {
     }
 
     public void cooldownWarn(Player sender, long remainingMs) {
-        messageService.send(sender, LangKeys.PLAYER_COOLDOWN_WARN, Placeholder.unparsed("remaining", formatTime(remainingMs)));
+        messageService.send(sender, LangKeys.COOLDOWN_WARN, Placeholder.unparsed("remaining", formatTime(remainingMs)));
     }
 
     /**
