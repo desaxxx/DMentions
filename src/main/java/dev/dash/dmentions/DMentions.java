@@ -9,6 +9,7 @@ import dev.dash.dmentions.mention.PendingMentions;
 import dev.dash.dmentions.mention.type.PlayerMentionType;
 import dev.dash.dmentions.message.MessageService;
 import dev.dash.dmentions.notify.MentionNotifier;
+import dev.dash.dmentions.permission.PermissionRegistrar;
 import dev.yoshi.xconfig.XConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,6 +20,8 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 
 public class DMentions extends JavaPlugin {
+
+    private PermissionRegistrar permissionRegistrar;
 
     @Override
     public void onEnable() {
@@ -54,6 +57,17 @@ public class DMentions extends JavaPlugin {
         MentionNotifier mentionNotifier = new MentionNotifier(this, messageService);
         MentionRegistry mentionRegistry = new MentionRegistry(new PlayerMentionType(config));
         getServer().getPluginManager().registerEvents(new ChatListener(config, cooldownTracker, pendingMentions, mentionNotifier, mentionRegistry), this);
+
+        permissionRegistrar = new PermissionRegistrar(getServer().getPluginManager());
+        permissionRegistrar.register(mentionRegistry.types());
+    }
+
+    @Override
+    public void onDisable() {
+        if (permissionRegistrar != null) {
+            permissionRegistrar.unregisterAll();
+            permissionRegistrar = null;
+        }
     }
 
     private void saveBundledLanguages() {

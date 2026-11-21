@@ -15,6 +15,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionDefault;
 
 import java.time.Duration;
 import java.util.*;
@@ -54,6 +55,16 @@ public final class PlayerMentionType implements MentionType {
     @Override
     public Component display(MentionCandidate candidate) {
         return MINI_MESSAGE.deserialize(config.get(ConfigKeys.PLAYER_DISPLAY), Placeholder.unparsed("player", candidate.label()));
+    }
+
+    @Override
+    public String permission() {
+        return config.find(ConfigKeys.PLAYER_PERMISSION).orElse("");
+    }
+
+    @Override
+    public PermissionDefault permissionDefault() {
+        return PermissionDefault.TRUE;
     }
 
     @Override

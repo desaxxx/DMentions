@@ -46,4 +46,8 @@ public final class ConfigKeys {
     public static final ConfigKey<Duration> PLAYER_COOLDOWN = ConfigKey.builder("player.cooldown", Duration.class)
             .defaultValue(Duration.ofSeconds(5))
             .build();
+
+    public static final ConfigKey<String> PLAYER_PERMISSION = ConfigKey.builder("player.permission", String.class)
+            .defaultValue("dmentions.mention.player")
+            .build();
 }

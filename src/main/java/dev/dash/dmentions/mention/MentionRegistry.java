@@ -2,6 +2,7 @@ package dev.dash.dmentions.mention;
 
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +21,15 @@ public final class MentionRegistry {
 
         for (MentionType type : types) {
             if (!type.enabled()) continue;
+            if (!type.permission().isEmpty() && !sender.hasPermission(type.permission())) continue;
 
             type.candidates().forEach(c -> candidates.putIfAbsent(c.keyword(), c)); 
         }
 
         return candidates;
+    }
+
+    public List<MentionType> types() {
+        return Collections.unmodifiableList(types);
     }
 }

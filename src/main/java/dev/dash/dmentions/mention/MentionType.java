@@ -6,6 +6,7 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionDefault;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -21,6 +22,10 @@ public interface MentionType {
     List<MentionCandidate> candidates();
 
     Component display(MentionCandidate candidate);
+
+    String permission();
+
+    PermissionDefault permissionDefault();
 
     Duration cooldown();
 
