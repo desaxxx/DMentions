@@ -237,6 +237,47 @@ class ChatMentionIntegrationTest {
     }
 
     @Test
+    void keywordTemplateIsApplied() throws Exception {
+        restartWith("""
+                player:
+                  keyword: "@<player>"
+                  display: "<#a9e871>[<player>]"
+                """);
+
+        AsyncChatEvent withAt = chat(alex, "hi @Steve");
+        assertEquals("hi [Steve]", plain(withAt.message()));
+        assertEquals(1, soundsHeard(steve));
+        assertEquals(PREFIX + "You mentioned Steve.", plain(alex.nextActionBar()));
+
+        PlayerMock bob = addPlayer("Bob");
+        AsyncChatEvent withoutAt = chat(alex, "hi Bob");
+        assertEquals("hi Bob", plain(withoutAt.message()));
+        assertEquals(0, soundsHeard(bob));
+    }
+
+    @Test
+    void disabledPlayerMentionsLeaveTheMessageAlone() throws Exception {
+        restartWith("""
+                player:
+                  enabled: false
+                """);
+
+        AsyncChatEvent event = chat(alex, "hi Steve");
+
+        assertEquals(Component.text("hi Steve"), event.message());
+        assertEquals(0, soundsHeard(steve));
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void playerWhoJoinsLaterCanBeMentioned() throws InterruptedException {
+        PlayerMock late = addPlayer("Latecomer");
+
+        assertEquals("hi @Latecomer", plain(chat(alex, "hi Latecomer").message()));
+        assertEquals(1, soundsHeard(late));
+    }
+
+    @Test
     void caseInsensitiveByDefault() throws InterruptedException {
         assertEquals("hi @Steve", plain(chat(alex, "hi steve").message()));
     }
