@@ -35,7 +35,8 @@ class LangKeysTest {
 
     private static final List<ConfigKey<List<Notification>>> ALL_KEYS = List.of(
             LangKeys.PLAYER_SENDER_MESSAGE, LangKeys.PLAYER_TARGET_MESSAGE, LangKeys.COOLDOWN_WARN,
-            LangKeys.DISABLED_WORLD_WARN, LangKeys.EVERYONE_SENDER_MESSAGE, LangKeys.EVERYONE_TARGET_MESSAGE);
+            LangKeys.DISABLED_WORLD_WARN, LangKeys.EVERYONE_SENDER_MESSAGE, LangKeys.EVERYONE_TARGET_MESSAGE,
+            LangKeys.NEARBY_SENDER_MESSAGE, LangKeys.NEARBY_TARGET_MESSAGE);
 
     private Path file() {
         return dir.resolve("lang.yml");
@@ -72,6 +73,13 @@ class LangKeysTest {
                         new Notification(Channel.ACTION_BAR, "<prefix> <#f4e4c0>Player <#ddf7a6><sender><#f4e4c0> mentioned everyone.", ""),
                         new Notification(Channel.TITLE, "<prefix>", "<#f4e4c0>You have been mentioned in chat.")),
                 lang.get(LangKeys.EVERYONE_TARGET_MESSAGE));
+        assertEquals(List.of(new Notification(Channel.ACTION_BAR,
+                        "<prefix> <#f4e4c0>You mentioned nearby players.", "")),
+                lang.get(LangKeys.NEARBY_SENDER_MESSAGE));
+        assertEquals(List.of(
+                        new Notification(Channel.ACTION_BAR, "<prefix> <#f4e4c0>Player <#ddf7a6><sender><#f4e4c0> mentioned nearby players.", ""),
+                        new Notification(Channel.TITLE, "<prefix>", "<#f4e4c0>You have been mentioned in chat.")),
+                lang.get(LangKeys.NEARBY_TARGET_MESSAGE));
     }
 
     @Test

@@ -694,4 +694,163 @@ class ChatMentionIntegrationTest {
         assertEquals(PREFIX + "Alex adlı oyuncu herkesten bahsetti.", plain(steve.nextActionBar()));
         assertEquals(PREFIX + "Herkesten bahsettin.", plain(alex.nextActionBar()));
     }
+
+    // ---- @nearby ----
+
+    private static final String NEARBY_PERMISSION = "dmentions.mention.nearby";
+    private static final TextColor NEARBY_COLOR = TextColor.fromHexString("#ea79b8");
+
+    private void allowNearby(PlayerMock player) {
+        player.addAttachment(plugin, NEARBY_PERMISSION, true);
+    }
+
+    /** Puts the player in the main world at the given x/z, everyone at the same height. */
+    private void placeAt(PlayerMock player, double x, double z) {
+        player.teleport(new org.bukkit.Location(server.getWorlds().getFirst(), x, 64, z));
+    }
+
+    @Test
+    void nearbyNotifiesPlayersInRangeOnly() throws InterruptedException {
+        PlayerMock far = addPlayer("Far");
+        placeAt(alex, 0, 0);
+        placeAt(steve, 10, 0);
+        placeAt(far, 50, 0);
+        allowNearby(alex);
+
+        AsyncChatEvent event = chat(alex, "help @nearby");
+
+        assertEquals("help @nearby", plain(event.message()));
+        assertEquals(NEARBY_COLOR, colourOf(event.message(), "@nearby"));
+        assertEquals(1, soundsHeard(steve));
+        assertTrue(steve.getHeardSounds().getFirst().getSound().contains("entity.player.levelup"));
+        assertEquals(PREFIX + "Player Alex mentioned nearby players.", plain(steve.nextActionBar()));
+        assertEquals("You have been mentioned in chat.", plain(steve.titles.getFirst().subtitle()));
+        assertEquals(0, soundsHeard(far));
+        assertNull(far.nextActionBar());
+        assertEquals(PREFIX + "You mentioned nearby players.", plain(alex.nextActionBar()));
+        assertEquals(0, soundsHeard(alex));
+    }
+
+    @Test
+    void nearbyUsesABoxAroundTheSender() throws InterruptedException {
+        // Same as 1.8.4: the radius is checked per axis, so a corner 15/15 away (~21.2 blocks) is still in range.
+        PlayerMock outside = addPlayer("Outside");
+        placeAt(alex, 0, 0);
+        placeAt(steve, 15, 15);
+        placeAt(outside, 21, 0);
+        allowNearby(alex);
+
+        chat(alex, "@nearby");
+
+        assertEquals(1, soundsHeard(steve));
+        assertEquals(0, soundsHeard(outside));
+    }
+
+    @Test
+    void nearbyIgnoresOtherWorlds() throws InterruptedException {
+        placeAt(alex, 0, 0);
+        steve.teleport(new org.bukkit.Location(server.addSimpleWorld("other"), 0, 64, 0));
+        allowNearby(alex);
+
+        chat(alex, "@nearby");
+
+        assertEquals(0, soundsHeard(steve));
+        assertNull(alex.nextActionBar(), "nobody was reached, so no confirmation");
+    }
+
+    @Test
+    void nearbyRadiusComesFromConfig() throws Exception {
+        restartWith("""
+                nearby:
+                  radius: 5
+                """);
+        placeAt(alex, 0, 0);
+        placeAt(steve, 10, 0);
+        allowNearby(alex);
+
+        chat(alex, "@nearby");
+
+        assertEquals(0, soundsHeard(steve));
+    }
+
+    @Test
+    void nearbyUsesPositionWhenTheMentionIsDelivered() throws InterruptedException {
+        // Targets are resolved on the main thread, one tick after the chat event.
+        placeAt(alex, 0, 0);
+        placeAt(steve, 100, 0);
+        allowNearby(alex);
+
+        Set<Audience> viewers = new HashSet<>(server.getOnlinePlayers());
+        Component message = Component.text("@nearby");
+        AsyncChatEvent event = new AsyncChatEvent(true, alex, viewers, ChatRenderer.defaultRenderer(),
+                message, message, null);
+        Thread chatThread = new Thread(() -> server.getPluginManager().callEvent(event));
+        chatThread.start();
+        chatThread.join();
+
+        placeAt(steve, 5, 0);
+        server.getScheduler().performOneTick();
+
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void nearbyNeedsPermissionThatOnlyOperatorsHaveByDefault() throws InterruptedException {
+        org.bukkit.permissions.Permission permission = server.getPluginManager().getPermission(NEARBY_PERMISSION);
+        assertNotNull(permission);
+        assertEquals(org.bukkit.permissions.PermissionDefault.OP, permission.getDefault());
+        placeAt(alex, 0, 0);
+        placeAt(steve, 5, 0);
+
+        AsyncChatEvent event = chat(alex, "@nearby");
+
+        assertEquals(Component.text("@nearby"), event.message());
+        assertEquals(0, soundsHeard(steve));
+    }
+
+    @Test
+    void nearbyHasItsOwnCooldown() throws InterruptedException {
+        placeAt(alex, 0, 0);
+        placeAt(steve, 5, 0);
+        allowNearby(alex);
+        allowEveryone(alex);
+
+        chat(alex, "@nearby");
+        alex.nextActionBar();
+        AsyncChatEvent second = chat(alex, "@nearby");
+
+        assertEquals("@nearby", plain(second.message()));
+        assertEquals(1, soundsHeard(steve));
+        assertEquals("You must wait 10s before mentioning.", plain(alex.nextActionBar()));
+
+        assertEquals("@everyone", plain(chat(alex, "@everyone").message()));
+        assertEquals(2, soundsHeard(steve));
+    }
+
+    @Test
+    void disabledNearbyLeavesTheKeywordAlone() throws Exception {
+        restartWith("""
+                nearby:
+                  enabled: false
+                """);
+        alex.setOp(true);
+        placeAt(alex, 0, 0);
+        placeAt(steve, 5, 0);
+
+        assertEquals(Component.text("@nearby"), chat(alex, "@nearby").message());
+        assertEquals(0, soundsHeard(steve));
+    }
+
+    @Test
+    void turkishNearbyMessages() throws Exception {
+        restartWith("lang_file: tr-TR\n", "tr-TR");
+        placeAt(alex, 0, 0);
+        placeAt(steve, 5, 0);
+        allowNearby(alex);
+
+        chat(alex, "@nearby");
+
+        assertEquals(PREFIX + "Alex adlı oyuncu yakındaki oyunculardan bahsetti.", plain(steve.nextActionBar()));
+        assertEquals(PREFIX + "Yakındaki oyunculardan bahsettin.", plain(alex.nextActionBar()));
+    }
 }

@@ -62,6 +62,13 @@ class ConfigKeysTest {
         assertEquals("<#8fb56c>@everyone", config.get(ConfigKeys.EVERYONE_DISPLAY));
         assertTrue(config.get(ConfigKeys.EVERYONE_SOUND).contains("entity.wither.spawn"));
         assertEquals(Duration.ofSeconds(10), config.get(ConfigKeys.EVERYONE_COOLDOWN));
+        assertTrue(config.get(ConfigKeys.NEARBY_ENABLED));
+        assertEquals("dmentions.mention.nearby", config.get(ConfigKeys.NEARBY_PERMISSION));
+        assertEquals("@nearby", config.get(ConfigKeys.NEARBY_KEYWORD));
+        assertEquals("<#ea79b8>@nearby", config.get(ConfigKeys.NEARBY_DISPLAY));
+        assertTrue(config.get(ConfigKeys.NEARBY_SOUND).contains("entity.player.levelup"));
+        assertEquals(Duration.ofSeconds(10), config.get(ConfigKeys.NEARBY_COOLDOWN));
+        assertEquals(20, config.get(ConfigKeys.NEARBY_RADIUS));
     }
 
     @Test
@@ -105,7 +112,9 @@ class ConfigKeysTest {
         for (String path : new String[]{"lang_file", "prefix", "mention_limit", "case_sensitive",
                 "disabled_worlds", "player.enabled", "player.permission", "player.keyword", "player.display", "player.sound", "player.cooldown",
                 "everyone.enabled", "everyone.permission", "everyone.keyword", "everyone.display",
-                "everyone.sound", "everyone.cooldown"}) {
+                "everyone.sound", "everyone.cooldown",
+                "nearby.enabled", "nearby.permission", "nearby.keyword", "nearby.display",
+                "nearby.sound", "nearby.cooldown", "nearby.radius"}) {
             assertTrue(yaml.contains(path), "missing path: " + path);
         }
         // Messages live in the language file now.
@@ -154,6 +163,15 @@ class ConfigKeysTest {
                   keyword: "  "
                 """);
         assertEquals("@everyone", load().get(ConfigKeys.EVERYONE_KEYWORD));
+    }
+
+    @Test
+    void nonPositiveRadiusFallsBackToDefault() throws IOException {
+        write("""
+                nearby:
+                  radius: 0
+                """);
+        assertEquals(20, load().get(ConfigKeys.NEARBY_RADIUS));
     }
 
     @Test
