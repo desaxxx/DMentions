@@ -56,6 +56,12 @@ class ConfigKeysTest {
         assertEquals("<dark_gray>[<#ffd16d>DMentions<dark_gray>]<reset>", config.get(ConfigKeys.PREFIX));
         assertEquals(java.util.List.of("no_mention_world_1", "no_mention_world_2"), config.get(ConfigKeys.DISABLED_WORLDS));
         assertFalse(config.get(ConfigKeys.PLAYER_PERMISSION).isEmpty());
+        assertTrue(config.get(ConfigKeys.EVERYONE_ENABLED));
+        assertEquals("dmentions.mention.everyone", config.get(ConfigKeys.EVERYONE_PERMISSION));
+        assertEquals("@everyone", config.get(ConfigKeys.EVERYONE_KEYWORD));
+        assertEquals("<#8fb56c>@everyone", config.get(ConfigKeys.EVERYONE_DISPLAY));
+        assertTrue(config.get(ConfigKeys.EVERYONE_SOUND).contains("entity.wither.spawn"));
+        assertEquals(Duration.ofSeconds(10), config.get(ConfigKeys.EVERYONE_COOLDOWN));
     }
 
     @Test
@@ -97,7 +103,9 @@ class ConfigKeysTest {
         load();
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(dir.resolve("config.yml").toFile());
         for (String path : new String[]{"lang_file", "prefix", "mention_limit", "case_sensitive",
-                "disabled_worlds", "player.enabled", "player.permission", "player.keyword", "player.display", "player.sound", "player.cooldown"}) {
+                "disabled_worlds", "player.enabled", "player.permission", "player.keyword", "player.display", "player.sound", "player.cooldown",
+                "everyone.enabled", "everyone.permission", "everyone.keyword", "everyone.display",
+                "everyone.sound", "everyone.cooldown"}) {
             assertTrue(yaml.contains(path), "missing path: " + path);
         }
         // Messages live in the language file now.
@@ -137,6 +145,15 @@ class ConfigKeysTest {
                   keyword: "@Steve"
                 """);
         assertEquals("<player>", load().get(ConfigKeys.PLAYER_KEYWORD));
+    }
+
+    @Test
+    void blankEveryoneKeywordFallsBackToDefault() throws IOException {
+        write("""
+                everyone:
+                  keyword: "  "
+                """);
+        assertEquals("@everyone", load().get(ConfigKeys.EVERYONE_KEYWORD));
     }
 
     @Test

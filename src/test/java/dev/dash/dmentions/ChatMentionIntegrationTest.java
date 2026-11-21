@@ -536,4 +536,162 @@ class ChatMentionIntegrationTest {
     void defaultConfigDoesNotDisableTheMainWorld() throws InterruptedException {
         assertEquals("@Steve", plain(chat(alex, "Steve").message()));
     }
+
+    // ---- Stage 4c: @everyone ----
+
+    private static final String EVERYONE_PERMISSION = "dmentions.mention.everyone";
+    private static final TextColor EVERYONE_COLOR = TextColor.fromHexString("#8fb56c");
+
+    /** Grants @everyone without making the player an operator (operators also bypass cooldowns). */
+    private void allowEveryone(PlayerMock player) {
+        player.addAttachment(plugin, EVERYONE_PERMISSION, true);
+    }
+
+    @Test
+    void everyoneNotifiesAllOtherPlayers() throws InterruptedException {
+        PlayerMock bob = addPlayer("Bob");
+        allowEveryone(alex);
+
+        AsyncChatEvent event = chat(alex, "hey @everyone!");
+
+        assertEquals("hey @everyone!", plain(event.message()));
+        assertEquals(EVERYONE_COLOR, colourOf(event.message(), "@everyone"));
+        for (PlayerMock target : List.of(steve, bob)) {
+            assertEquals(1, soundsHeard(target), target.getName());
+            assertTrue(target.getHeardSounds().getFirst().getSound().contains("entity.wither.spawn"));
+            assertEquals(PREFIX + "Player Alex mentioned everyone.", plain(target.nextActionBar()));
+        }
+        assertEquals("You have been mentioned in chat.", plain(steve.titles.getFirst().subtitle()));
+        assertEquals(PREFIX + "You mentioned everyone.", plain(alex.nextActionBar()));
+        assertEquals(0, soundsHeard(alex));
+        assertTrue(alex.titles.isEmpty());
+    }
+
+    @Test
+    void everyoneNeedsPermissionThatOnlyOperatorsHaveByDefault() throws InterruptedException {
+        org.bukkit.permissions.Permission permission = server.getPluginManager().getPermission(EVERYONE_PERMISSION);
+        assertNotNull(permission);
+        assertEquals(org.bukkit.permissions.PermissionDefault.OP, permission.getDefault());
+
+        AsyncChatEvent event = chat(alex, "hey @everyone");
+
+        assertEquals(Component.text("hey @everyone"), event.message());
+        assertEquals(0, soundsHeard(steve));
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void operatorCanMentionEveryone() throws InterruptedException {
+        alex.setOp(true);
+
+        assertEquals("@everyone", plain(chat(alex, "@everyone").message()));
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void everyoneHasItsOwnCooldown() throws InterruptedException {
+        allowEveryone(alex);
+
+        chat(alex, "@everyone");
+        alex.nextActionBar();
+        AsyncChatEvent second = chat(alex, "@everyone again");
+
+        assertEquals("@everyone again", plain(second.message()));
+        assertEquals(1, soundsHeard(steve));
+        assertEquals("You must wait 10s before mentioning.", plain(alex.nextActionBar()));
+
+        // A player mention is not blocked by the @everyone cooldown.
+        assertEquals("@Steve", plain(chat(alex, "Steve").message()));
+        assertEquals(2, soundsHeard(steve));
+    }
+
+    @Test
+    void everyoneCooldownIsPerSender() throws InterruptedException {
+        PlayerMock bob = addPlayer("Bob");
+        allowEveryone(alex);
+        allowEveryone(bob);
+
+        chat(alex, "@everyone");
+        AsyncChatEvent fromBob = chat(bob, "@everyone");
+
+        assertEquals("@everyone", plain(fromBob.message()));
+        assertEquals(2, soundsHeard(steve));
+    }
+
+    @Test
+    void everyoneAloneOnTheServerSendsNoConfirmation() throws InterruptedException {
+        steve.disconnect();
+        allowEveryone(alex);
+
+        AsyncChatEvent event = chat(alex, "@everyone");
+
+        assertEquals("@everyone", plain(event.message()));
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void disabledEveryoneLeavesTheKeywordAlone() throws Exception {
+        restartWith("""
+                everyone:
+                  enabled: false
+                """);
+        alex.setOp(true);
+
+        AsyncChatEvent event = chat(alex, "hey @everyone");
+
+        assertEquals(Component.text("hey @everyone"), event.message());
+        assertEquals(0, soundsHeard(steve));
+    }
+
+    @Test
+    void customEveryoneKeywordAndDisplay() throws Exception {
+        restartWith("""
+                everyone:
+                  keyword: "@all"
+                  display: "<gold>[ALL]"
+                """);
+        allowEveryone(alex);
+
+        assertEquals("hi [ALL]", plain(chat(alex, "hi @all").message()));
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void everyoneWinsOverAPlayerNamedEveryone() throws Exception {
+        restartWith("""
+                player:
+                  keyword: "@<player>"
+                """);
+        PlayerMock namedEveryone = addPlayer("everyone");
+        allowEveryone(alex);
+
+        AsyncChatEvent event = chat(alex, "@everyone");
+
+        assertEquals(EVERYONE_COLOR, colourOf(event.message(), "@everyone"));
+        assertEquals(PREFIX + "You mentioned everyone.", plain(alex.nextActionBar()));
+        assertEquals(PREFIX + "Player Alex mentioned everyone.", plain(namedEveryone.nextActionBar()));
+    }
+
+    @Test
+    void everyoneIsBlockedInDisabledWorld() throws Exception {
+        allowEveryone(alex);
+        alex.teleport(disableWorld("nomention").getSpawnLocation());
+
+        AsyncChatEvent event = chat(alex, "@everyone");
+
+        assertEquals(Component.text("@everyone"), event.message());
+        assertEquals(0, soundsHeard(steve));
+        assertEquals(PREFIX + "You can't mention a player in this world.", plain(alex.nextActionBar()));
+    }
+
+    @Test
+    void turkishEveryoneMessages() throws Exception {
+        restartWith("lang_file: tr-TR\n", "tr-TR");
+        allowEveryone(alex);
+
+        chat(alex, "@everyone");
+
+        assertEquals(PREFIX + "Alex adlı oyuncu herkesten bahsetti.", plain(steve.nextActionBar()));
+        assertEquals(PREFIX + "Herkesten bahsettin.", plain(alex.nextActionBar()));
+    }
 }
