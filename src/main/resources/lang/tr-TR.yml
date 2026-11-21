@@ -1,0 +1,19 @@
+# (!) Kullanılabilir mesaj türleri: CHAT, ACTION_BAR, TITLE.
+#     Kullanım: "KANAL_TÜRÜ=Herhangi bir mesaj"
+#     Kanal belirtilmezse mesaj sohbete (CHAT) gönderilir.
+#     Örnekler:
+#       - "ACTION_BAR=<red>Bu hoş değil."
+#       - "TITLE=<#4bbdbc>Etiket||<white>Bir oyuncu tarafından etiketlendin."
+#       - "CHAT=<prefix> <gray>Bu mesaj config.yml'den düzenlediğin önekli bir mesaj."
+#       TITLE durumunda mesaj içinde || kullanarak başlık ve alt başlığı ayırabilirsin.
+# (!) Mesajlar MiniMessage formatındadır: https://docs.papermc.io/adventure/minimessage/format
+# (!) Bir mesajı kapatmak için listeyi boş bırak: sender_message: []
+#
+player:
+  sender_message:
+    - "ACTION_BAR=<prefix> <#ddf7a6><target><#f4e4c0> adlı oyuncudan bahsettin."
+  target_message:
+    - "ACTION_BAR=<prefix> <#ddf7a6><sender><#f4e4c0> adlı oyuncu sohbette senden bahsetti."
+    - "TITLE=<prefix>||<#f4e4c0>Sohbette biri senden bahsetti."
+  cooldown_warn:
+    - "ACTION_BAR=<red>Tekrar etiketlemek için <remaining> beklemelisin."
