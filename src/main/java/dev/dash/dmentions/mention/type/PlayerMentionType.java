@@ -49,7 +49,7 @@ public final class PlayerMentionType implements MentionType {
             MentionCandidate candidate = new MentionCandidate(keyword, this, target.getUniqueId().toString(), target.getName());
             result.add(candidate);
         }
-        return result;
+        return List.copyOf(result);
     }
 
     @Override

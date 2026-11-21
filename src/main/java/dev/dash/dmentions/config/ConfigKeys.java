@@ -37,6 +37,10 @@ public final class ConfigKeys {
             .defaultValue(true)
             .build();
 
+    public static final ConfigKey<String> PLAYER_PERMISSION = ConfigKey.builder("player.permission", String.class)
+            .defaultValue("dmentions.mention.player")
+            .build();
+
     public static final ConfigKey<String> PLAYER_KEYWORD = ConfigKey.builder("player.keyword", String.class)
             .defaultValue("<player>")
             .validate(keyword -> keyword.contains("<player>"), "Player keyword must contain <player>")
@@ -54,7 +58,28 @@ public final class ConfigKeys {
             .defaultValue(Duration.ofSeconds(5))
             .build();
 
-    public static final ConfigKey<String> PLAYER_PERMISSION = ConfigKey.builder("player.permission", String.class)
-            .defaultValue("dmentions.mention.player")
+    public static final ConfigKey<Boolean> EVERYONE_ENABLED = ConfigKey.builder("everyone.enabled", Boolean.class)
+            .defaultValue(true)
+            .build();
+
+    public static final ConfigKey<String> EVERYONE_PERMISSION = ConfigKey.builder("everyone.permission", String.class)
+            .defaultValue("dmentions.mention.everyone")
+            .build();
+
+    public static final ConfigKey<String> EVERYONE_KEYWORD = ConfigKey.builder("everyone.keyword", String.class)
+            .defaultValue("@everyone")
+            .validate(k -> !k.isBlank(), "Everyone keyword cannot be blank")
+            .build();
+
+    public static final ConfigKey<String> EVERYONE_DISPLAY = ConfigKey.builder("everyone.display", String.class)
+            .defaultValue("<#8fb56c>@everyone")
+            .build();
+
+    public static final ConfigKey<String> EVERYONE_SOUND = ConfigKey.builder("everyone.sound", String.class)
+            .defaultValue("minecraft:entity.wither.spawn;1.0;1.0")
+            .build();
+
+    public static final ConfigKey<Duration> EVERYONE_COOLDOWN = ConfigKey.builder("everyone.cooldown", Duration.class)
+            .defaultValue(Duration.ofSeconds(10))
             .build();
 }

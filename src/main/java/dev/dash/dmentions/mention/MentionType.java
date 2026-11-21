@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+/** Introduce each {@link MentionType} to {@link MentionRegistry} */
 public interface MentionType {
 
     String id();
