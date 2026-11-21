@@ -28,3 +28,10 @@ everyone:
   target_message:
     - "ACTION_BAR=<prefix> <#ddf7a6><sender><#f4e4c0> adlı oyuncu herkesten bahsetti."
     - "TITLE=<prefix>||<#f4e4c0>Sohbette biri senden bahsetti."
+
+nearby:
+  sender_message:
+    - "ACTION_BAR=<prefix> <#f4e4c0>Yakındaki oyunculardan bahsettin."
+  target_message:
+    - "ACTION_BAR=<prefix> <#ddf7a6><sender><#f4e4c0> adlı oyuncu yakındaki oyunculardan bahsetti."
+    - "TITLE=<prefix>||<#f4e4c0>Sohbette biri senden bahsetti."
