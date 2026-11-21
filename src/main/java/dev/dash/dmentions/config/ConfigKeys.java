@@ -82,4 +82,35 @@ public final class ConfigKeys {
     public static final ConfigKey<Duration> EVERYONE_COOLDOWN = ConfigKey.builder("everyone.cooldown", Duration.class)
             .defaultValue(Duration.ofSeconds(10))
             .build();
+
+    public static final ConfigKey<Boolean> NEARBY_ENABLED = ConfigKey.builder("nearby.enabled", Boolean.class)
+            .defaultValue(true)
+            .build();
+
+    public static final ConfigKey<String> NEARBY_PERMISSION = ConfigKey.builder("nearby.permission", String.class)
+            .defaultValue("dmentions.mention.nearby")
+            .build();
+
+    public static final ConfigKey<String> NEARBY_KEYWORD = ConfigKey.builder("nearby.keyword", String.class)
+            .defaultValue("@nearby")
+            .validate(k -> !k.isBlank(), "Nearby keyword cannot be blank")
+            .build();
+
+    public static final ConfigKey<String> NEARBY_DISPLAY = ConfigKey.builder("nearby.display", String.class)
+            .defaultValue("<#ea79b8>@nearby")
+            .build();
+
+    public static final ConfigKey<String> NEARBY_SOUND = ConfigKey.builder("nearby.sound", String.class)
+            .defaultValue("minecraft:entity.player.levelup;1.0;1.0")
+            .build();
+
+    public static final ConfigKey<Duration> NEARBY_COOLDOWN = ConfigKey.builder("nearby.cooldown", Duration.class)
+            .defaultValue(Duration.ofSeconds(10))
+            .build();
+
+    public static final ConfigKey<Integer> NEARBY_RADIUS = ConfigKey.builder("nearby.radius", Integer.class)
+            .comment("Checked as a box: each axis separately.")
+            .defaultValue(20)
+            .validate(r -> r > 0, "Nearby radius must be greater than 0")
+            .build();
 }

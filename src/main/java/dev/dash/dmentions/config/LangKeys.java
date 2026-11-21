@@ -46,4 +46,13 @@ public final class LangKeys {
             .defaultValue(List.of(new Notification(Channel.ACTION_BAR, "<prefix> <#f4e4c0>Player <#ddf7a6><sender><#f4e4c0> mentioned everyone.", ""),
                     new Notification(Channel.TITLE, "<prefix>","<#f4e4c0>You have been mentioned in chat.")))
             .build();
+
+    public static final ConfigKey<List<Notification>> NEARBY_SENDER_MESSAGE = ConfigKey.elementList("nearby.sender_message", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.ACTION_BAR, "<prefix> <#f4e4c0>You mentioned nearby players.", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> NEARBY_TARGET_MESSAGE = ConfigKey.elementList("nearby.target_message", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.ACTION_BAR, "<prefix> <#f4e4c0>Player <#ddf7a6><sender><#f4e4c0> mentioned nearby players.", ""),
+                    new Notification(Channel.TITLE, "<prefix>","<#f4e4c0>You have been mentioned in chat.")))
+            .build();
 }

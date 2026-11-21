@@ -7,6 +7,7 @@ import dev.dash.dmentions.mention.CooldownTracker;
 import dev.dash.dmentions.mention.MentionRegistry;
 import dev.dash.dmentions.mention.PendingMentions;
 import dev.dash.dmentions.mention.type.EveryoneMentionType;
+import dev.dash.dmentions.mention.type.NearbyMentionType;
 import dev.dash.dmentions.mention.type.PlayerMentionType;
 import dev.dash.dmentions.message.MessageService;
 import dev.dash.dmentions.notify.MentionNotifier;
@@ -58,6 +59,7 @@ public class DMentions extends JavaPlugin {
         MentionNotifier mentionNotifier = new MentionNotifier(this, messageService);
         MentionRegistry mentionRegistry = new MentionRegistry(
                 new EveryoneMentionType(config),
+                new NearbyMentionType(config),
                 new PlayerMentionType(config)
         );
         getServer().getPluginManager().registerEvents(new ChatListener(config, cooldownTracker, pendingMentions, mentionNotifier, mentionRegistry), this);
