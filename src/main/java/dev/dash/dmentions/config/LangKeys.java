@@ -64,4 +64,16 @@ public final class LangKeys {
             .defaultValue(List.of(new Notification(Channel.ACTION_BAR, "<prefix> <#f4e4c0>Player <#ddf7a6><sender><#f4e4c0> mentioned <#ddf7a6><group><#f4e4c0> members.", ""),
                     new Notification(Channel.TITLE, "<prefix>","<#f4e4c0>You have been mentioned in chat.")))
             .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_HELP_HEADER = ConfigKey.elementList("command.help.header", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <gray>Commands:", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_HELP_VERSION = ConfigKey.elementList("command.help.version", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms version <gray>- Show the plugin version", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_VERSION = ConfigKey.elementList("command.version", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <gray>Running DMentions <white><version>", "")))
+            .build();
 }

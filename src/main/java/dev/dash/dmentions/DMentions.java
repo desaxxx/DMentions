@@ -1,5 +1,7 @@
 package dev.dash.dmentions;
 
+import dev.dash.dmentions.command.DMentionsCommand;
+import dev.dash.dmentions.command.sub.VersionSubCommand;
 import dev.dash.dmentions.config.ConfigKeys;
 import dev.dash.dmentions.config.LangKeys;
 import dev.dash.dmentions.group.GroupProvider;
@@ -22,6 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 
@@ -73,6 +76,12 @@ public class DMentions extends JavaPlugin {
 
         permissionRegistrar = new PermissionRegistrar(getServer().getPluginManager());
         permissionRegistrar.register(mentionRegistry.types());
+
+        DMentionsCommand command = new DMentionsCommand(List.of(
+                new VersionSubCommand(messageService, getPluginMeta().getVersion())
+        ), messageService);
+        permissionRegistrar.registerCommands(command.subCommands());
+        command.register(getLifecycleManager());
     }
 
     @Override

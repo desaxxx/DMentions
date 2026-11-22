@@ -1,5 +1,6 @@
 package dev.dash.dmentions.permission;
 
+import dev.dash.dmentions.command.SubCommand;
 import dev.dash.dmentions.mention.MentionType;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.PluginManager;
@@ -25,6 +26,18 @@ public final class PermissionRegistrar {
             if (permission != null) continue;
 
             pluginManager.addPermission(new Permission(perm, "Mention permission for " + t.id(), t.permissionDefault()));
+            registeredPermissions.add(perm);
+        }
+    }
+
+    public void registerCommands(Collection<SubCommand> subCommands) {
+        for (SubCommand sub : subCommands) {
+            String perm = sub.permission();
+            if (perm.isEmpty()) continue;
+            Permission permission = pluginManager.getPermission(perm);
+            if (permission != null) continue;
+
+            pluginManager.addPermission(new Permission(perm, "Command permission for " + sub.name(), sub.permissionDefault()));
             registeredPermissions.add(perm);
         }
     }
