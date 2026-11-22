@@ -70,6 +70,22 @@ class ConfigKeysTest {
         assertTrue(config.get(ConfigKeys.NEARBY_SOUND).contains("entity.player.levelup"));
         assertEquals(Duration.ofSeconds(10), config.get(ConfigKeys.NEARBY_COOLDOWN));
         assertEquals(20, config.get(ConfigKeys.NEARBY_RADIUS));
+        assertTrue(config.get(ConfigKeys.GROUP_ENABLED));
+        assertEquals("dmentions.mention.group.<group>", config.get(ConfigKeys.GROUP_PERMISSION));
+        assertEquals("@<group>", config.get(ConfigKeys.GROUP_KEYWORD));
+        assertEquals("<#73c7dc>@<group>", config.get(ConfigKeys.GROUP_DISPLAY));
+        assertTrue(config.get(ConfigKeys.GROUP_SOUND).contains("item.totem.use"));
+        assertEquals(Duration.ofSeconds(5), config.get(ConfigKeys.GROUP_COOLDOWN));
+        assertEquals(java.util.List.of("admin", "owner"), config.get(ConfigKeys.GROUP_DISABLED_GROUPS));
+    }
+
+    @Test
+    void groupKeywordWithoutPlaceholderFallsBackToDefault() throws IOException {
+        write("""
+                group:
+                  keyword: "@vip"
+                """);
+        assertEquals("@<group>", load().get(ConfigKeys.GROUP_KEYWORD));
     }
 
     @Test
@@ -115,7 +131,9 @@ class ConfigKeysTest {
                 "everyone.enabled", "everyone.permission", "everyone.keyword", "everyone.display",
                 "everyone.sound", "everyone.cooldown",
                 "nearby.enabled", "nearby.permission", "nearby.keyword", "nearby.display",
-                "nearby.sound", "nearby.cooldown", "nearby.radius"}) {
+                "nearby.sound", "nearby.cooldown", "nearby.radius",
+                "group.enabled", "group.permission", "group.keyword", "group.display",
+                "group.sound", "group.cooldown", "group.disabled_groups"}) {
             assertTrue(yaml.contains(path), "missing path: " + path);
         }
         // Messages live in the language file now.

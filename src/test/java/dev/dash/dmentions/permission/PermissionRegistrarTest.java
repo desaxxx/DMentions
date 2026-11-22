@@ -44,6 +44,7 @@ class PermissionRegistrarTest {
         @Override public ConfigKey<List<Notification>> senderMessage() { return null; }
         @Override public ConfigKey<List<Notification>> targetMessage() { return null; }
         @Override public TagResolver senderPlaceholders(MentionCandidate candidate) { return TagResolver.empty(); }
+        @Override public TagResolver targetPlaceholders(MentionCandidate candidate) { return TagResolver.empty(); }
     }
 
     private ServerMock server;

@@ -63,6 +63,33 @@ class MentionRegistryTest {
         @Override public ConfigKey<List<Notification>> senderMessage() { return null; }
         @Override public ConfigKey<List<Notification>> targetMessage() { return null; }
         @Override public TagResolver senderPlaceholders(MentionCandidate candidate) { return TagResolver.empty(); }
+        @Override public TagResolver targetPlaceholders(MentionCandidate candidate) { return TagResolver.empty(); }
+    }
+
+    /** A type whose permission depends on the candidate, like group mentions. */
+    private static final class PerCandidatePermissionType implements MentionType {
+        private final List<String> keywords;
+
+        PerCandidatePermissionType(String... keywords) {
+            this.keywords = Arrays.asList(keywords);
+        }
+
+        @Override public String id() { return "group"; }
+        @Override public boolean enabled() { return true; }
+        @Override public List<MentionCandidate> candidates() {
+            return keywords.stream().map(k -> new MentionCandidate("@" + k, this, k, k)).toList();
+        }
+        @Override public Component display(MentionCandidate candidate) { return Component.text(candidate.keyword()); }
+        @Override public String permission() { return ""; }
+        @Override public String permission(MentionCandidate candidate) { return "test.group." + candidate.label(); }
+        @Override public PermissionDefault permissionDefault() { return PermissionDefault.OP; }
+        @Override public Duration cooldown() { return Duration.ZERO; }
+        @Override public Optional<Sound> sound() { return Optional.empty(); }
+        @Override public Collection<Player> resolveTargets(Player sender, MentionCandidate candidate) { return List.of(); }
+        @Override public ConfigKey<List<Notification>> senderMessage() { return null; }
+        @Override public ConfigKey<List<Notification>> targetMessage() { return null; }
+        @Override public TagResolver senderPlaceholders(MentionCandidate candidate) { return TagResolver.empty(); }
+        @Override public TagResolver targetPlaceholders(MentionCandidate candidate) { return TagResolver.empty(); }
     }
 
     @Test
@@ -162,7 +189,16 @@ class MentionRegistryTest {
             Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(alex);
 
             assertEquals(List.of("Steve"), List.copyOf(candidates.keySet()));
-            assertEquals(0, everyone.candidateCalls, "candidates of a forbidden type should not even be built");
+        }
+
+        @Test
+        void permissionIsCheckedPerCandidate() {
+            PerCandidatePermissionType groups = new PerCandidatePermissionType("vip", "staff");
+            alex.addAttachment(plugin, "test.group.vip", true);
+
+            Map<String, MentionCandidate> candidates = new MentionRegistry(groups).candidatesFor(alex);
+
+            assertEquals(List.of("@vip"), List.copyOf(candidates.keySet()));
         }
 
         @Test

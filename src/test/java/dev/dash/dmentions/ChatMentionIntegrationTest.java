@@ -923,4 +923,225 @@ class ChatMentionIntegrationTest {
         assertEquals(PREFIX + "You mentioned everyone.", plain(alex.nextActionBar()));
         assertEquals(PREFIX + "You mentioned Steve.", plain(alex.nextActionBar()));
     }
+
+    // ---- @group ----
+
+    private static final TextColor GROUP_COLOR = TextColor.fromHexString("#73c7dc");
+
+    /** Stands in for LuckPerms: groups and their members are set by hand. */
+    static final class FakeGroups implements dev.dash.dmentions.group.GroupProvider {
+        final java.util.Map<String, Set<UUID>> members = new java.util.LinkedHashMap<>();
+
+        FakeGroups group(String name, PlayerMock... players) {
+            Set<UUID> ids = members.computeIfAbsent(name, n -> new HashSet<>());
+            for (PlayerMock p : players) ids.add(p.getUniqueId());
+            return this;
+        }
+
+        @Override
+        public List<String> groups() {
+            return List.copyOf(members.keySet());
+        }
+
+        @Override
+        public boolean isMember(org.bukkit.entity.Player player, String group) {
+            return members.getOrDefault(group, Set.of()).contains(player.getUniqueId());
+        }
+    }
+
+    /** Registers the fake provider the way another plugin would, then restarts so onEnable picks it up. */
+    private void useGroups(FakeGroups groups, String configYaml) throws IOException {
+        server.getServicesManager().register(dev.dash.dmentions.group.GroupProvider.class, groups,
+                MockBukkit.createMockPlugin(), org.bukkit.plugin.ServicePriority.Normal);
+        restartWith(configYaml);
+    }
+
+    private void allowGroup(PlayerMock player, String group) {
+        player.addAttachment(plugin, "dmentions.mention.group." + group, true);
+    }
+
+    @Test
+    void groupMentionNotifiesItsMembersOnly() throws Exception {
+        PlayerMock bob = addPlayer("Bob");
+        PlayerMock carl = addPlayer("Carl");
+        useGroups(new FakeGroups().group("vip", steve, bob).group("default", carl), "");
+        allowGroup(alex, "vip");
+
+        AsyncChatEvent event = chat(alex, "hi @vip");
+
+        assertEquals("hi @vip", plain(event.message()));
+        assertEquals(GROUP_COLOR, colourOf(event.message(), "@vip"));
+        for (PlayerMock member : List.of(steve, bob)) {
+            assertEquals(1, soundsHeard(member), member.getName());
+            assertTrue(member.getHeardSounds().getFirst().getSound().contains("item.totem.use"));
+            assertEquals(PREFIX + "Player Alex mentioned vip members.", plain(member.nextActionBar()));
+        }
+        assertEquals("You have been mentioned in chat.", plain(steve.titles.getFirst().subtitle()));
+        assertEquals(0, soundsHeard(carl));
+        assertNull(carl.nextActionBar());
+        assertEquals(PREFIX + "You mentioned vip members.", plain(alex.nextActionBar()));
+    }
+
+    @Test
+    void groupPermissionIsPerGroup() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve).group("staff", steve), "");
+        allowGroup(alex, "vip");
+
+        assertEquals(Component.text("hi @staff"), chat(alex, "hi @staff").message());
+        assertEquals(0, soundsHeard(steve));
+
+        assertEquals("hi @vip", plain(chat(alex, "hi @vip").message()));
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void groupNeedsPermissionThatOnlyOperatorsHaveByDefault() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve), "");
+
+        assertEquals(Component.text("@vip"), chat(alex, "@vip").message());
+        assertEquals(0, soundsHeard(steve));
+
+        alex.setOp(true);
+        assertEquals("@vip", plain(chat(alex, "@vip").message()));
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void groupPermissionNodeComesFromConfig() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve), """
+                group:
+                  permission: "server.ping.<group>"
+                """);
+        alex.addAttachment(plugin, "server.ping.vip", true);
+
+        assertEquals("@vip", plain(chat(alex, "@vip").message()));
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void disabledGroupsCannotBeMentionedAndIgnoreCase() throws Exception {
+        useGroups(new FakeGroups().group("admin", steve).group("vip", steve), """
+                group:
+                  disabled_groups:
+                    - admin
+                    - VIP
+                """);
+        alex.setOp(true);
+
+        assertEquals(Component.text("@admin"), chat(alex, "@admin").message());
+        assertEquals(Component.text("@vip"), chat(alex, "@vip").message());
+        assertEquals(0, soundsHeard(steve));
+    }
+
+    @Test
+    void senderInsideTheGroupIsNotNotified() throws Exception {
+        useGroups(new FakeGroups().group("vip", alex, steve), "");
+        allowGroup(alex, "vip");
+
+        chat(alex, "@vip");
+
+        assertEquals(1, soundsHeard(steve));
+        assertEquals(0, soundsHeard(alex));
+        assertEquals(PREFIX + "You mentioned vip members.", plain(alex.nextActionBar()));
+    }
+
+    @Test
+    void groupWithOnlyTheSenderSendsNoConfirmation() throws Exception {
+        useGroups(new FakeGroups().group("vip", alex), "");
+        allowGroup(alex, "vip");
+
+        assertEquals("@vip", plain(chat(alex, "@vip").message()));
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void groupAndOneOfItsMembersInOneMessageNotifyOnce() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve), "");
+        allowGroup(alex, "vip");
+
+        chat(alex, "@vip Steve");
+
+        assertEquals(1, soundsHeard(steve));
+        assertTrue(steve.getHeardSounds().getFirst().getSound().contains("item.totem.use"));
+    }
+
+    @Test
+    void groupCooldownIsPerGroup() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve).group("staff", steve), "");
+        allowGroup(alex, "vip");
+        allowGroup(alex, "staff");
+
+        chat(alex, "@vip");
+        alex.nextActionBar();
+        AsyncChatEvent second = chat(alex, "@vip");
+
+        assertEquals("@vip", plain(second.message()));
+        assertEquals(1, soundsHeard(steve));
+        assertEquals("You must wait 5s before mentioning.", plain(alex.nextActionBar()));
+
+        assertEquals("@staff", plain(chat(alex, "@staff").message()));
+        assertEquals(2, soundsHeard(steve));
+    }
+
+    @Test
+    void groupWinsOverAPlayerWithTheSameKeyword() throws Exception {
+        PlayerMock namedVip = addPlayer("vip");
+        useGroups(new FakeGroups().group("vip", steve), """
+                player:
+                  keyword: "@<player>"
+                """);
+        allowGroup(alex, "vip");
+
+        AsyncChatEvent event = chat(alex, "@vip");
+
+        assertEquals(GROUP_COLOR, colourOf(event.message(), "@vip"));
+        assertEquals(1, soundsHeard(steve));
+        assertEquals(0, soundsHeard(namedVip));
+    }
+
+    @Test
+    void withoutAGroupProviderGroupKeywordsStayPlain() throws InterruptedException {
+        alex.setOp(true);
+
+        assertEquals(Component.text("hi @vip"), chat(alex, "hi @vip").message());
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void disabledGroupMentionsLeaveTheKeywordAlone() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve), """
+                group:
+                  enabled: false
+                """);
+        alex.setOp(true);
+
+        assertEquals(Component.text("@vip"), chat(alex, "@vip").message());
+        assertEquals(0, soundsHeard(steve));
+    }
+
+    @Test
+    void customGroupKeywordAndDisplay() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve), """
+                group:
+                  keyword: "#<group>"
+                  display: "<gold>[<group>]"
+                """);
+        allowGroup(alex, "vip");
+
+        assertEquals("hi [vip]", plain(chat(alex, "hi #vip").message()));
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void turkishGroupMessages() throws Exception {
+        server.getServicesManager().register(dev.dash.dmentions.group.GroupProvider.class,
+                new FakeGroups().group("vip", steve), MockBukkit.createMockPlugin(), org.bukkit.plugin.ServicePriority.Normal);
+        restartWith("lang_file: tr-TR\n", "tr-TR");
+        allowGroup(alex, "vip");
+
+        chat(alex, "@vip");
+
+        assertEquals(PREFIX + "Alex adlı oyuncu vip üyelerinden bahsetti.", plain(steve.nextActionBar()));
+        assertEquals(PREFIX + "vip üyelerinden bahsettin.", plain(alex.nextActionBar()));
+    }
 }
