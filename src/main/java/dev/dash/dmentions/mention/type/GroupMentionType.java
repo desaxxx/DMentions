@@ -35,6 +35,12 @@ public final class GroupMentionType implements MentionType {
         this.groupProvider = groupProvider;
     }
 
+    private Optional<GroupSettings> settingsFor(String group) {
+        for (Map.Entry<String, GroupSettings> entry : config.find(ConfigKeys.GROUP_LIST).orElse(Map.of()).entrySet()) {
+            if (group.equalsIgnoreCase(entry.getKey())) return Optional.of(entry.getValue());
+        }
+        return Optional.empty();
+    }
 
     @Override
     public String id() {
@@ -62,7 +68,12 @@ public final class GroupMentionType implements MentionType {
 
     @Override
     public Component display(MentionCandidate candidate) {
-        return MINI_MESSAGE.deserialize(config.get(ConfigKeys.GROUP_DISPLAY), Placeholder.unparsed("group", candidate.label()));
+        String group = candidate.label();
+        String display = settingsFor(group).map(GroupSettings::display).orElse(null);
+        if (display != null) {
+            return MINI_MESSAGE.deserialize(display, Placeholder.unparsed("group", group));
+        }
+        return MINI_MESSAGE.deserialize(config.get(ConfigKeys.GROUP_DISPLAY), Placeholder.unparsed("group", group));
     }
 
     @Override
@@ -86,8 +97,26 @@ public final class GroupMentionType implements MentionType {
     }
 
     @Override
+    public Duration cooldown(MentionCandidate candidate) {
+        Duration cooldown = settingsFor(candidate.label()).map(GroupSettings::cooldown).orElse(null);
+        if (cooldown != null) {
+            return cooldown;
+        }
+        return cooldown();
+    }
+
+    @Override
     public Optional<Sound> sound() {
         return SoundSpec.parse(config.find(ConfigKeys.GROUP_SOUND).orElse(null));
+    }
+
+    @Override
+    public Optional<Sound> sound(MentionCandidate candidate) {
+        String sound = settingsFor(candidate.label()).map(GroupSettings::sound).orElse(null);
+        if (sound != null) {
+            return SoundSpec.parse(sound);
+        }
+        return sound();
     }
 
     @Override

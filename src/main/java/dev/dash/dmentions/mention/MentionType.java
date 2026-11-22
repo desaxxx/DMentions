@@ -34,7 +34,15 @@ public interface MentionType {
 
     Duration cooldown();
 
+    default Duration cooldown(MentionCandidate candidate) {
+        return cooldown();
+    }
+
     Optional<Sound> sound();
+
+    default Optional<Sound> sound(MentionCandidate candidate) {
+        return sound();
+    }
 
     Collection<Player> resolveTargets(Player sender, MentionCandidate candidate);
 

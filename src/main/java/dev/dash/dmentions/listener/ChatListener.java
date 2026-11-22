@@ -80,7 +80,7 @@ public final class ChatListener implements Listener {
 
         long now = System.currentTimeMillis();
         for (PendingMention mention : pending) {
-            Duration cooldownDuration = mention.candidate().type().cooldown();
+            Duration cooldownDuration = mention.candidate().type().cooldown(mention.candidate());
             cooldownTracker.start(mention.sender().getUniqueId(), mention.candidate().type().id(), mention.candidate().targetId(), cooldownDuration, now);
         }
         mentionNotifier.notify(pending);

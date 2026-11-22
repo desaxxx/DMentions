@@ -1,10 +1,13 @@
 package dev.dash.dmentions.config;
 
+import dev.dash.dmentions.mention.type.GroupSettings;
 import dev.yoshi.xconfig.ConfigKey;
 import dev.yoshi.xconfig.TypeToken;
 
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class ConfigKeys {
 
@@ -150,4 +153,18 @@ public final class ConfigKeys {
     public static final ConfigKey<List<String>> GROUP_DISABLED_GROUPS = ConfigKey.builder("group.disabled_groups", new TypeToken<List<String>>() {})
             .defaultValue(List.of("admin","owner"))
             .build();
+
+    public static final ConfigKey<Map<String, GroupSettings>> GROUP_LIST = ConfigKey.elementMap("group.list", GroupSettings.class, GroupSettings.ADAPTER)
+            .defaultValue(groupListDefaults())
+            .build();
+
+    private static Map<String, GroupSettings> groupListDefaults() {
+        Map<String, GroupSettings> defaults = new LinkedHashMap<>();
+        defaults.put("default", new GroupSettings(
+                "<#c0dee6>@<group>",
+                "minecraft:item.totem.use;1.0;1.0",
+                Duration.ofSeconds(5)
+        ));
+        return defaults;
+    }
 }

@@ -35,7 +35,7 @@ public final class MentionNotifier {
             for (PendingMention mention : mentions) {
                 Player sender = mention.sender();
                 MentionType type = mention.candidate().type();
-                Optional<Sound> sound = type.sound();
+                Optional<Sound> sound = type.sound(mention.candidate());
                 var targetMessage = type.targetMessage();
                 TagResolver senderTag = Placeholder.unparsed("sender", sender.getName());
 
