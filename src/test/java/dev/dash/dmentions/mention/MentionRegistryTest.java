@@ -48,11 +48,21 @@ class MentionRegistryTest {
             return this;
         }
 
+        /** Makes the candidate for this keyword point at the given target id instead of "id:keyword". */
+        FakeType withTarget(String keyword, String targetId) {
+            targetIds.put(keyword, targetId);
+            return this;
+        }
+
+        private final Map<String, String> targetIds = new java.util.HashMap<>();
+
         @Override public String id() { return id; }
         @Override public boolean enabled() { return enabled; }
         @Override public List<MentionCandidate> candidates() {
             candidateCalls++;
-            return keywords.stream().map(k -> new MentionCandidate(k, this, id + ":" + k, k)).toList();
+            return keywords.stream()
+                    .map(k -> new MentionCandidate(k, this, targetIds.getOrDefault(k, id + ":" + k), k))
+                    .toList();
         }
         @Override public Component display(MentionCandidate candidate) { return Component.text(candidate.keyword()); }
         @Override public String permission() { return permission; }
@@ -92,9 +102,25 @@ class MentionRegistryTest {
         @Override public TagResolver targetPlaceholders(MentionCandidate candidate) { return TagResolver.empty(); }
     }
 
+    private ServerMock server;
+    private Plugin plugin;
+    private PlayerMock alex;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        server = MockBukkit.mock();
+        plugin = MockBukkit.createMockPlugin();
+        alex = server.addPlayer("Alex");
+    }
+
+    @AfterEach
+    void tearDown() {
+        MockBukkit.unmock();
+    }
+
     @Test
     void emptyRegistryHasNoCandidates() {
-        assertTrue(new MentionRegistry().candidatesFor(null).isEmpty());
+        assertTrue(new MentionRegistry().candidatesFor(alex).isEmpty());
     }
 
     @Test
@@ -102,7 +128,7 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", true, "@everyone");
         FakeType player = new FakeType("player", true, "Alex", "Steve");
 
-        Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(null);
+        Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(alex);
 
         assertEquals(3, candidates.size());
         assertSame(everyone, candidates.get("@everyone").type());
@@ -115,7 +141,7 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", false, "@everyone");
         FakeType player = new FakeType("player", true, "Alex");
 
-        Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(null);
+        Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(alex);
 
         assertEquals(List.of("Alex"), List.copyOf(candidates.keySet()));
     }
@@ -125,7 +151,7 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", true, "@everyone");
         FakeType player = new FakeType("player", true, "@everyone", "@Alex");
 
-        Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(null);
+        Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(alex);
 
         assertSame(everyone, candidates.get("@everyone").type());
         assertEquals("everyone:@everyone", candidates.get("@everyone").targetId());
@@ -137,7 +163,7 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", false, "@everyone");
         FakeType player = new FakeType("player", true, "@everyone");
 
-        assertSame(player, new MentionRegistry(everyone, player).candidatesFor(null).get("@everyone").type());
+        assertSame(player, new MentionRegistry(everyone, player).candidatesFor(alex).get("@everyone").type());
     }
 
     @Test
@@ -146,8 +172,8 @@ class MentionRegistryTest {
         FakeType player = new FakeType("player", true, "Alex");
         MentionRegistry registry = new MentionRegistry(player);
 
-        registry.candidatesFor(null);
-        registry.candidatesFor(null);
+        registry.candidatesFor(alex);
+        registry.candidatesFor(alex);
 
         assertEquals(2, player.candidateCalls);
     }
@@ -162,24 +188,27 @@ class MentionRegistryTest {
         assertThrows(UnsupportedOperationException.class, () -> registry.types().add(player));
     }
 
+    @Test
+    void candidatePointingAtTheSenderIsNotOffered() {
+        FakeType player = new FakeType("player", true, "Alex", "Steve")
+                .withTarget("Alex", alex.getUniqueId().toString());
+
+        Map<String, MentionCandidate> candidates = new MentionRegistry(player).candidatesFor(alex);
+
+        assertEquals(List.of("Steve"), List.copyOf(candidates.keySet()));
+    }
+
+    @Test
+    void selfCandidateIsOnlyHiddenFromThatSender() {
+        PlayerMock steve = server.addPlayer("Steve");
+        FakeType player = new FakeType("player", true, "Alex")
+                .withTarget("Alex", alex.getUniqueId().toString());
+
+        assertTrue(new MentionRegistry(player).candidatesFor(steve).containsKey("Alex"));
+    }
+
     @Nested
     class Permissions {
-
-        private ServerMock server;
-        private Plugin plugin;
-        private PlayerMock alex;
-
-        @org.junit.jupiter.api.BeforeEach
-        void setUp() {
-            server = MockBukkit.mock();
-            plugin = MockBukkit.createMockPlugin();
-            alex = server.addPlayer("Alex");
-        }
-
-        @AfterEach
-        void tearDown() {
-            MockBukkit.unmock();
-        }
 
         @Test
         void senderWithoutPermissionGetsNoCandidatesOfThatType() {

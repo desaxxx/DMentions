@@ -229,12 +229,32 @@ class ChatMentionIntegrationTest {
     }
 
     @Test
-    void selfMentionIsColouredButNotNotified() throws InterruptedException {
+    void ownNameStaysPlainAndIsNotNotified() throws InterruptedException {
         AsyncChatEvent event = chat(alex, "I am Alex");
 
-        assertEquals("I am @Alex", plain(event.message()));
+        assertEquals(Component.text("I am Alex"), event.message());
         assertEquals(0, soundsHeard(alex));
         assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void ownNameCanBeRepeatedWithoutCooldownWarnings() throws InterruptedException {
+        chat(alex, "Alex");
+        AsyncChatEvent second = chat(alex, "Alex");
+
+        assertEquals(Component.text("Alex"), second.message());
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void ownNameDoesNotUseUpTheMentionLimit() throws InterruptedException {
+        PlayerMock bob = addPlayer("Bob");
+
+        AsyncChatEvent event = chat(alex, "Alex Alex Steve Bob");
+
+        assertEquals("Alex Alex @Steve @Bob", plain(event.message()));
+        assertEquals(1, soundsHeard(steve));
+        assertEquals(1, soundsHeard(bob));
     }
 
     @Test
