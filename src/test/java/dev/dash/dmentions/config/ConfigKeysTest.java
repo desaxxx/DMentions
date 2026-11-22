@@ -48,6 +48,7 @@ class ConfigKeysTest {
         XConfig config = load();
         assertEquals(2, config.get(ConfigKeys.MENTION_LIMIT));
         assertFalse(config.get(ConfigKeys.CASE_SENSITIVE));
+        assertFalse(config.get(ConfigKeys.ALLOW_MULTIPLE_NOTIFICATIONS));
         assertTrue(config.get(ConfigKeys.PLAYER_ENABLED));
         assertEquals("<player>", config.get(ConfigKeys.PLAYER_KEYWORD));
         assertEquals("<#a9e871>@<player>", config.get(ConfigKeys.PLAYER_DISPLAY));
@@ -109,7 +110,7 @@ class ConfigKeysTest {
     void generatedFileUsesExpectedPaths() {
         load();
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(dir.resolve("config.yml").toFile());
-        for (String path : new String[]{"lang_file", "prefix", "mention_limit", "case_sensitive",
+        for (String path : new String[]{"lang_file", "prefix", "mention_limit", "case_sensitive", "allow_multiple_notifications",
                 "disabled_worlds", "player.enabled", "player.permission", "player.keyword", "player.display", "player.sound", "player.cooldown",
                 "everyone.enabled", "everyone.permission", "everyone.keyword", "everyone.display",
                 "everyone.sound", "everyone.cooldown",

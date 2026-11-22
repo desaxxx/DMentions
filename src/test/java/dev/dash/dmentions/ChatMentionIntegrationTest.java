@@ -853,4 +853,74 @@ class ChatMentionIntegrationTest {
         assertEquals(PREFIX + "Alex adlı oyuncu yakındaki oyunculardan bahsetti.", plain(steve.nextActionBar()));
         assertEquals(PREFIX + "Yakındaki oyunculardan bahsettin.", plain(alex.nextActionBar()));
     }
+
+    // ---- one notification per player per message ----
+
+    @Test
+    void playerAlsoCoveredByEveryoneIsNotifiedOnce() throws InterruptedException {
+        allowEveryone(alex);
+
+        AsyncChatEvent event = chat(alex, "@everyone Steve");
+
+        assertEquals("@everyone @Steve", plain(event.message()), "both keywords are still coloured");
+        assertEquals(1, soundsHeard(steve));
+        assertTrue(steve.getHeardSounds().getFirst().getSound().contains("entity.wither.spawn"), "first mention wins");
+        assertEquals(PREFIX + "Player Alex mentioned everyone.", plain(steve.nextActionBar()));
+        assertNull(steve.nextActionBar());
+        assertEquals(1, steve.titles.size());
+        assertEquals(PREFIX + "You mentioned everyone.", plain(alex.nextActionBar()));
+        assertNull(alex.nextActionBar(), "the player mention reached nobody new, so no confirmation for it");
+    }
+
+    @Test
+    void firstMentionInTheMessageDecidesTheNotification() throws InterruptedException {
+        PlayerMock bob = addPlayer("Bob");
+        allowEveryone(alex);
+
+        chat(alex, "Steve @everyone");
+
+        assertEquals(1, soundsHeard(steve));
+        assertTrue(steve.getHeardSounds().getFirst().getSound().contains("block.note_block.pling"));
+        assertEquals(PREFIX + "Alex mentioned you.", plain(steve.nextActionBar()));
+        assertNull(steve.nextActionBar());
+        assertEquals(PREFIX + "Player Alex mentioned everyone.", plain(bob.nextActionBar()));
+        assertEquals(PREFIX + "You mentioned Steve.", plain(alex.nextActionBar()));
+        assertEquals(PREFIX + "You mentioned everyone.", plain(alex.nextActionBar()));
+    }
+
+    @Test
+    void samePlayerTwiceInOneMessageIsNotifiedOnce() throws InterruptedException {
+        AsyncChatEvent event = chat(alex, "Steve Steve");
+
+        assertEquals("@Steve @Steve", plain(event.message()));
+        assertEquals(1, soundsHeard(steve));
+        assertEquals(PREFIX + "You mentioned Steve.", plain(alex.nextActionBar()));
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void skippedDuplicateStillStartsItsCooldown() throws InterruptedException {
+        allowEveryone(alex);
+
+        chat(alex, "@everyone Steve");
+        alex.nextActionBar();
+        AsyncChatEvent next = chat(alex, "Steve");
+
+        assertEquals("Steve", plain(next.message()));
+        assertEquals("You must wait 5s before mentioning.", plain(alex.nextActionBar()));
+    }
+
+    @Test
+    void multipleNotificationsCanBeAllowed() throws Exception {
+        restartWith("allow_multiple_notifications: true\n");
+        allowEveryone(alex);
+
+        chat(alex, "@everyone Steve");
+
+        assertEquals(2, soundsHeard(steve));
+        assertEquals(PREFIX + "Player Alex mentioned everyone.", plain(steve.nextActionBar()));
+        assertEquals(PREFIX + "Alex mentioned you.", plain(steve.nextActionBar()));
+        assertEquals(PREFIX + "You mentioned everyone.", plain(alex.nextActionBar()));
+        assertEquals(PREFIX + "You mentioned Steve.", plain(alex.nextActionBar()));
+    }
 }
