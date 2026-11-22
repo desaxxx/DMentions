@@ -256,13 +256,18 @@ class ConfigKeysTest {
     }
 
     @Test
-    void brokenGroupListEntryFallsBackToDefault() throws IOException {
+    void brokenGroupListEntryIsSkippedAndTheRestIsKept() throws IOException {
         write("""
                 group:
                   list:
                     vip:
                       cooldown: soon
+                    staff:
+                      display: "<gold>@<group>"
                 """);
-        assertEquals(Set.of("default"), load().get(ConfigKeys.GROUP_LIST).keySet());
+        Map<String, GroupSettings> list = load().get(ConfigKeys.GROUP_LIST);
+
+        assertEquals(Set.of("staff"), list.keySet());
+        assertEquals("<gold>@<group>", list.get("staff").display());
     }
 }
