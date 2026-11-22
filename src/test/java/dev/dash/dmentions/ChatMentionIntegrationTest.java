@@ -79,7 +79,11 @@ class ChatMentionIntegrationTest {
         return player;
     }
 
-    /** Writes files into the plugin folder and restarts the plugin so onEnable reads them. */
+    /**
+     * Writes files into the plugin folder and starts a fresh plugin instance so onEnable reads them.
+     * Paper only accepts lifecycle (command) handlers during a plugin instance's first enable,
+     * so re-enabling the same instance is not an option.
+     */
     private void restartWith(String configYaml, String... bundledLangs) throws IOException {
         Path data = plugin.getDataPath();
         Files.writeString(data.resolve("config.yml"), configYaml);
@@ -90,7 +94,7 @@ class ChatMentionIntegrationTest {
             }
         }
         Bukkit.getPluginManager().disablePlugin(plugin);
-        Bukkit.getPluginManager().enablePlugin(plugin);
+        plugin = MockBukkit.load(DMentions.class);
     }
 
     @AfterEach

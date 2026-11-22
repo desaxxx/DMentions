@@ -36,7 +36,9 @@ class LangKeysTest {
     private static final List<ConfigKey<List<Notification>>> ALL_KEYS = List.of(
             LangKeys.PLAYER_SENDER_MESSAGE, LangKeys.PLAYER_TARGET_MESSAGE, LangKeys.COOLDOWN_WARN,
             LangKeys.DISABLED_WORLD_WARN, LangKeys.EVERYONE_SENDER_MESSAGE, LangKeys.EVERYONE_TARGET_MESSAGE,
-            LangKeys.NEARBY_SENDER_MESSAGE, LangKeys.NEARBY_TARGET_MESSAGE);
+            LangKeys.NEARBY_SENDER_MESSAGE, LangKeys.NEARBY_TARGET_MESSAGE,
+            LangKeys.GROUP_SENDER_MESSAGE, LangKeys.GROUP_TARGET_MESSAGE,
+            LangKeys.COMMAND_HELP_HEADER, LangKeys.COMMAND_HELP_VERSION, LangKeys.COMMAND_VERSION);
 
     private Path file() {
         return dir.resolve("lang.yml");
@@ -96,6 +98,11 @@ class LangKeysTest {
         assertFalse(yaml.contains("player.cooldown_warn"));
         assertEquals(List.of("ACTION_BAR=<prefix> <red>You can't mention a player in this world."),
                 yaml.getStringList("disabled_world_warn"));
+        assertEquals(List.of("CHAT=<prefix> <gray>Commands:"), yaml.getStringList("command.help.header"));
+        assertEquals(List.of("CHAT=<#ffd16d>/dms version <gray>- Show the plugin version"),
+                yaml.getStringList("command.help.version"));
+        assertEquals(List.of("CHAT=<prefix> <gray>Running DMentions <white><version>"),
+                yaml.getStringList("command.version"));
     }
 
     @Test
