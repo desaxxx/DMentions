@@ -56,7 +56,7 @@ public class DMentions extends JavaPlugin {
         CooldownTracker cooldownTracker = new CooldownTracker();
         PendingMentions pendingMentions = new PendingMentions();
         MessageService messageService = new MessageService(config, lang);
-        MentionNotifier mentionNotifier = new MentionNotifier(this, messageService);
+        MentionNotifier mentionNotifier = new MentionNotifier(this, messageService, config);
         MentionRegistry mentionRegistry = new MentionRegistry(
                 new EveryoneMentionType(config),
                 new NearbyMentionType(config),

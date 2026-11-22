@@ -28,6 +28,14 @@ public final class ConfigKeys {
             .defaultValue(false)
             .build();
 
+    public static final ConfigKey<Boolean> ALLOW_MULTIPLE_NOTIFICATIONS = ConfigKey.builder("allow_multiple_notifications", Boolean.class)
+            .comment(
+                    "If true, a player mentioned more than once in the same message",
+                    "(e.g. \"@everyone Steve\") gets a notification for each mention.",
+                    "If false, only the first one.")
+            .defaultValue(false)
+            .build();
+
     public static final ConfigKey<List<String>> DISABLED_WORLDS = ConfigKey.builder("disabled_worlds", new TypeToken<List<String>>() {})
             .comment("Worlds that players cannot mention anybody.")
             .defaultValue(List.of("no_mention_world_1","no_mention_world_2"))
