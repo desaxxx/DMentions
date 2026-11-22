@@ -1,5 +1,6 @@
 package dev.dash.dmentions.config;
 
+import dev.dash.dmentions.mention.type.GroupSettings;
 import dev.yoshi.xconfig.XConfig;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -133,7 +136,8 @@ class ConfigKeysTest {
                 "nearby.enabled", "nearby.permission", "nearby.keyword", "nearby.display",
                 "nearby.sound", "nearby.cooldown", "nearby.radius",
                 "group.enabled", "group.permission", "group.keyword", "group.display",
-                "group.sound", "group.cooldown", "group.disabled_groups"}) {
+                "group.sound", "group.cooldown", "group.disabled_groups",
+                "group.list.default.display", "group.list.default.sound", "group.list.default.cooldown"}) {
             assertTrue(yaml.contains(path), "missing path: " + path);
         }
         // Messages live in the language file now.
@@ -201,5 +205,64 @@ class ConfigKeysTest {
 
         assertEquals("@Steve", PlainTextComponentSerializer.plainText().serialize(rendered));
         assertEquals(TextColor.fromHexString("#a9e871"), rendered.color());
+    }
+
+    // ---- group.list ----
+
+    @Test
+    void groupListDefaultsToOneExampleEntry() {
+        Map<String, GroupSettings> list = load().get(ConfigKeys.GROUP_LIST);
+
+        assertEquals(Set.of("default"), list.keySet());
+        GroupSettings example = list.get("default");
+        assertEquals("<#c0dee6>@<group>", example.display());
+        assertTrue(example.sound().contains("item.totem.use"));
+        assertEquals(Duration.ofSeconds(5), example.cooldown());
+    }
+
+    @Test
+    void groupListEntryMayLeaveFieldsOut() throws IOException {
+        write("""
+                group:
+                  list:
+                    vip:
+                      display: "<gold>@<group>"
+                    staff:
+                      cooldown: 1m30s
+                    builder:
+                      sound: ""
+                """);
+        Map<String, GroupSettings> list = load().get(ConfigKeys.GROUP_LIST);
+
+        assertEquals(Set.of("vip", "staff", "builder"), list.keySet());
+        assertEquals(new GroupSettings("<gold>@<group>", null, null), list.get("vip"));
+        assertEquals(new GroupSettings(null, null, Duration.ofSeconds(90)), list.get("staff"));
+        assertEquals(new GroupSettings(null, "", null), list.get("builder"));
+    }
+
+    @Test
+    void deletedExampleEntryStaysDeleted() throws IOException {
+        write("""
+                group:
+                  list:
+                    vip:
+                      cooldown: 0
+                """);
+        XConfig config = load();
+        config.update();
+
+        assertEquals(Set.of("vip"), config.get(ConfigKeys.GROUP_LIST).keySet());
+        assertEquals(Duration.ZERO, config.get(ConfigKeys.GROUP_LIST).get("vip").cooldown());
+    }
+
+    @Test
+    void brokenGroupListEntryFallsBackToDefault() throws IOException {
+        write("""
+                group:
+                  list:
+                    vip:
+                      cooldown: soon
+                """);
+        assertEquals(Set.of("default"), load().get(ConfigKeys.GROUP_LIST).keySet());
     }
 }

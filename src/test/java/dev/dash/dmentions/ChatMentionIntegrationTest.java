@@ -1164,4 +1164,128 @@ class ChatMentionIntegrationTest {
         assertEquals(PREFIX + "Alex adlı oyuncu vip üyelerinden bahsetti.", plain(steve.nextActionBar()));
         assertEquals(PREFIX + "vip üyelerinden bahsettin.", plain(alex.nextActionBar()));
     }
+
+    // ---- group.list overrides ----
+
+    @Test
+    void groupListDisplayAppliesToThatGroupOnly() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve).group("staff", steve), """
+                group:
+                  list:
+                    vip:
+                      display: "<gold>[<group>]"
+                    ghost:
+                      display: "<red>never used"
+                """);
+        allowGroup(alex, "vip");
+        allowGroup(alex, "staff");
+        alex.addAttachment(plugin).setPermission("dmentions.mention.group.ghost", true);
+
+        AsyncChatEvent event = chat(alex, "@vip @staff @ghost");
+
+        assertEquals("[vip] @staff @ghost", plain(event.message()));
+        assertEquals(TextColor.color(0xFFAA00), colourOf(event.message(), "[vip]"));
+        assertEquals(GROUP_COLOR, colourOf(event.message(), "@staff"));
+    }
+
+    @Test
+    void groupListNameMatchIgnoresCase() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve), """
+                group:
+                  list:
+                    VIP:
+                      display: "<gold>[<group>]"
+                """);
+        allowGroup(alex, "vip");
+
+        assertEquals("[vip]", plain(chat(alex, "@vip").message()));
+    }
+
+    @Test
+    void groupListCooldownOverridesTheGlobalOne() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve).group("staff", steve), """
+                group:
+                  list:
+                    vip:
+                      cooldown: 30s
+                """);
+        allowGroup(alex, "vip");
+        allowGroup(alex, "staff");
+
+        chat(alex, "@vip");
+        alex.nextActionBar();
+        chat(alex, "@vip");
+        assertEquals("You must wait 30s before mentioning.", plain(alex.nextActionBar()));
+
+        chat(alex, "@staff");
+        alex.nextActionBar();
+        chat(alex, "@staff");
+        assertEquals("You must wait 5s before mentioning.", plain(alex.nextActionBar()));
+    }
+
+    @Test
+    void groupListZeroCooldownTurnsTheCooldownOff() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve), """
+                group:
+                  list:
+                    vip:
+                      cooldown: 0
+                """);
+        allowGroup(alex, "vip");
+
+        chat(alex, "@vip");
+        chat(alex, "@vip");
+
+        assertEquals(2, soundsHeard(steve));
+    }
+
+    @Test
+    void groupListSoundOverridesTheGlobalOne() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve).group("staff", steve), """
+                allow_multiple_notifications: true
+                group:
+                  list:
+                    vip:
+                      sound: "minecraft:block.bell.use"
+                """);
+        allowGroup(alex, "vip");
+        allowGroup(alex, "staff");
+
+        chat(alex, "@vip @staff");
+
+        assertEquals(2, soundsHeard(steve));
+        assertTrue(steve.getHeardSounds().get(0).getSound().contains("block.bell.use"));
+        assertTrue(steve.getHeardSounds().get(1).getSound().contains("item.totem.use"));
+    }
+
+    @Test
+    void emptyGroupListSoundIsSilentButStillNotifies() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve), """
+                group:
+                  list:
+                    vip:
+                      sound: ""
+                """);
+        allowGroup(alex, "vip");
+
+        chat(alex, "@vip");
+
+        assertEquals(0, soundsHeard(steve));
+        assertEquals(PREFIX + "Player Alex mentioned vip members.", plain(steve.nextActionBar()));
+    }
+
+    @Test
+    void disabledGroupStaysDisabledEvenWithAGroupListEntry() throws Exception {
+        useGroups(new FakeGroups().group("vip", steve), """
+                group:
+                  disabled_groups: [vip]
+                  list:
+                    vip:
+                      display: "<gold>[<group>]"
+                """);
+        alex.setOp(true);
+
+        assertEquals(Component.text("@vip"), chat(alex, "@vip").message());
+        assertEquals(0, soundsHeard(steve));
+    }
 }
