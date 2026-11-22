@@ -64,9 +64,7 @@ public final class ChatListener implements Listener {
             }
 
             Component display = candidate.type().display(candidate);
-            if (!candidate.targetId().equals(sender.getUniqueId().toString())) {
-                pending.add(new PendingMention(sender, candidate));
-            }
+            pending.add(new PendingMention(sender, candidate));
             replacements.add(new Replacement(m.start(), m.end(), display));
         }
 

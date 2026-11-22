@@ -23,6 +23,7 @@ public final class MentionRegistry {
             if (!type.enabled()) continue;
 
             for (MentionCandidate c : type.candidates()) {
+                if (sender.getUniqueId().toString().equals(c.targetId())) continue;
                 String permission = type.permission(c);
                 if (!permission.isEmpty() && !sender.hasPermission(permission)) continue;
                 candidates.putIfAbsent(c.keyword(), c);
