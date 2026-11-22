@@ -46,7 +46,7 @@ public final class MentionNotifier {
 
                     reachedAny = true;
                     sound.ifPresent(target::playSound);
-                    messageService.send(target, targetMessage, senderTag);
+                    messageService.send(target, targetMessage, TagResolver.resolver(senderTag, type.targetPlaceholders(mention.candidate())));
                 }
 
                 if (sender.isOnline() && reachedAny) {

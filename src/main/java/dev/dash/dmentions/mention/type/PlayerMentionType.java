@@ -101,4 +101,9 @@ public final class PlayerMentionType implements MentionType {
     public TagResolver senderPlaceholders(MentionCandidate candidate) {
         return Placeholder.unparsed("target", candidate.label());
     }
+
+    @Override
+    public TagResolver targetPlaceholders(MentionCandidate candidate) {
+        return TagResolver.empty();
+    }
 }

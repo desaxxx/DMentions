@@ -26,6 +26,10 @@ public interface MentionType {
 
     String permission();
 
+    default String permission(MentionCandidate candidate) {
+        return permission();
+    }
+
     PermissionDefault permissionDefault();
 
     Duration cooldown();
@@ -39,4 +43,6 @@ public interface MentionType {
     ConfigKey<List<Notification>> targetMessage();
 
     TagResolver senderPlaceholders(MentionCandidate candidate);
+
+    TagResolver targetPlaceholders(MentionCandidate candidate);
 }

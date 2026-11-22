@@ -21,9 +21,12 @@ public final class MentionRegistry {
 
         for (MentionType type : types) {
             if (!type.enabled()) continue;
-            if (!type.permission().isEmpty() && !sender.hasPermission(type.permission())) continue;
 
-            type.candidates().forEach(c -> candidates.putIfAbsent(c.keyword(), c)); 
+            for (MentionCandidate c : type.candidates()) {
+                String permission = type.permission(c);
+                if (!permission.isEmpty() && !sender.hasPermission(permission)) continue;
+                candidates.putIfAbsent(c.keyword(), c);
+            }
         }
 
         return candidates;

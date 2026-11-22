@@ -4,6 +4,7 @@ main: dev.dash.dmentions.DMentions
 api-version: '1.21'
 load: POSTWORLD
 authors: [ desaxx ]
+softdepend: [LuckPerms]
 permissions:
   dmentions.cooldown.bypass:
     default: op

@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
+    compileOnly("net.luckperms:api:5.4")
     implementation("org.bstats:bstats-bukkit:3.2.1")
 
     implementation("dev.dash:loom:0.2.1")

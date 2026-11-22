@@ -2,11 +2,15 @@ package dev.dash.dmentions;
 
 import dev.dash.dmentions.config.ConfigKeys;
 import dev.dash.dmentions.config.LangKeys;
+import dev.dash.dmentions.group.GroupProvider;
+import dev.dash.dmentions.group.LuckPermsGroupProvider;
+import dev.dash.dmentions.group.NoGroupProvider;
 import dev.dash.dmentions.listener.ChatListener;
 import dev.dash.dmentions.mention.CooldownTracker;
 import dev.dash.dmentions.mention.MentionRegistry;
 import dev.dash.dmentions.mention.PendingMentions;
 import dev.dash.dmentions.mention.type.EveryoneMentionType;
+import dev.dash.dmentions.mention.type.GroupMentionType;
 import dev.dash.dmentions.mention.type.NearbyMentionType;
 import dev.dash.dmentions.mention.type.PlayerMentionType;
 import dev.dash.dmentions.message.MessageService;
@@ -53,6 +57,8 @@ public class DMentions extends JavaPlugin {
             return;
         }
 
+        GroupProvider groupProvider = fetchGroupProvider(config);
+
         CooldownTracker cooldownTracker = new CooldownTracker();
         PendingMentions pendingMentions = new PendingMentions();
         MessageService messageService = new MessageService(config, lang);
@@ -60,6 +66,7 @@ public class DMentions extends JavaPlugin {
         MentionRegistry mentionRegistry = new MentionRegistry(
                 new EveryoneMentionType(config),
                 new NearbyMentionType(config),
+                new GroupMentionType(config, groupProvider),
                 new PlayerMentionType(config)
         );
         getServer().getPluginManager().registerEvents(new ChatListener(config, cooldownTracker, pendingMentions, mentionNotifier, mentionRegistry), this);
@@ -74,6 +81,26 @@ public class DMentions extends JavaPlugin {
             permissionRegistrar.unregisterAll();
             permissionRegistrar = null;
         }
+    }
+
+    private GroupProvider fetchGroupProvider(XConfig config) {
+        GroupProvider provider = getServer().getServicesManager().load(GroupProvider.class);
+        if (provider == null && getServer().getPluginManager().isPluginEnabled("LuckPerms")) {
+            try {
+                provider = new LuckPermsGroupProvider();
+            } catch (IllegalStateException e) {
+                getLogger().log(Level.WARNING, "LuckPerms found but was not loaded yet.", e);
+            }
+        }
+
+        if (provider == null) {
+            provider = new NoGroupProvider();
+            if (config.find(ConfigKeys.GROUP_ENABLED).orElse(false)) {
+                getLogger().warning("Group mentioning is enabled but no group provider was found.");
+            }
+        }
+
+        return provider;
     }
 
     private void saveBundledLanguages() {

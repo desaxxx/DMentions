@@ -91,4 +91,9 @@ public final class EveryoneMentionType implements MentionType {
     public TagResolver senderPlaceholders(MentionCandidate candidate) {
         return TagResolver.empty();
     }
+
+    @Override
+    public TagResolver targetPlaceholders(MentionCandidate candidate) {
+        return TagResolver.empty();
+    }
 }

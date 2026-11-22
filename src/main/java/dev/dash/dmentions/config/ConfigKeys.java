@@ -121,4 +121,33 @@ public final class ConfigKeys {
             .defaultValue(20)
             .validate(r -> r > 0, "Nearby radius must be greater than 0")
             .build();
+
+    public static final ConfigKey<Boolean> GROUP_ENABLED = ConfigKey.builder("group.enabled", Boolean.class)
+            .defaultValue(true)
+            .build();
+
+    public static final ConfigKey<String> GROUP_PERMISSION = ConfigKey.builder("group.permission", String.class)
+            .defaultValue("dmentions.mention.group.<group>")
+            .build();
+
+    public static final ConfigKey<String> GROUP_KEYWORD = ConfigKey.builder("group.keyword", String.class)
+            .defaultValue("@<group>")
+            .validate(k -> k.contains("<group>"), "Group keyword must contain <group>")
+            .build();
+
+    public static final ConfigKey<String> GROUP_DISPLAY = ConfigKey.builder("group.display", String.class)
+            .defaultValue("<#73c7dc>@<group>")
+            .build();
+
+    public static final ConfigKey<String> GROUP_SOUND = ConfigKey.builder("group.sound", String.class)
+            .defaultValue("minecraft:item.totem.use;1.0;1.0")
+            .build();
+
+    public static final ConfigKey<Duration> GROUP_COOLDOWN = ConfigKey.builder("group.cooldown", Duration.class)
+            .defaultValue(Duration.ofSeconds(5))
+            .build();
+
+    public static final ConfigKey<List<String>> GROUP_DISABLED_GROUPS = ConfigKey.builder("group.disabled_groups", new TypeToken<List<String>>() {})
+            .defaultValue(List.of("admin","owner"))
+            .build();
 }
