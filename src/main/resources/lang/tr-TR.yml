@@ -35,3 +35,10 @@ nearby:
   target_message:
     - "ACTION_BAR=<prefix> <#ddf7a6><sender><#f4e4c0> adlı oyuncu yakındaki oyunculardan bahsetti."
     - "TITLE=<prefix>||<#f4e4c0>Sohbette biri senden bahsetti."
+
+group:
+  sender_message:
+    - "ACTION_BAR=<prefix> <#ddf7a6><group><#f4e4c0> üyelerinden bahsettin."
+  target_message:
+    - "ACTION_BAR=<prefix> <#ddf7a6><sender><#f4e4c0> adlı oyuncu <#ddf7a6><group><#f4e4c0> üyelerinden bahsetti."
+    - "TITLE=<prefix>||<#f4e4c0>Sohbette biri senden bahsetti."
