@@ -42,3 +42,12 @@ group:
   target_message:
     - "ACTION_BAR=<prefix> <#ddf7a6><sender><#f4e4c0> adlı oyuncu <#ddf7a6><group><#f4e4c0> üyelerinden bahsetti."
     - "TITLE=<prefix>||<#f4e4c0>Sohbette biri senden bahsetti."
+
+command:
+  help:
+    header:
+      - "CHAT=<prefix> <gray>Komutlar:"
+    version:
+      - "CHAT=<#ffd16d>/dms version <gray>- Eklenti sürümünü gösterir"
+  version:
+    - "CHAT=<prefix> <gray>DMentions <white><version><gray> sürümü çalışıyor"
