@@ -1,7 +1,7 @@
 name: DMentions
 version: '${version}'
 main: dev.dash.dmentions.DMentions
-api-version: '1.21.11'
+api-version: '1.21'
 load: POSTWORLD
 authors: [ desaxx ]
 permissions:
