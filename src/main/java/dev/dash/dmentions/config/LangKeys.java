@@ -73,7 +73,11 @@ public final class LangKeys {
             .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms version <gray>- Show the plugin version", "")))
             .build();
 
-    public static final ConfigKey<List<Notification>> COMMAND_HELP_SEND = ConfigKey.elementList("command.help.send", Notification.class, NotificationAdapter.INSTANCE)
+    public static final ConfigKey<List<Notification>> COMMAND_HELP_TOGGLE = ConfigKey.elementList("command.help.toggle", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms toggle <gray>- Turn being mentioned on or off", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_HELP_SEND =ConfigKey.elementList("command.help.send", Notification.class, NotificationAdapter.INSTANCE)
             .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms send <keyword> <gray>- Send a mention", "")))
             .build();
 
@@ -89,7 +93,15 @@ public final class LangKeys {
             .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <gray>Running DMentions <white><version>", "")))
             .build();
 
-    public static final ConfigKey<List<Notification>> COMMAND_SEND_INVALID_KEYWORD = ConfigKey.elementList("command.send.invalid_keyword", Notification.class, NotificationAdapter.INSTANCE)
+    public static final ConfigKey<List<Notification>> COMMAND_TOGGLE_ENABLED = ConfigKey.elementList("command.toggle.enabled", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <green>You will now be mentioned.", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_TOGGLE_DISABLED = ConfigKey.elementList("command.toggle.disabled", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <yellow>You will no longer be mentioned.", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_SEND_INVALID_KEYWORD =ConfigKey.elementList("command.send.invalid_keyword", Notification.class, NotificationAdapter.INSTANCE)
             .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <red>Invalid keyword: <white><keyword>", "")))
             .build();
 

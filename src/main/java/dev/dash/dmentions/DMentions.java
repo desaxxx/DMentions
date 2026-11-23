@@ -4,6 +4,7 @@ import com.tcoded.folialib.FoliaLib;
 import dev.dash.dmentions.command.DMentionsCommand;
 import dev.dash.dmentions.command.sub.ReloadSubCommand;
 import dev.dash.dmentions.command.sub.SendSubCommand;
+import dev.dash.dmentions.command.sub.ToggleSubCommand;
 import dev.dash.dmentions.command.sub.VersionSubCommand;
 import dev.dash.dmentions.config.ConfigKeys;
 import dev.dash.dmentions.config.LangKeys;
@@ -21,13 +22,19 @@ import dev.dash.dmentions.mention.type.PlayerMentionType;
 import dev.dash.dmentions.message.MessageService;
 import dev.dash.dmentions.notify.MentionNotifier;
 import dev.dash.dmentions.permission.PermissionRegistrar;
+import dev.dash.dmentions.storage.UserRepository;
+import dev.dash.dmentions.storage.YamlUserRepository;
+import dev.dash.dmentions.user.UserListener;
+import dev.dash.dmentions.user.UserService;
 import dev.yoshi.xconfig.XConfig;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 
@@ -35,6 +42,7 @@ public class DMentions extends JavaPlugin {
 
     private PermissionRegistrar permissionRegistrar;
     private FoliaLib foliaLib;
+    private UserService userService;
 
     private XConfig config;
     private MessageService messageService;
@@ -63,6 +71,16 @@ public class DMentions extends JavaPlugin {
             return;
         }
 
+        UserRepository repository = new YamlUserRepository(getDataPath().resolve("data/users.yml"), getLogger());
+        try {
+            repository.init();
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Could not initialize user repository, disabling the plugin.", e);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+        userService = new UserService(repository, getLogger());
+
         foliaLib = new FoliaLib(this);
 
         GroupProvider groupProvider = fetchGroupProvider(config);
@@ -70,19 +88,27 @@ public class DMentions extends JavaPlugin {
         CooldownTracker cooldownTracker = new CooldownTracker();
         PendingMentions pendingMentions = new PendingMentions();
         messageService = new MessageService(config, lang);
-        MentionNotifier mentionNotifier = new MentionNotifier(foliaLib.getScheduler(), messageService, config);
+        MentionNotifier mentionNotifier = new MentionNotifier(foliaLib.getScheduler(), messageService, config, userService);
         mentionRegistry = new MentionRegistry(
                 new EveryoneMentionType(config),
                 new NearbyMentionType(config),
                 new GroupMentionType(config, groupProvider),
-                new PlayerMentionType(config)
+                new PlayerMentionType(config, userService)
         );
         getServer().getPluginManager().registerEvents(new ChatListener(config, cooldownTracker, pendingMentions, mentionNotifier, mentionRegistry), this);
+
+        getServer().getPluginManager().registerEvents(new UserListener(userService), this);
+        // players already online
+        for (Player player : getServer().getOnlinePlayers()) {
+            UUID playerId = player.getUniqueId();
+            foliaLib.getScheduler().runAsync(task -> userService.load(playerId));
+        }
 
         permissionRegistrar = new PermissionRegistrar(getServer().getPluginManager());
         permissionRegistrar.register(mentionRegistry.types());
 
         command = new DMentionsCommand(List.of(
+                new ToggleSubCommand(messageService, userService),
                 new SendSubCommand(config, messageService, mentionRegistry),
                 new ReloadSubCommand(messageService, this::reload),
                 new VersionSubCommand(messageService, getPluginMeta().getVersion())
@@ -93,6 +119,10 @@ public class DMentions extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (userService != null) {
+            userService.shutdown();
+            userService = null;
+        }
         if (permissionRegistrar != null) {
             permissionRegistrar.unregisterAll();
             permissionRegistrar = null;
@@ -107,12 +137,6 @@ public class DMentions extends JavaPlugin {
         command = null;
     }
 
-    /**
-     * Reloads config.yml and the language file in place: every component keeps its {@link XConfig},
-     * only the values behind it change. Permission nodes come from the config, so they are re-registered.
-     *
-     * @return false if a file could not be read; the error is logged
-     */
     public boolean reload() {
         if (!isEnabled()) return false;
         try {
@@ -130,7 +154,6 @@ public class DMentions extends JavaPlugin {
         return true;
     }
 
-    /** Builds the language file named by {@code lang_file}, falling back to en-US if it does not exist. */
     private XConfig loadLang() {
         String langFile = config.get(ConfigKeys.LANG_FILE);
         if (!getDataPath().resolve("lang/" + langFile + ".yml").toFile().exists() && !langFile.equals("en-US")) {

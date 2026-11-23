@@ -47,6 +47,8 @@ command:
   help:
     header:
       - "CHAT=<prefix> <gray>Komutlar:"
+    toggle:
+      - "CHAT=<#ffd16d>/dms toggle <gray>- Etiketlenmeyi açar veya kapatır"
     send:
       - "CHAT=<#ffd16d>/dms send <keyword> <gray>- Etiket gönderir"
     reload:
@@ -57,6 +59,11 @@ command:
     - "CHAT=<prefix> <red>Bu komutu kullanmak için oyuncu olmalısın."
   version:
     - "CHAT=<prefix> <gray>DMentions <white><version><gray> sürümü çalışıyor"
+  toggle:
+    enabled:
+      - "CHAT=<prefix> <green>Artık etiketlenebilirsin."
+    disabled:
+      - "CHAT=<prefix> <yellow>Artık etiketlenmeyeceksin."
   send:
     invalid_keyword:
       - "CHAT=<prefix> <red>Geçersiz anahtar kelime: <white><keyword>"

@@ -20,6 +20,10 @@ public interface MentionType {
 
     boolean enabled();
 
+    default boolean respectsToggle() {
+        return true;
+    }
+
     List<MentionCandidate> candidates();
 
     Component display(MentionCandidate candidate);

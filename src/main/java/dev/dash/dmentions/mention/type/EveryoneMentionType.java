@@ -43,6 +43,11 @@ public final class EveryoneMentionType implements MentionType {
     }
 
     @Override
+    public boolean respectsToggle() {
+        return false;
+    }
+
+    @Override
     public List<MentionCandidate> candidates() {
         return List.of(new MentionCandidate(config.get(ConfigKeys.EVERYONE_KEYWORD), this, ID, ID));
     }

@@ -6,6 +6,8 @@ import dev.dash.dmentions.mention.MentionCandidate;
 import dev.dash.dmentions.mention.MentionType;
 import dev.dash.dmentions.mention.SoundSpec;
 import dev.dash.dmentions.message.Notification;
+import dev.dash.dmentions.user.UserData;
+import dev.dash.dmentions.user.UserService;
 import dev.yoshi.xconfig.ConfigKey;
 import dev.yoshi.xconfig.XConfig;
 import net.kyori.adventure.sound.Sound;
@@ -26,9 +28,11 @@ public final class PlayerMentionType implements MentionType {
     public static final String ID = "player";
 
     private final XConfig config;
+    private final UserService userService;
 
-    public PlayerMentionType(XConfig config) {
+    public PlayerMentionType(XConfig config, UserService userService) {
         this.config = config;
+        this.userService = userService;
     }
 
     @Override
@@ -45,6 +49,8 @@ public final class PlayerMentionType implements MentionType {
     public List<MentionCandidate> candidates() {
         List<MentionCandidate> result = new ArrayList<>();
         for (Player target : Bukkit.getOnlinePlayers()) {
+            if (respectsToggle() && !userService.isMentionable(target.getUniqueId())) continue;
+
             String keyword = config.get(ConfigKeys.PLAYER_KEYWORD).replace("<player>", target.getName());
             MentionCandidate candidate = new MentionCandidate(keyword, this, target.getUniqueId().toString(), target.getName());
             result.add(candidate);
