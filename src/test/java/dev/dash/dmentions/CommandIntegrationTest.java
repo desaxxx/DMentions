@@ -6,6 +6,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.junit.jupiter.api.AfterEach;
@@ -37,6 +38,9 @@ class CommandIntegrationTest {
     private static final String PREFIX = "[DMentions] ";
     private static final String HEADER = PREFIX + "Commands:";
     private static final String VERSION_LINE = "/dms version - Show the plugin version";
+    private static final String SEND_LINE = "/dms send <keyword> - Send a mention";
+    private static final String RELOAD_LINE = "/dms reload - Reload the config and language files";
+    private static final String RELOADED = PREFIX + "Reloaded the config and language files.";
 
     private ServerMock server;
     private DMentions plugin;
@@ -181,5 +185,162 @@ class CommandIntegrationTest {
 
         alex.performCommand("dms version");
         assertEquals(List.of(PREFIX + "DMentions " + version() + " sürümü çalışıyor"), received(alex));
+    }
+
+    // ---- send / reload ----
+
+    @Test
+    void operatorSeesEverySubCommandInHelpAndTabCompletion() {
+        alex.setOp(true);
+
+        alex.performCommand("dms");
+        assertEquals(List.of(HEADER, SEND_LINE, RELOAD_LINE, VERSION_LINE), received(alex));
+        assertEquals(List.of("help", "reload", "send", "version"), clientSubCommands(alex, "dms"));
+    }
+
+    @Test
+    void sendAndReloadPermissionsDefaultToOp() {
+        for (String node : List.of("dmentions.command.send", "dmentions.command.reload")) {
+            Permission permission = server.getPluginManager().getPermission(node);
+            assertNotNull(permission, node);
+            assertEquals(PermissionDefault.OP, permission.getDefault(), node);
+        }
+    }
+
+    /** Runs the command, then lets the chat event it causes (fired async by MockBukkit) finish and deliver. */
+    private void performAndDeliver(PlayerMock player, String command) {
+        player.performCommand(command);
+        server.getScheduler().waitAsyncEventsFinished();
+        server.getScheduler().performTicks(2);
+    }
+
+    @Test
+    void sendMentionsThroughTheChatPipeline() {
+        PlayerMock steve = server.addPlayer("Steve");
+        alex.setOp(true);
+
+        performAndDeliver(alex, "dms send Steve");
+
+        assertEquals(1, steve.getHeardSounds().size());
+        assertEquals(PREFIX + "Alex mentioned you.", PLAIN.serialize(steve.nextActionBar()));
+    }
+
+    @Test
+    void sendMatchesTheKeywordIgnoringCaseByDefault() {
+        PlayerMock steve = server.addPlayer("Steve");
+        alex.setOp(true);
+
+        performAndDeliver(alex, "dms send steve");
+
+        assertEquals(1, steve.getHeardSounds().size());
+    }
+
+    @Test
+    void sendRejectsAnUnknownKeyword() {
+        alex.setOp(true);
+
+        alex.performCommand("dms send Nobody");
+
+        assertEquals(List.of(PREFIX + "Invalid keyword: Nobody"), received(alex));
+    }
+
+    @Test
+    void sendWithoutAKeywordShowsItsUsage() {
+        alex.setOp(true);
+
+        alex.performCommand("dms send");
+
+        assertEquals(List.of(SEND_LINE), received(alex));
+    }
+
+    @Test
+    void sendFromTheConsoleIsRefused() {
+        ConsoleCommandSenderMock console = (ConsoleCommandSenderMock) server.getConsoleSender();
+
+        server.dispatchCommand(console, "dms send Alex");
+
+        assertEquals(PREFIX + "You must be a player to use this command.", PLAIN.serialize(console.nextComponentMessage()));
+    }
+
+    @Test
+    void sendSuggestsTheKeywordsThePlayerCanUse() throws Exception {
+        server.addPlayer("Steve");
+        server.addPlayer("Stella");
+        alex.setOp(true);
+        server.dispatchCommand(server.getConsoleSender(), "dmentions help");
+        CommandDispatcher<CommandSourceStack> dispatcher = PaperCommandsMock.INSTANCE.getDispatcherInternal();
+        CommandSourceStack source = CommandSourceStackMock.from(alex);
+
+        var suggestions = dispatcher.getCompletionSuggestions(dispatcher.parse("dms send st", source)).get();
+
+        assertEquals(List.of("Stella", "Steve"), suggestions.getList().stream().map(s -> s.getText()).toList());
+    }
+
+    private void editConfig(String path, Object value) throws IOException {
+        Path file = plugin.getDataPath().resolve("config.yml");
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file.toFile());
+        yaml.set(path, value);
+        yaml.save(file.toFile());
+    }
+
+    @Test
+    void reloadAppliesConfigChangesWithoutARestart() throws IOException {
+        alex.setOp(true);
+        editConfig("prefix", "<gray>[New]");
+
+        alex.performCommand("dms reload");
+        assertEquals(List.of("[New] Reloaded the config and language files."), received(alex));
+
+        alex.performCommand("dms version");
+        assertEquals(List.of("[New] Running DMentions " + version()), received(alex));
+    }
+
+    @Test
+    void reloadSwitchesTheLanguageFile() throws IOException {
+        alex.setOp(true);
+        Path data = plugin.getDataPath();
+        Files.createDirectories(data.resolve("lang"));
+        try (InputStream in = getClass().getResourceAsStream("/lang/tr-TR.yml")) {
+            Files.copy(in, data.resolve("lang/tr-TR.yml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+        editConfig("lang_file", "tr-TR");
+
+        alex.performCommand("dms reload");
+
+        assertEquals(List.of(PREFIX + "Config ve dil dosyaları yeniden yüklendi."), received(alex));
+    }
+
+    @Test
+    void reloadReRegistersConfiguredPermissionNodes() throws IOException {
+        String oldNode = YamlConfiguration.loadConfiguration(plugin.getDataPath().resolve("config.yml").toFile())
+                .getString("player.permission");
+        editConfig("player.permission", "custom.mention.player");
+
+        server.dispatchCommand(server.getConsoleSender(), "dms reload");
+
+        assertNull(server.getPluginManager().getPermission(oldNode));
+        assertNotNull(server.getPluginManager().getPermission("custom.mention.player"));
+        assertNotNull(server.getPluginManager().getPermission("dmentions.command.reload"));
+    }
+
+    @Test
+    void reloadKeepsMentionsWorking() throws IOException {
+        PlayerMock steve = server.addPlayer("Steve");
+        alex.setOp(true);
+
+        alex.performCommand("dms reload");
+        performAndDeliver(alex, "dms send Steve");
+
+        assertEquals(1, steve.getHeardSounds().size());
+    }
+
+    @Test
+    void reloadReportsABrokenConfig() throws IOException {
+        alex.setOp(true);
+        Files.writeString(plugin.getDataPath().resolve("config.yml"), "prefix: [unclosed\n  : :");
+
+        alex.performCommand("dms reload");
+
+        assertEquals(List.of(PREFIX + "Reload failed. See the console for details."), received(alex));
     }
 }

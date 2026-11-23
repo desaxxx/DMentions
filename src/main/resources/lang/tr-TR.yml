@@ -47,7 +47,21 @@ command:
   help:
     header:
       - "CHAT=<prefix> <gray>Komutlar:"
+    send:
+      - "CHAT=<#ffd16d>/dms send <keyword> <gray>- Etiket gönderir"
+    reload:
+      - "CHAT=<#ffd16d>/dms reload <gray>- Config ve dil dosyalarını yeniden yükler"
     version:
       - "CHAT=<#ffd16d>/dms version <gray>- Eklenti sürümünü gösterir"
+  must_be_player:
+    - "CHAT=<prefix> <red>Bu komutu kullanmak için oyuncu olmalısın."
   version:
     - "CHAT=<prefix> <gray>DMentions <white><version><gray> sürümü çalışıyor"
+  send:
+    invalid_keyword:
+      - "CHAT=<prefix> <red>Geçersiz anahtar kelime: <white><keyword>"
+  reload:
+    success:
+      - "CHAT=<prefix> <green>Config ve dil dosyaları yeniden yüklendi."
+    failed:
+      - "CHAT=<prefix> <red>Yeniden yükleme başarısız oldu. Ayrıntılar için konsola bak."

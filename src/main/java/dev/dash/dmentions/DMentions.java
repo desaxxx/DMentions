@@ -2,6 +2,8 @@ package dev.dash.dmentions;
 
 import com.tcoded.folialib.FoliaLib;
 import dev.dash.dmentions.command.DMentionsCommand;
+import dev.dash.dmentions.command.sub.ReloadSubCommand;
+import dev.dash.dmentions.command.sub.SendSubCommand;
 import dev.dash.dmentions.command.sub.VersionSubCommand;
 import dev.dash.dmentions.config.ConfigKeys;
 import dev.dash.dmentions.config.LangKeys;
@@ -34,10 +36,14 @@ public class DMentions extends JavaPlugin {
     private PermissionRegistrar permissionRegistrar;
     private FoliaLib foliaLib;
 
+    private XConfig config;
+    private MessageService messageService;
+    private MentionRegistry mentionRegistry;
+    private DMentionsCommand command;
+
     @Override
     public void onEnable() {
 
-        XConfig config;
         try {
             config = XConfig.builder(getDataPath().resolve("config.yml")).keys(ConfigKeys.class).logger(getLogger()).build();
         } catch (Exception e) {
@@ -48,14 +54,9 @@ public class DMentions extends JavaPlugin {
 
         saveBundledLanguages();
 
-        String langFile = config.get(ConfigKeys.LANG_FILE);
-        if (!getDataPath().resolve("lang/" + langFile + ".yml").toFile().exists() && !langFile.equals("en-US")) {
-            getLogger().warning("Could not find language file '%s', using default 'en-US'.".formatted(langFile));
-            langFile = "en-US";
-        }
         XConfig lang;
         try {
-            lang = XConfig.builder(getDataPath().resolve("lang/" + langFile + ".yml")).keys(LangKeys.class).logger(getLogger()).build();
+            lang = loadLang();
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Could not load lang file, disabling the plugin.", e);
             Bukkit.getPluginManager().disablePlugin(this);
@@ -68,9 +69,9 @@ public class DMentions extends JavaPlugin {
 
         CooldownTracker cooldownTracker = new CooldownTracker();
         PendingMentions pendingMentions = new PendingMentions();
-        MessageService messageService = new MessageService(config, lang);
+        messageService = new MessageService(config, lang);
         MentionNotifier mentionNotifier = new MentionNotifier(foliaLib.getScheduler(), messageService, config);
-        MentionRegistry mentionRegistry = new MentionRegistry(
+        mentionRegistry = new MentionRegistry(
                 new EveryoneMentionType(config),
                 new NearbyMentionType(config),
                 new GroupMentionType(config, groupProvider),
@@ -81,7 +82,9 @@ public class DMentions extends JavaPlugin {
         permissionRegistrar = new PermissionRegistrar(getServer().getPluginManager());
         permissionRegistrar.register(mentionRegistry.types());
 
-        DMentionsCommand command = new DMentionsCommand(List.of(
+        command = new DMentionsCommand(List.of(
+                new SendSubCommand(config, messageService, mentionRegistry),
+                new ReloadSubCommand(messageService, this::reload),
                 new VersionSubCommand(messageService, getPluginMeta().getVersion())
         ), messageService);
         permissionRegistrar.registerCommands(command.subCommands());
@@ -98,6 +101,43 @@ public class DMentions extends JavaPlugin {
             foliaLib.getScheduler().cancelAllTasks();
             foliaLib = null;
         }
+        config = null;
+        messageService = null;
+        mentionRegistry = null;
+        command = null;
+    }
+
+    /**
+     * Reloads config.yml and the language file in place: every component keeps its {@link XConfig},
+     * only the values behind it change. Permission nodes come from the config, so they are re-registered.
+     *
+     * @return false if a file could not be read; the error is logged
+     */
+    public boolean reload() {
+        if (!isEnabled()) return false;
+        try {
+            config.update();
+            saveBundledLanguages();
+            messageService.setLang(loadLang());
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Could not reload the configuration.", e);
+            return false;
+        }
+
+        permissionRegistrar.unregisterAll();
+        permissionRegistrar.register(mentionRegistry.types());
+        permissionRegistrar.registerCommands(command.subCommands());
+        return true;
+    }
+
+    /** Builds the language file named by {@code lang_file}, falling back to en-US if it does not exist. */
+    private XConfig loadLang() {
+        String langFile = config.get(ConfigKeys.LANG_FILE);
+        if (!getDataPath().resolve("lang/" + langFile + ".yml").toFile().exists() && !langFile.equals("en-US")) {
+            getLogger().warning("Could not find language file '%s', using default 'en-US'.".formatted(langFile));
+            langFile = "en-US";
+        }
+        return XConfig.builder(getDataPath().resolve("lang/" + langFile + ".yml")).keys(LangKeys.class).logger(getLogger()).build();
     }
 
     private GroupProvider fetchGroupProvider(XConfig config) {

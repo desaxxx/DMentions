@@ -17,10 +17,15 @@ public final class MessageService {
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     private final XConfig config;
-    private final XConfig lang;
+    private volatile XConfig lang;
 
     public MessageService(XConfig config, XConfig lang) {
         this.config = config;
+        this.lang = lang;
+    }
+
+    /** Swaps the language file in place (reload); messages sent afterwards use the new one. */
+    public void setLang(XConfig lang) {
         this.lang = lang;
     }
 

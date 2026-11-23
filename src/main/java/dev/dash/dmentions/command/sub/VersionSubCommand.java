@@ -41,9 +41,10 @@ public class VersionSubCommand implements SubCommand {
 
     @Override
     public ArgumentBuilder<CommandSourceStack, ?> build(LiteralArgumentBuilder<CommandSourceStack> literal) {
-        return literal.executes(ctx -> {
-            messageService.send(ctx.getSource().getSender(), LangKeys.COMMAND_VERSION, Placeholder.unparsed("version", version));
-            return Command.SINGLE_SUCCESS;
-        });
+        return literal
+                .executes(ctx -> {
+                    messageService.send(ctx.getSource().getSender(), LangKeys.COMMAND_VERSION, Placeholder.unparsed("version", version));
+                    return Command.SINGLE_SUCCESS;
+                });
     }
 }

@@ -38,7 +38,9 @@ class LangKeysTest {
             LangKeys.DISABLED_WORLD_WARN, LangKeys.EVERYONE_SENDER_MESSAGE, LangKeys.EVERYONE_TARGET_MESSAGE,
             LangKeys.NEARBY_SENDER_MESSAGE, LangKeys.NEARBY_TARGET_MESSAGE,
             LangKeys.GROUP_SENDER_MESSAGE, LangKeys.GROUP_TARGET_MESSAGE,
-            LangKeys.COMMAND_HELP_HEADER, LangKeys.COMMAND_HELP_VERSION, LangKeys.COMMAND_VERSION);
+            LangKeys.COMMAND_HELP_HEADER, LangKeys.COMMAND_HELP_VERSION, LangKeys.COMMAND_VERSION,
+            LangKeys.COMMAND_HELP_SEND, LangKeys.COMMAND_HELP_RELOAD, LangKeys.COMMAND_MUST_BE_PLAYER,
+            LangKeys.COMMAND_SEND_INVALID_KEYWORD, LangKeys.COMMAND_RELOAD_SUCCESS, LangKeys.COMMAND_RELOAD_FAILED);
 
     private Path file() {
         return dir.resolve("lang.yml");

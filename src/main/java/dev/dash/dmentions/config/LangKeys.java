@@ -73,7 +73,31 @@ public final class LangKeys {
             .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms version <gray>- Show the plugin version", "")))
             .build();
 
+    public static final ConfigKey<List<Notification>> COMMAND_HELP_SEND = ConfigKey.elementList("command.help.send", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms send <keyword> <gray>- Send a mention", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_HELP_RELOAD = ConfigKey.elementList("command.help.reload", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms reload <gray>- Reload the config and language files", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_MUST_BE_PLAYER = ConfigKey.elementList("command.must_be_player", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <red>You must be a player to use this command.", "")))
+            .build();
+
     public static final ConfigKey<List<Notification>> COMMAND_VERSION = ConfigKey.elementList("command.version", Notification.class, NotificationAdapter.INSTANCE)
             .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <gray>Running DMentions <white><version>", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_SEND_INVALID_KEYWORD = ConfigKey.elementList("command.send.invalid_keyword", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <red>Invalid keyword: <white><keyword>", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_RELOAD_SUCCESS = ConfigKey.elementList("command.reload.success", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <green>Reloaded the config and language files.", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_RELOAD_FAILED = ConfigKey.elementList("command.reload.failed", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <red>Reload failed. See the console for details.", "")))
             .build();
 }
