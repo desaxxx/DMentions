@@ -38,6 +38,7 @@ class CommandIntegrationTest {
     private static final String PREFIX = "[DMentions] ";
     private static final String HEADER = PREFIX + "Commands:";
     private static final String VERSION_LINE = "/dms version - Show the plugin version";
+    private static final String TOGGLE_LINE = "/dms toggle - Turn being mentioned on or off";
     private static final String SEND_LINE = "/dms send <keyword> - Send a mention";
     private static final String RELOAD_LINE = "/dms reload - Reload the config and language files";
     private static final String RELOADED = PREFIX + "Reloaded the config and language files.";
@@ -76,14 +77,14 @@ class CommandIntegrationTest {
     void rootCommandShowsHelp() {
         alex.performCommand("dmentions");
 
-        assertEquals(List.of(HEADER, VERSION_LINE), received(alex));
+        assertEquals(List.of(HEADER, TOGGLE_LINE, VERSION_LINE), received(alex));
     }
 
     @Test
     void helpLiteralAndAliasesShowTheSameHelp() {
         for (String command : List.of("dmentions help", "dms", "dms help", "mentions", "mentions help")) {
             alex.performCommand(command);
-            assertEquals(List.of(HEADER, VERSION_LINE), received(alex), command);
+            assertEquals(List.of(HEADER, TOGGLE_LINE, VERSION_LINE), received(alex), command);
         }
     }
 
@@ -110,7 +111,7 @@ class CommandIntegrationTest {
         alex.addAttachment(plugin, "dmentions.command.version", false);
 
         alex.performCommand("dms");
-        assertEquals(List.of(HEADER), received(alex));
+        assertEquals(List.of(HEADER, TOGGLE_LINE), received(alex));
 
         alex.performCommand("dms version");
         assertTrue(received(alex).stream().noneMatch(line -> line.contains("Running DMentions")));
@@ -137,11 +138,11 @@ class CommandIntegrationTest {
     @Test
     void tabCompletionListsHelpAndPermittedSubCommands() {
         for (String label : List.of("dmentions", "dms", "mentions", "dmentions:dmentions")) {
-            assertEquals(List.of("help", "version"), clientSubCommands(alex, label), label);
+            assertEquals(List.of("help", "toggle", "version"), clientSubCommands(alex, label), label);
         }
 
         alex.addAttachment(plugin, "dmentions.command.version", false);
-        assertEquals(List.of("help"), clientSubCommands(alex, "dms"));
+        assertEquals(List.of("help", "toggle"), clientSubCommands(alex, "dms"));
     }
 
     @Test
@@ -181,7 +182,7 @@ class CommandIntegrationTest {
         restart();
 
         alex.performCommand("dms");
-        assertEquals(List.of(PREFIX + "Komutlar:", "/dms version - Eklenti sürümünü gösterir"), received(alex));
+        assertEquals(List.of(PREFIX + "Komutlar:", "/dms toggle - Etiketlenmeyi açar veya kapatır", "/dms version - Eklenti sürümünü gösterir"), received(alex));
 
         alex.performCommand("dms version");
         assertEquals(List.of(PREFIX + "DMentions " + version() + " sürümü çalışıyor"), received(alex));
@@ -194,8 +195,8 @@ class CommandIntegrationTest {
         alex.setOp(true);
 
         alex.performCommand("dms");
-        assertEquals(List.of(HEADER, SEND_LINE, RELOAD_LINE, VERSION_LINE), received(alex));
-        assertEquals(List.of("help", "reload", "send", "version"), clientSubCommands(alex, "dms"));
+        assertEquals(List.of(HEADER, TOGGLE_LINE, SEND_LINE, RELOAD_LINE, VERSION_LINE), received(alex));
+        assertEquals(List.of("help", "reload", "send", "toggle", "version"), clientSubCommands(alex, "dms"));
     }
 
     @Test
@@ -342,5 +343,74 @@ class CommandIntegrationTest {
         alex.performCommand("dms reload");
 
         assertEquals(List.of(PREFIX + "Reload failed. See the console for details."), received(alex));
+    }
+
+    // ---- toggle ----
+
+    @Test
+    void toggleSwitchesBeingMentionedOffAndOn() {
+        PlayerMock steve = server.addPlayer("Steve");
+        alex.setOp(true);
+
+        steve.performCommand("dms toggle");
+        assertEquals(List.of(PREFIX + "You will no longer be mentioned."), received(steve));
+        performAndDeliver(alex, "dms send Steve");
+        assertEquals(List.of(PREFIX + "Invalid keyword: Steve"), received(alex));
+        assertEquals(0, steve.getHeardSounds().size());
+
+        steve.performCommand("dms toggle");
+        assertEquals(List.of(PREFIX + "You will now be mentioned."), received(steve));
+        performAndDeliver(alex, "dms send Steve");
+        assertEquals(1, steve.getHeardSounds().size());
+    }
+
+    @Test
+    void togglePermissionDefaultsToEveryone() {
+        Permission permission = server.getPluginManager().getPermission("dmentions.command.toggle");
+        assertNotNull(permission);
+        assertEquals(PermissionDefault.TRUE, permission.getDefault());
+    }
+
+    @Test
+    void toggleFromTheConsoleIsRefused() {
+        ConsoleCommandSenderMock console = (ConsoleCommandSenderMock) server.getConsoleSender();
+
+        server.dispatchCommand(console, "dms toggle");
+
+        assertEquals(PREFIX + "You must be a player to use this command.", PLAIN.serialize(console.nextComponentMessage()));
+    }
+
+    @Test
+    void toggleIsSavedAndSurvivesARestart() throws IOException {
+        PlayerMock steve = server.addPlayer("Steve");
+        steve.performCommand("dms toggle");
+        received(steve);
+
+        restart();
+        // the new instance loads players that are already online asynchronously
+        server.getScheduler().waitAsyncTasksFinished();
+
+        // checked through chat: MockBukkit keeps the command tree of the first instance after a restart
+        alex.chat("hi Steve");
+        server.getScheduler().waitAsyncEventsFinished();
+        server.getScheduler().performTicks(2);
+        assertEquals(0, steve.getHeardSounds().size());
+        assertTrue(Files.readString(plugin.getDataPath().resolve("data/users.yml")).contains(steve.getUniqueId().toString()));
+    }
+
+    @Test
+    void turkishToggleMessages() throws IOException {
+        Path data = plugin.getDataPath();
+        Files.writeString(data.resolve("config.yml"), "lang_file: tr-TR\n");
+        Files.createDirectories(data.resolve("lang"));
+        try (InputStream in = getClass().getResourceAsStream("/lang/tr-TR.yml")) {
+            Files.copy(in, data.resolve("lang/tr-TR.yml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+        restart();
+
+        alex.performCommand("dms toggle");
+        assertEquals(List.of(PREFIX + "Artık etiketlenmeyeceksin."), received(alex));
+        alex.performCommand("dms toggle");
+        assertEquals(List.of(PREFIX + "Artık etiketlenebilirsin."), received(alex));
     }
 }

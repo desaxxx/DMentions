@@ -1292,4 +1292,77 @@ class ChatMentionIntegrationTest {
         assertEquals(Component.text("@vip"), chat(alex, "@vip").message());
         assertEquals(0, soundsHeard(steve));
     }
+
+    // ---- /dms toggle ----
+
+    /** Turns mentions off through the command. Do it before any restart: MockBukkit keeps the first instance's commands. */
+    private void toggleOff(PlayerMock player) {
+        player.performCommand("dms toggle");
+        while (player.nextComponentMessage() != null) ;
+    }
+
+    @Test
+    void toggledOffPlayerStaysPlainAndGetsNothing() throws InterruptedException {
+        toggleOff(steve);
+
+        AsyncChatEvent event = chat(alex, "hi Steve");
+
+        assertEquals(Component.text("hi Steve"), event.message());
+        assertEquals(0, soundsHeard(steve));
+        assertNull(steve.nextActionBar());
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void nearbySkipsToggledOffPlayers() throws InterruptedException {
+        PlayerMock bob = addPlayer("Bob");
+        placeAt(alex, 0, 0);
+        placeAt(steve, 5, 0);
+        placeAt(bob, 5, 0);
+        allowNearby(alex);
+        toggleOff(steve);
+
+        chat(alex, "help @nearby");
+
+        assertEquals(0, soundsHeard(steve));
+        assertEquals(1, soundsHeard(bob));
+    }
+
+    @Test
+    void nearbyWithOnlyToggledOffPlayersSendsNoConfirmation() throws InterruptedException {
+        placeAt(alex, 0, 0);
+        placeAt(steve, 5, 0);
+        allowNearby(alex);
+        toggleOff(steve);
+
+        chat(alex, "help @nearby");
+
+        assertEquals(0, soundsHeard(steve));
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void groupSkipsToggledOffMembers() throws Exception {
+        PlayerMock bob = addPlayer("Bob");
+        toggleOff(steve);
+        useGroups(new FakeGroups().group("vip", steve, bob), "");
+        server.getScheduler().waitAsyncTasksFinished(); // the new instance loads online players asynchronously
+        allowGroup(alex, "vip");
+
+        chat(alex, "hi @vip");
+
+        assertEquals(0, soundsHeard(steve));
+        assertEquals(1, soundsHeard(bob));
+    }
+
+    @Test
+    void everyoneStillReachesToggledOffPlayers() throws InterruptedException {
+        allowEveryone(alex);
+        toggleOff(steve);
+
+        chat(alex, "hey @everyone");
+
+        assertEquals(1, soundsHeard(steve));
+        assertEquals(PREFIX + "Player Alex mentioned everyone.", plain(steve.nextActionBar()));
+    }
 }

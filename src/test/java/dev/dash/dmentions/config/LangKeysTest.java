@@ -40,7 +40,8 @@ class LangKeysTest {
             LangKeys.GROUP_SENDER_MESSAGE, LangKeys.GROUP_TARGET_MESSAGE,
             LangKeys.COMMAND_HELP_HEADER, LangKeys.COMMAND_HELP_VERSION, LangKeys.COMMAND_VERSION,
             LangKeys.COMMAND_HELP_SEND, LangKeys.COMMAND_HELP_RELOAD, LangKeys.COMMAND_MUST_BE_PLAYER,
-            LangKeys.COMMAND_SEND_INVALID_KEYWORD, LangKeys.COMMAND_RELOAD_SUCCESS, LangKeys.COMMAND_RELOAD_FAILED);
+            LangKeys.COMMAND_SEND_INVALID_KEYWORD, LangKeys.COMMAND_RELOAD_SUCCESS, LangKeys.COMMAND_RELOAD_FAILED,
+            LangKeys.COMMAND_HELP_TOGGLE, LangKeys.COMMAND_TOGGLE_ENABLED, LangKeys.COMMAND_TOGGLE_DISABLED);
 
     private Path file() {
         return dir.resolve("lang.yml");
