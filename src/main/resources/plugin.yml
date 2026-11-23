@@ -4,6 +4,7 @@ main: dev.dash.dmentions.DMentions
 api-version: '1.21'
 load: POSTWORLD
 authors: [ desaxx ]
+folia-supported: true
 softdepend: [LuckPerms]
 permissions:
   dmentions.cooldown.bypass:

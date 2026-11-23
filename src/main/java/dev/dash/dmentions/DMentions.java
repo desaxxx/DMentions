@@ -1,5 +1,6 @@
 package dev.dash.dmentions;
 
+import com.tcoded.folialib.FoliaLib;
 import dev.dash.dmentions.command.DMentionsCommand;
 import dev.dash.dmentions.command.sub.VersionSubCommand;
 import dev.dash.dmentions.config.ConfigKeys;
@@ -31,6 +32,7 @@ import java.util.logging.Level;
 public class DMentions extends JavaPlugin {
 
     private PermissionRegistrar permissionRegistrar;
+    private FoliaLib foliaLib;
 
     @Override
     public void onEnable() {
@@ -60,12 +62,14 @@ public class DMentions extends JavaPlugin {
             return;
         }
 
+        foliaLib = new FoliaLib(this);
+
         GroupProvider groupProvider = fetchGroupProvider(config);
 
         CooldownTracker cooldownTracker = new CooldownTracker();
         PendingMentions pendingMentions = new PendingMentions();
         MessageService messageService = new MessageService(config, lang);
-        MentionNotifier mentionNotifier = new MentionNotifier(this, messageService, config);
+        MentionNotifier mentionNotifier = new MentionNotifier(foliaLib.getScheduler(), messageService, config);
         MentionRegistry mentionRegistry = new MentionRegistry(
                 new EveryoneMentionType(config),
                 new NearbyMentionType(config),
@@ -89,6 +93,10 @@ public class DMentions extends JavaPlugin {
         if (permissionRegistrar != null) {
             permissionRegistrar.unregisterAll();
             permissionRegistrar = null;
+        }
+        if (foliaLib != null) {
+            foliaLib.getScheduler().cancelAllTasks();
+            foliaLib = null;
         }
     }
 

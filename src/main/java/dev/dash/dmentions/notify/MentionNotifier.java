@@ -1,5 +1,6 @@
 package dev.dash.dmentions.notify;
 
+import com.tcoded.folialib.impl.PlatformScheduler;
 import dev.dash.dmentions.config.ConfigKeys;
 import dev.dash.dmentions.config.LangKeys;
 import dev.dash.dmentions.mention.MentionType;
@@ -9,31 +10,28 @@ import dev.yoshi.xconfig.XConfig;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
 
 public final class MentionNotifier {
 
-    private final JavaPlugin plugin;
+    private final PlatformScheduler scheduler;
     private final MessageService messageService;
     private final XConfig config;
 
-    public MentionNotifier(JavaPlugin plugin, MessageService messageService, XConfig config) {
-        this.plugin = plugin;
+    public MentionNotifier(PlatformScheduler scheduler, MessageService messageService, XConfig config) {
+        this.scheduler = scheduler;
         this.messageService = messageService;
         this.config = config;
     }
 
-    public void notify(List<PendingMention> mentions) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
+    public void notify(Player sender, List<PendingMention> mentions) {
+        scheduler.runAtEntity(sender, t1 -> {
             boolean allowMultipleNotifications = config.get(ConfigKeys.ALLOW_MULTIPLE_NOTIFICATIONS);
             Set<UUID> notified = new HashSet<>();
 
             for (PendingMention mention : mentions) {
-                Player sender = mention.sender();
                 MentionType type = mention.candidate().type();
                 Optional<Sound> sound = type.sound(mention.candidate());
                 var targetMessage = type.targetMessage();
@@ -41,12 +39,14 @@ public final class MentionNotifier {
 
                 boolean reachedAny = false;
                 for (Player target : type.resolveTargets(sender, mention.candidate())) {
-                    if (target.equals(sender) || !target.isOnline()) continue;
+                    if (target.equals(sender)) continue;
                     if (!allowMultipleNotifications && !notified.add(target.getUniqueId())) continue;
 
                     reachedAny = true;
-                    sound.ifPresent(target::playSound);
-                    messageService.send(target, targetMessage, TagResolver.resolver(senderTag, type.targetPlaceholders(mention.candidate())));
+                    scheduler.runAtEntity(target, t2 -> {
+                        sound.ifPresent(target::playSound);
+                        messageService.send(target, targetMessage, TagResolver.resolver(senderTag, type.targetPlaceholders(mention.candidate())));
+                    });
                 }
 
                 if (sender.isOnline() && reachedAny) {

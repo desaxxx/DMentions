@@ -83,6 +83,6 @@ public final class ChatListener implements Listener {
             Duration cooldownDuration = mention.candidate().type().cooldown(mention.candidate());
             cooldownTracker.start(mention.sender().getUniqueId(), mention.candidate().type().id(), mention.candidate().targetId(), cooldownDuration, now);
         }
-        mentionNotifier.notify(pending);
+        mentionNotifier.notify(event.getPlayer(), pending);
     }
 }

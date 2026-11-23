@@ -111,7 +111,7 @@ class ChatMentionIntegrationTest {
         Thread chatThread = new Thread(() -> server.getPluginManager().callEvent(event));
         chatThread.start();
         chatThread.join();
-        server.getScheduler().performOneTick();
+        server.getScheduler().performTicks(2);
         return event;
     }
 
@@ -402,7 +402,7 @@ class ChatMentionIntegrationTest {
         chatThread.join();
 
         steve.disconnect();
-        server.getScheduler().performOneTick();
+        server.getScheduler().performTicks(2);
 
         assertEquals(0, soundsHeard(steve));
         assertNull(alex.nextActionBar());
@@ -799,7 +799,7 @@ class ChatMentionIntegrationTest {
 
     @Test
     void nearbyUsesPositionWhenTheMentionIsDelivered() throws InterruptedException {
-        // Targets are resolved on the main thread, one tick after the chat event.
+        // Targets are resolved on the sender's thread one tick after the chat event; delivery happens on the next tick.
         placeAt(alex, 0, 0);
         placeAt(steve, 100, 0);
         allowNearby(alex);
@@ -813,7 +813,7 @@ class ChatMentionIntegrationTest {
         chatThread.join();
 
         placeAt(steve, 5, 0);
-        server.getScheduler().performOneTick();
+        server.getScheduler().performTicks(2);
 
         assertEquals(1, soundsHeard(steve));
     }
