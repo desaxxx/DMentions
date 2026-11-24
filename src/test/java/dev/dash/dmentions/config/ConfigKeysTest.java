@@ -59,6 +59,14 @@ class ConfigKeysTest {
         assertEquals("en-US", config.get(ConfigKeys.LANG_FILE));
         assertEquals("<dark_gray>[<#ffd16d>DMentions<dark_gray>]<reset>", config.get(ConfigKeys.PREFIX));
         assertEquals(java.util.List.of("no_mention_world_1", "no_mention_world_2"), config.get(ConfigKeys.DISABLED_WORLDS));
+        assertEquals(dev.dash.dmentions.storage.StorageType.YAML, config.get(ConfigKeys.STORAGE_TYPE));
+        assertEquals("localhost", config.get(ConfigKeys.STORAGE_HOST));
+        assertEquals(3306, config.get(ConfigKeys.STORAGE_PORT));
+        assertEquals("dmentions", config.get(ConfigKeys.STORAGE_NAME));
+        assertEquals("root", config.get(ConfigKeys.STORAGE_USERNAME));
+        assertEquals("password", config.get(ConfigKeys.STORAGE_PASSWORD));
+        assertFalse(config.get(ConfigKeys.STORAGE_USE_SSL));
+        assertEquals("dmentions_", config.get(ConfigKeys.STORAGE_PREFIX));
         assertFalse(config.get(ConfigKeys.PLAYER_PERMISSION).isEmpty());
         assertTrue(config.get(ConfigKeys.EVERYONE_ENABLED));
         assertEquals("dmentions.mention.everyone", config.get(ConfigKeys.EVERYONE_PERMISSION));
