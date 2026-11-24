@@ -55,6 +55,7 @@ class ConfigKeysTest {
         assertTrue(config.get(ConfigKeys.PLAYER_ENABLED));
         assertEquals("<player>", config.get(ConfigKeys.PLAYER_KEYWORD));
         assertEquals("<#a9e871>@<player>", config.get(ConfigKeys.PLAYER_DISPLAY));
+        assertEquals("<#eac773>@<custom_name>", config.get(ConfigKeys.PLAYER_CUSTOM_DISPLAY));
         assertEquals(Duration.ofSeconds(5), config.get(ConfigKeys.PLAYER_COOLDOWN));
         assertEquals("en-US", config.get(ConfigKeys.LANG_FILE));
         assertEquals("<dark_gray>[<#ffd16d>DMentions<dark_gray>]<reset>", config.get(ConfigKeys.PREFIX));

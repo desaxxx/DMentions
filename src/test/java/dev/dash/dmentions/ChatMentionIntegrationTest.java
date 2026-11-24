@@ -1365,4 +1365,19 @@ class ChatMentionIntegrationTest {
         assertEquals(1, soundsHeard(steve));
         assertEquals(PREFIX + "Player Alex mentioned everyone.", plain(steve.nextActionBar()));
     }
+
+    @Test
+    void customNameIsShownWithItsOwnDisplayButTheRealNameStaysTheKeyword() throws InterruptedException {
+        steve.setOp(true);
+        steve.performCommand("dms customize Stevo");
+
+        AsyncChatEvent byCustomName = chat(alex, "hi Stevo");
+        assertEquals("hi Stevo", plain(byCustomName.message()));
+        assertEquals(0, soundsHeard(steve));
+
+        AsyncChatEvent byRealName = chat(alex, "hi Steve");
+        assertEquals("hi @Stevo", plain(byRealName.message()));
+        assertEquals(TextColor.fromHexString("#eac773"), colourOf(byRealName.message(), "@Stevo"));
+        assertEquals(1, soundsHeard(steve));
+    }
 }

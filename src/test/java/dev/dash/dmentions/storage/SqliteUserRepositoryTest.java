@@ -54,36 +54,36 @@ class SqliteUserRepositoryTest {
         assertTrue(Files.isRegularFile(file()));
         assertEquals(Optional.empty(), repository.load(STEVE));
 
-        repository.save(new UserData(STEVE, false));
-        assertEquals(Optional.of(new UserData(STEVE, false)), repository.load(STEVE));
+        repository.save(new UserData(STEVE, false, null));
+        assertEquals(Optional.of(new UserData(STEVE, false, null)), repository.load(STEVE));
     }
 
     @Test
     void savedUserIsReadBackAfterReopening() {
         SqliteUserRepository repository = open();
-        repository.save(new UserData(STEVE, false));
+        repository.save(new UserData(STEVE, false, null));
         repository.close();
 
         SqliteUserRepository reopened = open();
 
-        assertEquals(Optional.of(new UserData(STEVE, false)), reopened.load(STEVE));
+        assertEquals(Optional.of(new UserData(STEVE, false, null)), reopened.load(STEVE));
         assertEquals(Optional.empty(), reopened.load(ALEX));
     }
 
     @Test
     void savingTheSameUserAgainUpdatesTheRow() {
         SqliteUserRepository repository = open();
-        repository.save(new UserData(STEVE, false));
+        repository.save(new UserData(STEVE, false, null));
 
-        repository.save(new UserData(STEVE, true));
+        repository.save(new UserData(STEVE, true, null));
 
-        assertEquals(Optional.of(new UserData(STEVE, true)), repository.load(STEVE));
+        assertEquals(Optional.of(new UserData(STEVE, true, null)), repository.load(STEVE));
     }
 
     @Test
     void differentPrefixesUseSeparateTables() {
         SqliteUserRepository first = open("first_");
-        first.save(new UserData(STEVE, false));
+        first.save(new UserData(STEVE, false, null));
         first.close();
 
         SqliteUserRepository second = open("second_");
@@ -104,5 +104,18 @@ class SqliteUserRepositoryTest {
         repository.init();
         repository.close();
         assertDoesNotThrow(repository::close);
+    }
+
+    @Test
+    void customNameIsStoredAndCanBeCleared() {
+        SqliteUserRepository repository = open();
+        repository.save(new UserData(STEVE, false, "Stevo"));
+        repository.close();
+
+        SqliteUserRepository reopened = open();
+        assertEquals(Optional.of(new UserData(STEVE, false, "Stevo")), reopened.load(STEVE));
+
+        reopened.save(new UserData(STEVE, false, null));
+        assertEquals(Optional.of(new UserData(STEVE, false, null)), reopened.load(STEVE));
     }
 }

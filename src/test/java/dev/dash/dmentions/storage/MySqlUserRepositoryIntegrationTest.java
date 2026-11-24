@@ -71,9 +71,9 @@ class MySqlUserRepositoryIntegrationTest {
 
         assertEquals(Optional.empty(), repository.load(STEVE));
 
-        repository.save(new UserData(STEVE, false));
+        repository.save(new UserData(STEVE, false, null));
 
-        assertEquals(Optional.of(new UserData(STEVE, false)), repository.load(STEVE));
+        assertEquals(Optional.of(new UserData(STEVE, false, null)), repository.load(STEVE));
         assertEquals(Optional.empty(), repository.load(ALEX));
     }
 
@@ -81,11 +81,11 @@ class MySqlUserRepositoryIntegrationTest {
     @MethodSource("databases")
     void savingTheSameUserAgainUpdatesTheRow(String name, JdbcDatabaseContainer<?> db) {
         MySqlUserRepository repository = open(db, newPrefix());
-        repository.save(new UserData(STEVE, false));
+        repository.save(new UserData(STEVE, false, null));
 
-        repository.save(new UserData(STEVE, true));
+        repository.save(new UserData(STEVE, true, null));
 
-        assertEquals(Optional.of(new UserData(STEVE, true)), repository.load(STEVE));
+        assertEquals(Optional.of(new UserData(STEVE, true, null)), repository.load(STEVE));
     }
 
     @ParameterizedTest(name = "{0}", autoCloseArguments = false)
@@ -93,22 +93,33 @@ class MySqlUserRepositoryIntegrationTest {
     void dataSurvivesReopening(String name, JdbcDatabaseContainer<?> db) {
         String prefix = newPrefix();
         MySqlUserRepository repository = open(db, prefix);
-        repository.save(new UserData(STEVE, false));
+        repository.save(new UserData(STEVE, false, null));
         repository.close();
 
         MySqlUserRepository reopened = open(db, prefix);
 
-        assertEquals(Optional.of(new UserData(STEVE, false)), reopened.load(STEVE));
+        assertEquals(Optional.of(new UserData(STEVE, false, null)), reopened.load(STEVE));
     }
 
     @ParameterizedTest(name = "{0}", autoCloseArguments = false)
     @MethodSource("databases")
     void differentPrefixesUseSeparateTables(String name, JdbcDatabaseContainer<?> db) {
         MySqlUserRepository first = open(db, newPrefix());
-        first.save(new UserData(STEVE, false));
+        first.save(new UserData(STEVE, false, null));
 
         MySqlUserRepository second = open(db, newPrefix());
 
         assertEquals(Optional.empty(), second.load(STEVE));
+    }
+
+    @ParameterizedTest(name = "{0}", autoCloseArguments = false)
+    @MethodSource("databases")
+    void customNameIsStoredAndCanBeCleared(String name, JdbcDatabaseContainer<?> db) {
+        MySqlUserRepository repository = open(db, newPrefix());
+        repository.save(new UserData(STEVE, false, "Stevo"));
+        assertEquals(Optional.of(new UserData(STEVE, false, "Stevo")), repository.load(STEVE));
+
+        repository.save(new UserData(STEVE, false, null));
+        assertEquals(Optional.of(new UserData(STEVE, false, null)), repository.load(STEVE));
     }
 }

@@ -39,7 +39,9 @@ class CommandIntegrationTest {
     private static final String HEADER = PREFIX + "Commands:";
     private static final String VERSION_LINE = "/dms version - Show the plugin version";
     private static final String TOGGLE_LINE = "/dms toggle - Turn being mentioned on or off";
+    private static final String CUSTOMIZE_LINE = "/dms customize <name> - Change the name shown when you are mentioned";
     private static final String USER_LINE = "/dms user <player> mentionable <true|false> - Set whether a player can be mentioned";
+    private static final String USER_CUSTOM_NAME_LINE = "/dms user <player> custom_name <name> - Set the name shown when a player is mentioned";
     private static final String SEND_LINE = "/dms send <keyword> - Send a mention";
     private static final String RELOAD_LINE = "/dms reload - Reload the config and language files";
     private static final String RELOADED = PREFIX + "Reloaded the config and language files.";
@@ -196,13 +198,13 @@ class CommandIntegrationTest {
         alex.setOp(true);
 
         alex.performCommand("dms");
-        assertEquals(List.of(HEADER, TOGGLE_LINE, USER_LINE, SEND_LINE, RELOAD_LINE, VERSION_LINE), received(alex));
-        assertEquals(List.of("help", "reload", "send", "toggle", "user", "version"), clientSubCommands(alex, "dms"));
+        assertEquals(List.of(HEADER, TOGGLE_LINE, CUSTOMIZE_LINE, USER_LINE, USER_CUSTOM_NAME_LINE, SEND_LINE, RELOAD_LINE, VERSION_LINE), received(alex));
+        assertEquals(List.of("customize", "help", "reload", "send", "toggle", "user", "version"), clientSubCommands(alex, "dms"));
     }
 
     @Test
     void adminCommandPermissionsDefaultToOp() {
-        for (String node : List.of("dmentions.command.send", "dmentions.command.reload", "dmentions.command.user")) {
+        for (String node : List.of("dmentions.command.send", "dmentions.command.reload", "dmentions.command.user", "dmentions.command.customize")) {
             Permission permission = server.getPluginManager().getPermission(node);
             assertNotNull(permission, node);
             assertEquals(PermissionDefault.OP, permission.getDefault(), node);
@@ -449,9 +451,9 @@ class CommandIntegrationTest {
         server.addPlayer("Steve");
         alex.setOp(true);
 
-        for (String command : List.of("dms user", "dms user Steve", "dms user Steve mentionable")) {
+        for (String command : List.of("dms user", "dms user Steve", "dms user Steve mentionable", "dms user Steve custom_name")) {
             alex.performCommand(command);
-            assertEquals(List.of(USER_LINE), received(alex), command);
+            assertEquals(List.of(USER_LINE, USER_CUSTOM_NAME_LINE), received(alex), command);
         }
     }
 
@@ -486,5 +488,83 @@ class CommandIntegrationTest {
         var suggestions = dispatcher.getCompletionSuggestions(dispatcher.parse("dms user st", source)).get();
 
         assertEquals(List.of("Stella", "Steve"), suggestions.getList().stream().map(s -> s.getText()).toList());
+    }
+
+    @Test
+    void userSetsAndRemovesTheCustomNameOfAnotherPlayer() {
+        server.addPlayer("Steve");
+        alex.setOp(true);
+
+        alex.performCommand("dms user Steve custom_name Stevo");
+        assertEquals(List.of(PREFIX + "Changed the mention name of Steve from Steve to Stevo."), received(alex));
+
+        alex.performCommand("dms user Steve custom_name STEVE");
+        assertEquals(List.of(PREFIX + "Changed the mention name of Steve from Stevo to Steve."), received(alex));
+    }
+
+    @Test
+    void userCustomNameRejectsAnInvalidNameAndAnOfflinePlayer() {
+        server.addPlayer("Steve");
+        alex.setOp(true);
+
+        alex.performCommand("dms user Steve custom_name a-b");
+        assertEquals(List.of(PREFIX + "Invalid name: a-b. Use 3-16 letters, numbers or _."), received(alex));
+
+        alex.performCommand("dms user Nobody custom_name Bobby");
+        assertEquals(List.of(PREFIX + "Player not found: Nobody"), received(alex));
+    }
+
+    // ---- customize ----
+
+    @Test
+    void customizeChangesTheNameAndShowsTheOldAndNewValue() {
+        alex.setOp(true);
+
+        alex.performCommand("dms customize Lexi");
+        assertEquals(List.of(PREFIX + "You changed your mention name from Alex to Lexi."), received(alex));
+
+        alex.performCommand("dms customize Al_99");
+        assertEquals(List.of(PREFIX + "You changed your mention name from Lexi to Al_99."), received(alex));
+    }
+
+    @Test
+    void customizeWithTheRealNameInAnyCaseRemovesTheCustomName() {
+        alex.setOp(true);
+        alex.performCommand("dms customize Lexi");
+        received(alex);
+
+        alex.performCommand("dms customize ALEX");
+        assertEquals(List.of(PREFIX + "You changed your mention name from Lexi to Alex."), received(alex));
+
+        alex.performCommand("dms customize Lexi");
+        assertEquals(List.of(PREFIX + "You changed your mention name from Alex to Lexi."), received(alex));
+    }
+
+    @Test
+    void customizeRejectsAnInvalidName() {
+        alex.setOp(true);
+
+        for (String name : List.of("ab", "a-b", "abcdefghijklmnopq")) {
+            alex.performCommand("dms customize " + name);
+            assertEquals(List.of(PREFIX + "Invalid name: " + name + ". Use 3-16 letters, numbers or _."), received(alex), name);
+        }
+    }
+
+    @Test
+    void customizeWithoutANameShowsItsUsage() {
+        alex.setOp(true);
+
+        alex.performCommand("dms customize");
+
+        assertEquals(List.of(CUSTOMIZE_LINE), received(alex));
+    }
+
+    @Test
+    void customizeFromTheConsoleIsRefused() {
+        ConsoleCommandSenderMock console = (ConsoleCommandSenderMock) server.getConsoleSender();
+
+        server.dispatchCommand(console, "dms customize Lexi");
+
+        assertEquals(PREFIX + "You must be a player to use this command.", PLAIN.serialize(console.nextComponentMessage()));
     }
 }

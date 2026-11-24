@@ -49,17 +49,17 @@ class YamlUserRepositoryTest {
         assertFalse(Files.exists(file()));
         assertEquals(Optional.empty(), repository.load(STEVE));
 
-        repository.save(new UserData(STEVE, false));
+        repository.save(new UserData(STEVE, false, null));
         assertTrue(Files.isRegularFile(file()));
     }
 
     @Test
     void savedUserIsReadBackAfterReopening() {
-        open().save(new UserData(STEVE, false));
+        open().save(new UserData(STEVE, false, null));
 
         YamlUserRepository reopened = open();
 
-        assertEquals(Optional.of(new UserData(STEVE, false)), reopened.load(STEVE));
+        assertEquals(Optional.of(new UserData(STEVE, false, null)), reopened.load(STEVE));
         assertEquals(Optional.empty(), reopened.load(ALEX));
         assertFalse(Files.exists(file().resolveSibling("users.yml.tmp")), "temp file left behind");
     }
@@ -67,8 +67,8 @@ class YamlUserRepositoryTest {
     @Test
     void userBackToDefaultsIsRemovedFromTheFile() throws IOException {
         YamlUserRepository repository = open();
-        repository.save(new UserData(STEVE, false));
-        repository.save(new UserData(ALEX, false));
+        repository.save(new UserData(STEVE, false, null));
+        repository.save(new UserData(ALEX, false, null));
 
         repository.save(UserData.defaults(STEVE));
 
@@ -109,7 +109,7 @@ class YamlUserRepositoryTest {
                     mentionable: false
                 """.formatted(STEVE));
 
-        assertEquals(Optional.of(new UserData(STEVE, false)), open().load(STEVE));
+        assertEquals(Optional.of(new UserData(STEVE, false, null)), open().load(STEVE));
     }
 
     @Test
@@ -118,5 +118,18 @@ class YamlUserRepositoryTest {
         Files.writeString(file(), "something_else: 1\n");
 
         assertEquals(Optional.empty(), open().load(STEVE));
+    }
+
+    @Test
+    void customNameIsSavedAndRemovedAgain() throws IOException {
+        open().save(new UserData(STEVE, true, "Stevo"));
+
+        assertEquals(Optional.of(new UserData(STEVE, true, "Stevo")), open().load(STEVE));
+        assertTrue(Files.readString(file()).contains("custom_name: Stevo"));
+
+        open().save(UserData.defaults(STEVE));
+
+        assertEquals(Optional.empty(), open().load(STEVE));
+        assertFalse(Files.readString(file()).contains("Stevo"));
     }
 }

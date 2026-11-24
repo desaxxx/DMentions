@@ -112,13 +112,13 @@ class UserServiceTest {
         service.setMentionable(STEVE, false);
         service.shutdown(); // waits for the queued saves
 
-        assertEquals(List.of(new UserData(STEVE, false), new UserData(STEVE, true), new UserData(STEVE, false)),
+        assertEquals(List.of(new UserData(STEVE, false, null), new UserData(STEVE, true, null), new UserData(STEVE, false, null)),
                 repository.saves);
     }
 
     @Test
     void loadReadsTheStoredUser() {
-        repository.stored.put(STEVE, new UserData(STEVE, false));
+        repository.stored.put(STEVE, new UserData(STEVE, false, null));
 
         service.load(STEVE);
 
@@ -137,7 +137,7 @@ class UserServiceTest {
 
     @Test
     void loadDoesNotOverwriteAChangeMadeMeanwhile() {
-        repository.stored.put(STEVE, new UserData(STEVE, false));
+        repository.stored.put(STEVE, new UserData(STEVE, false, null));
         service.setMentionable(STEVE, true);
 
         service.load(STEVE);
@@ -169,7 +169,7 @@ class UserServiceTest {
 
     @Test
     void evictForgetsTheUser() {
-        repository.stored.put(STEVE, new UserData(STEVE, false));
+        repository.stored.put(STEVE, new UserData(STEVE, false, null));
         service.load(STEVE);
 
         service.evict(STEVE);
@@ -185,5 +185,22 @@ class UserServiceTest {
         assertDoesNotThrow(() -> service.setMentionable(STEVE, false));
         assertDoesNotThrow(() -> service.load(STEVE));
         assertTrue(repository.saves.isEmpty());
+    }
+
+    @Test
+    void customNameIsVisibleAtOnceAndKeepsTheOtherFields() {
+        assertEquals(Optional.empty(), service.customName(STEVE));
+        service.setMentionable(STEVE, false);
+
+        service.setCustomName(STEVE, "Stevo");
+        assertEquals(Optional.of("Stevo"), service.customName(STEVE));
+        assertFalse(service.isMentionable(STEVE));
+
+        service.setCustomName(STEVE, null);
+        assertEquals(Optional.empty(), service.customName(STEVE));
+        service.shutdown();
+
+        assertEquals(List.of(new UserData(STEVE, false, null), new UserData(STEVE, false, "Stevo"), new UserData(STEVE, false, null)),
+                repository.saves);
     }
 }
