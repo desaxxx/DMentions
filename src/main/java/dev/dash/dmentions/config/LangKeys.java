@@ -85,8 +85,16 @@ public final class LangKeys {
             .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms reload <gray>- Reload the config and language files", "")))
             .build();
 
+    public static final ConfigKey<List<Notification>> COMMAND_HELP_USER = ConfigKey.elementList("command.help.user", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms user <player> mentionable <true|false> <gray>- Set whether a player can be mentioned", "")))
+            .build();
+
     public static final ConfigKey<List<Notification>> COMMAND_MUST_BE_PLAYER = ConfigKey.elementList("command.must_be_player", Notification.class, NotificationAdapter.INSTANCE)
             .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <red>You must be a player to use this command.", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_PLAYER_NOT_FOUND = ConfigKey.elementList("command.player_not_found", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <red>Player not found: <white><player>", "")))
             .build();
 
     public static final ConfigKey<List<Notification>> COMMAND_VERSION = ConfigKey.elementList("command.version", Notification.class, NotificationAdapter.INSTANCE)
@@ -99,6 +107,14 @@ public final class LangKeys {
 
     public static final ConfigKey<List<Notification>> COMMAND_TOGGLE_DISABLED = ConfigKey.elementList("command.toggle.disabled", Notification.class, NotificationAdapter.INSTANCE)
             .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <yellow>You will no longer be mentioned.", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_USER_MENTIONABLE_ENABLED = ConfigKey.elementList("command.user.mentionable.enabled", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <white><target> <green>can now be mentioned.", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_USER_MENTIONABLE_DISABLED = ConfigKey.elementList("command.user.mentionable.disabled", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <white><target> <yellow>can no longer be mentioned.", "")))
             .build();
 
     public static final ConfigKey<List<Notification>> COMMAND_SEND_INVALID_KEYWORD =ConfigKey.elementList("command.send.invalid_keyword", Notification.class, NotificationAdapter.INSTANCE)

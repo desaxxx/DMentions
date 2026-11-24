@@ -5,6 +5,7 @@ import dev.dash.dmentions.command.DMentionsCommand;
 import dev.dash.dmentions.command.sub.ReloadSubCommand;
 import dev.dash.dmentions.command.sub.SendSubCommand;
 import dev.dash.dmentions.command.sub.ToggleSubCommand;
+import dev.dash.dmentions.command.sub.UserSubCommand;
 import dev.dash.dmentions.command.sub.VersionSubCommand;
 import dev.dash.dmentions.config.ConfigKeys;
 import dev.dash.dmentions.config.LangKeys;
@@ -101,6 +102,7 @@ public class DMentions extends JavaPlugin {
 
         command = new DMentionsCommand(List.of(
                 new ToggleSubCommand(messageService, userService),
+                new UserSubCommand(messageService, userService),
                 new SendSubCommand(config, messageService, mentionRegistry),
                 new ReloadSubCommand(messageService, this::reload),
                 new VersionSubCommand(messageService, getPluginMeta().getVersion())
