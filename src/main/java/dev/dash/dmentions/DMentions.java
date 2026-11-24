@@ -32,12 +32,17 @@ import dev.dash.dmentions.storage.*;
 import dev.dash.dmentions.user.UserListener;
 import dev.dash.dmentions.user.UserService;
 import dev.yoshi.xconfig.XConfig;
+import dev.dash.dmentions.metrics.LanguageMetric;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -52,6 +57,12 @@ public class DMentions extends JavaPlugin {
     private MessageService messageService;
     private MentionRegistry mentionRegistry;
     private DMentionsCommand command;
+
+    private Metrics metrics;
+    private volatile Set<String> bundledLanguages = Set.of(DEFAULT_LANGUAGE);
+    private volatile String loadedLanguage;
+
+    private static final String DEFAULT_LANGUAGE = "en-US";
 
     @Override
     public void onEnable() {
@@ -119,6 +130,14 @@ public class DMentions extends JavaPlugin {
         ), messageService);
         permissionRegistrar.registerCommands(command.subCommands());
         command.register(getLifecycleManager());
+
+        this.metrics = new Metrics(this, 24381);
+        String storageType = config.get(ConfigKeys.STORAGE_TYPE).name();
+        metrics.addCustomChart(new SimplePie("storage_type", () -> storageType));
+        metrics.addCustomChart(new SimplePie("language", () -> {
+            String language = loadedLanguage;
+            return language == null ? null : LanguageMetric.valueFor(language, bundledLanguages);
+        }));
     }
 
     @Override
@@ -134,6 +153,10 @@ public class DMentions extends JavaPlugin {
         if (foliaLib != null) {
             foliaLib.getScheduler().cancelAllTasks();
             foliaLib = null;
+        }
+        if (metrics != null) {
+            metrics.shutdown();
+            metrics = null;
         }
         config = null;
         messageService = null;
@@ -164,7 +187,9 @@ public class DMentions extends JavaPlugin {
             getLogger().warning("Could not find language file '%s', using default 'en-US'.".formatted(langFile));
             langFile = "en-US";
         }
-        return XConfig.builder(getDataPath().resolve("lang/" + langFile + ".yml")).keys(LangKeys.class).logger(getLogger()).build();
+        XConfig lang = XConfig.builder(getDataPath().resolve("lang/" + langFile + ".yml")).keys(LangKeys.class).logger(getLogger()).build();
+        loadedLanguage = langFile;
+        return lang;
     }
 
     private UserRepository prepareUserRepository(XConfig config) {
@@ -237,16 +262,21 @@ public class DMentions extends JavaPlugin {
     }
 
     private void saveBundledLanguages() {
+        Set<String> names = new HashSet<>();
+        names.add(DEFAULT_LANGUAGE);
         try (JarFile jarFile = new JarFile(getFile())) {
             jarFile.stream()
                     .filter(entry -> !entry.isDirectory() && entry.getName().startsWith("lang/") && entry.getName().endsWith(".yml"))
                     .forEach(entry -> {
-                        if (getDataPath().resolve(entry.getName()).toFile().exists()) return;
+                        String name = entry.getName();
+                        names.add(name.substring("lang/".length(), name.length() - ".yml".length()));
+                        if (getDataPath().resolve(name).toFile().exists()) return;
 
-                        saveResource(entry.getName(), false);
+                        saveResource(name, false);
                     });
         } catch (IOException e) {
             getLogger().log(Level.WARNING, "Could not save bundled languages.", e);
         }
+        bundledLanguages = Set.copyOf(names);
     }
 }
