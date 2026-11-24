@@ -25,6 +25,11 @@ public final class LangKeys {
             .defaultValue(List.of(new Notification(Channel.ACTION_BAR, "<red>You must wait <remaining> before mentioning.", "")))
             .build();
 
+    public static final ConfigKey<List<Notification>> UPDATE_AVAILABLE = ConfigKey.elementList("update_available", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <yellow>A new version is available: <white><latest> <gray>(current: <current>) "
+                            + "<click:open_url:'https://modrinth.com/plugin/dmentions'><#ffd16d><u>Download</u></click>", "")))
+            .build();
+
     public static final ConfigKey<List<Notification>> DISABLED_WORLD_WARN = ConfigKey.elementList("disabled_world_warn", Notification.class, NotificationAdapter.INSTANCE)
             .defaultValue(List.of(new Notification(Channel.ACTION_BAR, "<prefix> <red>You can't mention a player in this world.","")))
             .build();

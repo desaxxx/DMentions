@@ -20,6 +20,12 @@ public final class ConfigKeys {
             .defaultValue("en-US")
             .build();
 
+    public static final ConfigKey<Boolean> CHECK_FOR_UPDATES = builder("check_for_updates", Boolean.class)
+            .comment("Checks Modrinth for a newer version when the server starts.",
+                    "Players with dmentions.update.notify (operators by default) are told when they join.")
+            .defaultValue(true)
+            .build();
+
     public static final ConfigKey<String> PREFIX = builder("prefix", String.class)
             .defaultValue("<dark_gray>[<#ffd16d>DMentions<dark_gray>]<reset>")
             .build();
@@ -64,8 +70,7 @@ public final class ConfigKeys {
             .build();
 
     public static final ConfigKey<StorageType> STORAGE_TYPE = builder("storage.type", StorageType.class)
-            .comment(
-                    "The type of storage to store user data: YAML, SQLITE or MYSQL.",
+            .comment("The type of storage to store user data: YAML, SQLITE or MYSQL.",
                     "Changing it requires a server restart, /dms reload does not apply it.")
             .defaultValue(StorageType.YAML)
             .build();

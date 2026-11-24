@@ -33,6 +33,8 @@ import dev.dash.dmentions.user.UserListener;
 import dev.dash.dmentions.user.UserService;
 import dev.yoshi.xconfig.XConfig;
 import dev.dash.dmentions.metrics.LanguageMetric;
+import dev.dash.dmentions.update.UpdateChecker;
+import dev.dash.dmentions.update.UpdateNotifyListener;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
@@ -138,6 +140,17 @@ public class DMentions extends JavaPlugin {
             String language = loadedLanguage;
             return language == null ? null : LanguageMetric.valueFor(language, bundledLanguages);
         }));
+
+        startUpdateCheck();
+    }
+
+    /** Checked once per server start; /dms reload does not repeat it. */
+    private void startUpdateCheck() {
+        if (!config.get(ConfigKeys.CHECK_FOR_UPDATES) || Boolean.getBoolean("dmentions.skipUpdateCheck")) return;
+
+        UpdateChecker updateChecker = new UpdateChecker(getLogger(), getPluginMeta().getVersion());
+        getServer().getPluginManager().registerEvents(new UpdateNotifyListener(updateChecker, messageService), this);
+        updateChecker.check();
     }
 
     @Override

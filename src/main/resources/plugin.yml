@@ -13,3 +13,5 @@ permissions:
     default: false
   dmentions.restricted.bypass:
     default: op
+  dmentions.update.notify:
+    default: op
