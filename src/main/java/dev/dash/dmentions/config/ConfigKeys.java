@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import static dev.yoshi.xconfig.ConfigKey.builder;
+import static dev.yoshi.xconfig.ConfigKey.elementMap;
 
 public final class ConfigKeys {
 
@@ -50,6 +51,35 @@ public final class ConfigKeys {
     public static final ConfigKey<StorageType> STORAGE_TYPE = builder("storage.type", StorageType.class)
             .comment("The type of storage to store user data.")
             .defaultValue(StorageType.YAML)
+            .build();
+
+    public static final ConfigKey<String> STORAGE_HOST = builder("storage.host", String.class)
+            .defaultValue("localhost")
+            .build();
+
+    public static final ConfigKey<Integer> STORAGE_PORT = builder("storage.port", Integer.class)
+            .defaultValue(3306)
+            .build();
+
+    public static final ConfigKey<String> STORAGE_NAME = builder("storage.name", String.class)
+            .defaultValue("dmentions")
+            .build();
+
+    public static final ConfigKey<String> STORAGE_USERNAME = builder("storage.username", String.class)
+            .defaultValue("root")
+            .build();
+
+    public static final ConfigKey<String> STORAGE_PASSWORD = builder("storage.password", String.class)
+            .defaultValue("password")
+            .build();
+
+    public static final ConfigKey<Boolean> STORAGE_USE_SSL = builder("storage.use_ssl", Boolean.class)
+            .defaultValue(false)
+            .build();
+
+    public static final ConfigKey<String> STORAGE_PREFIX = builder("storage.prefix", String.class)
+            .comment("The prefix of the database table.")
+            .defaultValue("dmentions_")
             .build();
 
     public static final ConfigKey<Boolean> PLAYER_ENABLED = builder("player.enabled", Boolean.class)
@@ -162,7 +192,7 @@ public final class ConfigKeys {
             .defaultValue(List.of("admin","owner"))
             .build();
 
-    public static final ConfigKey<Map<String, GroupSettings>> GROUP_LIST = ConfigKey.elementMap("group.list", GroupSettings.class, GroupSettings.ADAPTER)
+    public static final ConfigKey<Map<String, GroupSettings>> GROUP_LIST = elementMap("group.list", GroupSettings.class, GroupSettings.ADAPTER)
             .defaultValue(groupListDefaults())
             .build();
 

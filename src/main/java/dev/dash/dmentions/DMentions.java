@@ -22,6 +22,7 @@ import dev.dash.dmentions.mention.type.PlayerMentionType;
 import dev.dash.dmentions.message.MessageService;
 import dev.dash.dmentions.notify.MentionNotifier;
 import dev.dash.dmentions.permission.PermissionRegistrar;
+import dev.dash.dmentions.storage.SqliteUserRepository;
 import dev.dash.dmentions.storage.UserRepository;
 import dev.dash.dmentions.storage.YamlUserRepository;
 import dev.dash.dmentions.user.UserListener;
@@ -32,7 +33,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 import java.util.jar.JarFile;
@@ -71,14 +71,8 @@ public class DMentions extends JavaPlugin {
             return;
         }
 
-        UserRepository repository = new YamlUserRepository(getDataPath().resolve("data/users.yml"), getLogger());
-        try {
-            repository.init();
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Could not initialize user repository, disabling the plugin.", e);
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
+        UserRepository repository = prepareUserRepository(config);
+        if (repository == null) return; // Disabled the plugin
         userService = new UserService(repository, getLogger());
 
         foliaLib = new FoliaLib(this);
@@ -161,6 +155,24 @@ public class DMentions extends JavaPlugin {
             langFile = "en-US";
         }
         return XConfig.builder(getDataPath().resolve("lang/" + langFile + ".yml")).keys(LangKeys.class).logger(getLogger()).build();
+    }
+
+    private UserRepository prepareUserRepository(XConfig config) {
+        String sqlTablePrefix = config.get(ConfigKeys.STORAGE_PREFIX);
+        try {
+            UserRepository repository = switch (config.get(ConfigKeys.STORAGE_TYPE)) {
+                case YAML -> new YamlUserRepository(getDataPath().resolve("data/users.yml"), getLogger());
+                case SQLITE -> new SqliteUserRepository(getDataPath().resolve("data/users.db"), sqlTablePrefix);
+                case MYSQL -> throw new UnsupportedOperationException("MySQL storage is not supported yet.");
+            };
+            repository.init();
+
+            return repository;
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Could not initialize user repository, disabling the plugin.", e);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return null;
+        }
     }
 
     private GroupProvider fetchGroupProvider(XConfig config) {
