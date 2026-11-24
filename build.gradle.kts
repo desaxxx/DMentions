@@ -60,6 +60,10 @@ tasks {
 
     test {
         useJUnitPlatform()
+        // keep the test suite off the network: every plugin load would ask Modrinth otherwise
+        systemProperty("dmentions.skipUpdateCheck", "true")
+        // tests run on the plain classes; the shadow jar relocates bStats
+        systemProperty("bstats.relocatecheck", "false")
     }
 
     processResources {
