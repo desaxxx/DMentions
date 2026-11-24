@@ -22,10 +22,12 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * /dms user &lt;player&gt; mentionable &lt;true|false&gt; — an admin sets whether a player can be mentioned.
+ * /dms user &lt;player&gt; custom_name &lt;name&gt; — an admin sets the name shown when a player is mentioned.
  * Only online players: user data is cached while a player is online, an offline player's data is not loaded.
  * The player is a plain name, not a selector, so "player not found" is our own message.
  */
@@ -60,7 +62,11 @@ public class UserSubCommand implements SubCommand {
                                 .executes(this::showUsage)
                                 // bool() suggests and accepts only true/false
                                 .then(Commands.argument("value", BoolArgumentType.bool())
-                                        .executes(this::setMentionable))));
+                                        .executes(this::setMentionable)))
+                        .then(Commands.literal("custom_name")
+                                .executes(this::showUsage)
+                                .then(Commands.argument("value", StringArgumentType.word())
+                                        .executes(this::setCustomName))));
     }
 
     private int showUsage(CommandContext<CommandSourceStack> ctx) {
@@ -68,19 +74,49 @@ public class UserSubCommand implements SubCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private int setMentionable(CommandContext<CommandSourceStack> ctx) {
+    /** The online player named in the command, or empty after telling the sender they were not found. */
+    private Optional<Player> findTarget(CommandContext<CommandSourceStack> ctx) {
         String name = StringArgumentType.getString(ctx, "player");
         Player target = Bukkit.getPlayerExact(name);
         if (target == null) {
             messageService.send(ctx.getSource().getSender(), LangKeys.COMMAND_PLAYER_NOT_FOUND, Placeholder.unparsed("player", name));
-            return 0;
         }
+        return Optional.ofNullable(target);
+    }
+
+    private int setMentionable(CommandContext<CommandSourceStack> ctx) {
+        Optional<Player> found = findTarget(ctx);
+        if (found.isEmpty()) return 0;
+        Player target = found.get();
         boolean mentionable = BoolArgumentType.getBool(ctx, "value");
 
         userService.setMentionable(target.getUniqueId(), mentionable);
         messageService.send(ctx.getSource().getSender(),
                 mentionable ? LangKeys.COMMAND_USER_MENTIONABLE_ENABLED : LangKeys.COMMAND_USER_MENTIONABLE_DISABLED,
                 Placeholder.unparsed("target", target.getName()));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int setCustomName(CommandContext<CommandSourceStack> ctx) {
+        Optional<Player> found = findTarget(ctx);
+        if (found.isEmpty()) return 0;
+        Player target = found.get();
+
+        String input = StringArgumentType.getString(ctx, "value");
+        if (!CustomizeSubCommand.CUSTOM_NAME.matcher(input).matches()) {
+            messageService.send(ctx.getSource().getSender(), LangKeys.COMMAND_CUSTOMIZE_INVALID_CUSTOM_NAME, Placeholder.unparsed("value", input));
+            return 0;
+        }
+
+        String oldValue = userService.customName(target.getUniqueId()).orElse(target.getName());
+        // Same rule as /dms customize: the real name in any case removes the custom name.
+        String customName = input.equalsIgnoreCase(target.getName()) ? null : input;
+        userService.setCustomName(target.getUniqueId(), customName);
+
+        messageService.send(ctx.getSource().getSender(), LangKeys.COMMAND_USER_CUSTOM_NAME_SUCCESS,
+                Placeholder.unparsed("target", target.getName()),
+                Placeholder.unparsed("old_value", oldValue),
+                Placeholder.unparsed("value", customName == null ? target.getName() : customName));
         return Command.SINGLE_SUCCESS;
     }
 

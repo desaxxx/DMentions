@@ -86,7 +86,13 @@ public final class LangKeys {
             .build();
 
     public static final ConfigKey<List<Notification>> COMMAND_HELP_USER = ConfigKey.elementList("command.help.user", Notification.class, NotificationAdapter.INSTANCE)
-            .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms user <player> mentionable <true|false> <gray>- Set whether a player can be mentioned", "")))
+            .defaultValue(List.of(
+                    new Notification(Channel.CHAT, "<#ffd16d>/dms user <player> mentionable <true|false> <gray>- Set whether a player can be mentioned", ""),
+                    new Notification(Channel.CHAT, "<#ffd16d>/dms user <player> custom_name <name> <gray>- Set the name shown when a player is mentioned", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_HELP_CUSTOMIZE = ConfigKey.elementList("command.help.customize", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms customize <name> <gray>- Change the name shown when you are mentioned", "")))
             .build();
 
     public static final ConfigKey<List<Notification>> COMMAND_MUST_BE_PLAYER = ConfigKey.elementList("command.must_be_player", Notification.class, NotificationAdapter.INSTANCE)
@@ -115,6 +121,18 @@ public final class LangKeys {
 
     public static final ConfigKey<List<Notification>> COMMAND_USER_MENTIONABLE_DISABLED = ConfigKey.elementList("command.user.mentionable.disabled", Notification.class, NotificationAdapter.INSTANCE)
             .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <white><target> <yellow>can no longer be mentioned.", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_CUSTOMIZE_INVALID_CUSTOM_NAME = ConfigKey.elementList("command.customize.invalid_custom_name", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <red>Invalid name: <white><value><red>. Use 3-16 letters, numbers or _.", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_CUSTOMIZE_SUCCESS = ConfigKey.elementList("command.customize.success", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <green>You changed your mention name from <white><old_value><green> to <white><value><green>.", "")))
+            .build();
+
+    public static final ConfigKey<List<Notification>> COMMAND_USER_CUSTOM_NAME_SUCCESS = ConfigKey.elementList("command.user.custom_name.success", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<prefix> <green>Changed the mention name of <white><target><green> from <white><old_value><green> to <white><value><green>.", "")))
             .build();
 
     public static final ConfigKey<List<Notification>> COMMAND_SEND_INVALID_KEYWORD =ConfigKey.elementList("command.send.invalid_keyword", Notification.class, NotificationAdapter.INSTANCE)
