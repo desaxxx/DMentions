@@ -1390,6 +1390,11 @@ class ChatMentionIntegrationTest {
     }
 
     @Test
+    void updateNoticePermissionDefaultsToOperators() {
+        assertEquals(PermissionDefault.OP, server.getPluginManager().getPermission("dmentions.update.notify").getDefault());
+    }
+
+    @Test
     void restrictedPermissionsAreRegisteredWithTheirDefaults() {
         assertEquals(PermissionDefault.FALSE, server.getPluginManager().getPermission("dmentions.restricted").getDefault());
         assertEquals(PermissionDefault.OP, server.getPluginManager().getPermission("dmentions.restricted.bypass").getDefault());

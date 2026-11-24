@@ -45,7 +45,8 @@ class LangKeysTest {
             LangKeys.COMMAND_HELP_USER, LangKeys.COMMAND_USER_MENTIONABLE_ENABLED, LangKeys.COMMAND_USER_MENTIONABLE_DISABLED,
             LangKeys.COMMAND_PLAYER_NOT_FOUND,
             LangKeys.COMMAND_HELP_CUSTOMIZE, LangKeys.COMMAND_CUSTOMIZE_INVALID_CUSTOM_NAME, LangKeys.COMMAND_CUSTOMIZE_SUCCESS,
-            LangKeys.COMMAND_USER_CUSTOM_NAME_SUCCESS);
+            LangKeys.COMMAND_USER_CUSTOM_NAME_SUCCESS,
+            LangKeys.UPDATE_AVAILABLE);
 
     private Path file() {
         return dir.resolve("lang.yml");
