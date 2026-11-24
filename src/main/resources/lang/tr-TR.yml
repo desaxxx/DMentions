@@ -12,6 +12,9 @@
 cooldown_warn:
   - "ACTION_BAR=<red>Tekrar etiketlemek için <remaining> beklemelisin."
 
+update_available:
+  - "CHAT=<prefix> <yellow>Yeni bir sürüm çıktı: <white><latest> <gray>(şu anki: <current>) <click:open_url:'https://modrinth.com/plugin/dmentions'><#ffd16d><u>İndir</u></click>"
+
 disabled_world_warn:
   - "ACTION_BAR=<prefix> <red>Bu dünyada oyuncu etiketleyemezsin."
 
