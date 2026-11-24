@@ -7,6 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.title.Title;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,6 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -1378,6 +1380,60 @@ class ChatMentionIntegrationTest {
         AsyncChatEvent byRealName = chat(alex, "hi Steve");
         assertEquals("hi @Stevo", plain(byRealName.message()));
         assertEquals(TextColor.fromHexString("#eac773"), colourOf(byRealName.message(), "@Stevo"));
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    // ---- restricted ----
+
+    private void restrict(PlayerMock player) {
+        player.addAttachment(plugin, "dmentions.restricted", true);
+    }
+
+    @Test
+    void restrictedPermissionsAreRegisteredWithTheirDefaults() {
+        assertEquals(PermissionDefault.FALSE, server.getPluginManager().getPermission("dmentions.restricted").getDefault());
+        assertEquals(PermissionDefault.OP, server.getPluginManager().getPermission("dmentions.restricted.bypass").getDefault());
+        alex.setOp(true);
+        assertFalse(alex.hasPermission("dmentions.restricted"), "not even operators are restricted by default");
+    }
+
+    @Test
+    void restrictedPlayerIsNotAMentionWithoutBypass() throws InterruptedException {
+        restrict(steve);
+
+        AsyncChatEvent event = chat(alex, "hi Steve");
+
+        assertEquals("hi Steve", plain(event.message()));
+        assertEquals(0, soundsHeard(steve));
+        assertNull(alex.nextActionBar(), "no confirmation, like a player who turned mentions off");
+    }
+
+    @Test
+    void senderWithBypassCanMentionARestrictedPlayer() throws InterruptedException {
+        restrict(steve);
+        alex.addAttachment(plugin, "dmentions.restricted.bypass", true);
+
+        AsyncChatEvent event = chat(alex, "hi Steve");
+
+        assertEquals("hi @Steve", plain(event.message()));
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void nearbySkipsARestrictedPlayerButEveryoneReachesThem() throws InterruptedException {
+        PlayerMock other = addPlayer("Other");
+        placeAt(alex, 0, 0);
+        placeAt(steve, 5, 0);
+        placeAt(other, 5, 0);
+        restrict(steve);
+        allowNearby(alex);
+        allowEveryone(alex);
+
+        chat(alex, "@nearby");
+        assertEquals(0, soundsHeard(steve));
+        assertEquals(1, soundsHeard(other));
+
+        chat(alex, "@everyone");
         assertEquals(1, soundsHeard(steve));
     }
 }

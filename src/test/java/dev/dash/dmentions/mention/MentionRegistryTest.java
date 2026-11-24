@@ -1,6 +1,9 @@
 package dev.dash.dmentions.mention;
 
 import dev.dash.dmentions.message.Notification;
+import dev.dash.dmentions.storage.UserRepository;
+import dev.dash.dmentions.user.UserData;
+import dev.dash.dmentions.user.UserService;
 import dev.yoshi.xconfig.ConfigKey;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -21,6 +24,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -55,6 +60,25 @@ class MentionRegistryTest {
         }
 
         private final Map<String, String> targetIds = new java.util.HashMap<>();
+
+        /** Makes the candidate for this keyword point at a single online player, like a player mention. */
+        FakeType withSingleTarget(String keyword, Player target) {
+            singleTargets.put(keyword, target);
+            return withTarget(keyword, target.getUniqueId().toString());
+        }
+
+        FakeType ignoringToggle() {
+            this.respectsToggle = false;
+            return this;
+        }
+
+        private final Map<String, Player> singleTargets = new java.util.HashMap<>();
+        private boolean respectsToggle = true;
+
+        @Override public boolean respectsToggle() { return respectsToggle; }
+        @Override public Optional<Player> singleTarget(MentionCandidate candidate) {
+            return Optional.ofNullable(singleTargets.get(candidate.keyword()));
+        }
 
         @Override public String id() { return id; }
         @Override public boolean enabled() { return enabled; }
@@ -102,25 +126,38 @@ class MentionRegistryTest {
         @Override public TagResolver targetPlaceholders(MentionCandidate candidate) { return TagResolver.empty(); }
     }
 
+    /** Keeps nothing: the filter only needs the cached toggle state. */
+    private static final UserRepository NO_STORAGE = new UserRepository() {
+        @Override public void init() {}
+        @Override public Optional<UserData> load(UUID userId) { return Optional.empty(); }
+        @Override public void save(UserData userData) {}
+        @Override public void close() {}
+    };
+
     private ServerMock server;
     private Plugin plugin;
     private PlayerMock alex;
+    private UserService userService;
+    private TargetFilter filter;
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
         server = MockBukkit.mock();
         plugin = MockBukkit.createMockPlugin();
         alex = server.addPlayer("Alex");
+        userService = new UserService(NO_STORAGE, Logger.getLogger("MentionRegistryTest"));
+        filter = new TargetFilter(userService);
     }
 
     @AfterEach
     void tearDown() {
+        userService.shutdown();
         MockBukkit.unmock();
     }
 
     @Test
     void emptyRegistryHasNoCandidates() {
-        assertTrue(new MentionRegistry().candidatesFor(alex).isEmpty());
+        assertTrue(new MentionRegistry(filter).candidatesFor(alex).isEmpty());
     }
 
     @Test
@@ -128,7 +165,7 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", true, "@everyone");
         FakeType player = new FakeType("player", true, "Alex", "Steve");
 
-        Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(alex);
+        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex);
 
         assertEquals(3, candidates.size());
         assertSame(everyone, candidates.get("@everyone").type());
@@ -141,7 +178,7 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", false, "@everyone");
         FakeType player = new FakeType("player", true, "Alex");
 
-        Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(alex);
+        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex);
 
         assertEquals(List.of("Alex"), List.copyOf(candidates.keySet()));
     }
@@ -151,7 +188,7 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", true, "@everyone");
         FakeType player = new FakeType("player", true, "@everyone", "@Alex");
 
-        Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(alex);
+        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex);
 
         assertSame(everyone, candidates.get("@everyone").type());
         assertEquals("everyone:@everyone", candidates.get("@everyone").targetId());
@@ -163,14 +200,14 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", false, "@everyone");
         FakeType player = new FakeType("player", true, "@everyone");
 
-        assertSame(player, new MentionRegistry(everyone, player).candidatesFor(alex).get("@everyone").type());
+        assertSame(player, new MentionRegistry(filter, everyone, player).candidatesFor(alex).get("@everyone").type());
     }
 
     @Test
     void candidatesAreAskedForOnEveryCall() {
         // Types read live state (online players, config), so the registry must not cache.
         FakeType player = new FakeType("player", true, "Alex");
-        MentionRegistry registry = new MentionRegistry(player);
+        MentionRegistry registry = new MentionRegistry(filter, player);
 
         registry.candidatesFor(alex);
         registry.candidatesFor(alex);
@@ -182,7 +219,7 @@ class MentionRegistryTest {
     void typesKeepsRegistrationOrderAndIsReadOnly() {
         FakeType everyone = new FakeType("everyone", true);
         FakeType player = new FakeType("player", true);
-        MentionRegistry registry = new MentionRegistry(everyone, player);
+        MentionRegistry registry = new MentionRegistry(filter, everyone, player);
 
         assertEquals(List.of(everyone, player), registry.types());
         assertThrows(UnsupportedOperationException.class, () -> registry.types().add(player));
@@ -193,7 +230,7 @@ class MentionRegistryTest {
         FakeType player = new FakeType("player", true, "Alex", "Steve")
                 .withTarget("Alex", alex.getUniqueId().toString());
 
-        Map<String, MentionCandidate> candidates = new MentionRegistry(player).candidatesFor(alex);
+        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, player).candidatesFor(alex);
 
         assertEquals(List.of("Steve"), List.copyOf(candidates.keySet()));
     }
@@ -204,7 +241,7 @@ class MentionRegistryTest {
         FakeType player = new FakeType("player", true, "Alex")
                 .withTarget("Alex", alex.getUniqueId().toString());
 
-        assertTrue(new MentionRegistry(player).candidatesFor(steve).containsKey("Alex"));
+        assertTrue(new MentionRegistry(filter, player).candidatesFor(steve).containsKey("Alex"));
     }
 
     @Nested
@@ -215,7 +252,7 @@ class MentionRegistryTest {
             FakeType everyone = new FakeType("everyone", true, "@everyone").withPermission("test.everyone");
             FakeType player = new FakeType("player", true, "Steve");
 
-            Map<String, MentionCandidate> candidates = new MentionRegistry(everyone, player).candidatesFor(alex);
+            Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex);
 
             assertEquals(List.of("Steve"), List.copyOf(candidates.keySet()));
         }
@@ -225,7 +262,7 @@ class MentionRegistryTest {
             PerCandidatePermissionType groups = new PerCandidatePermissionType("vip", "staff");
             alex.addAttachment(plugin, "test.group.vip", true);
 
-            Map<String, MentionCandidate> candidates = new MentionRegistry(groups).candidatesFor(alex);
+            Map<String, MentionCandidate> candidates = new MentionRegistry(filter, groups).candidatesFor(alex);
 
             assertEquals(List.of("@vip"), List.copyOf(candidates.keySet()));
         }
@@ -235,7 +272,7 @@ class MentionRegistryTest {
             FakeType everyone = new FakeType("everyone", true, "@everyone").withPermission("test.everyone");
             alex.addAttachment(plugin, "test.everyone", true);
 
-            assertTrue(new MentionRegistry(everyone).candidatesFor(alex).containsKey("@everyone"));
+            assertTrue(new MentionRegistry(filter, everyone).candidatesFor(alex).containsKey("@everyone"));
         }
 
         @Test
@@ -244,7 +281,7 @@ class MentionRegistryTest {
             alex.setOp(true);
             alex.addAttachment(plugin, "test.player", false);
 
-            assertTrue(new MentionRegistry(player).candidatesFor(alex).isEmpty());
+            assertTrue(new MentionRegistry(filter, player).candidatesFor(alex).isEmpty());
         }
 
         @Test
@@ -252,7 +289,40 @@ class MentionRegistryTest {
             FakeType everyone = new FakeType("everyone", true, "@everyone").withPermission("test.everyone");
             FakeType player = new FakeType("player", true, "@everyone");
 
-            assertSame(player, new MentionRegistry(everyone, player).candidatesFor(alex).get("@everyone").type());
+            assertSame(player, new MentionRegistry(filter, everyone, player).candidatesFor(alex).get("@everyone").type());
         }
+    }
+
+    // ---- target filter: toggle and restricted ----
+
+    @Test
+    void targetWhoTurnedMentionsOffIsNotOffered() {
+        PlayerMock steve = server.addPlayer("Steve");
+        FakeType player = new FakeType("player", true, "Steve").withSingleTarget("Steve", steve);
+        userService.setMentionable(steve.getUniqueId(), false);
+
+        assertTrue(new MentionRegistry(filter, player).candidatesFor(alex).isEmpty());
+    }
+
+    @Test
+    void restrictedTargetIsOnlyOfferedToSendersWithBypass() {
+        PlayerMock steve = server.addPlayer("Steve");
+        steve.addAttachment(plugin, TargetFilter.RESTRICTED, true);
+        MentionRegistry registry = new MentionRegistry(filter, new FakeType("player", true, "Steve").withSingleTarget("Steve", steve));
+
+        assertTrue(registry.candidatesFor(alex).isEmpty());
+
+        alex.addAttachment(plugin, TargetFilter.RESTRICTED_BYPASS, true);
+        assertTrue(registry.candidatesFor(alex).containsKey("Steve"));
+    }
+
+    @Test
+    void typeThatIgnoresTheToggleIgnoresRestrictedToo() {
+        PlayerMock steve = server.addPlayer("Steve");
+        steve.addAttachment(plugin, TargetFilter.RESTRICTED, true);
+        userService.setMentionable(steve.getUniqueId(), false);
+        FakeType type = new FakeType("player", true, "Steve").withSingleTarget("Steve", steve).ignoringToggle();
+
+        assertTrue(new MentionRegistry(filter, type).candidatesFor(alex).containsKey("Steve"));
     }
 }
