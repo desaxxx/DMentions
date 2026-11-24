@@ -93,9 +93,11 @@ public class DMentions extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new UserListener(userService), this);
         // players already online
+        // Captured once: the field is cleared in onDisable, which may run before these tasks do.
+        UserService service = userService;
         for (Player player : getServer().getOnlinePlayers()) {
             UUID playerId = player.getUniqueId();
-            foliaLib.getScheduler().runAsync(task -> userService.load(playerId));
+            foliaLib.getScheduler().runAsync(task -> service.load(playerId));
         }
 
         permissionRegistrar = new PermissionRegistrar(getServer().getPluginManager());
