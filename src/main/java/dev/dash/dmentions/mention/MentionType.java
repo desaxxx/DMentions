@@ -50,6 +50,10 @@ public interface MentionType {
 
     Collection<Player> resolveTargets(Player sender, MentionCandidate candidate);
 
+    default Optional<Player> singleTarget(MentionCandidate candidate) {
+        return Optional.empty();
+    }
+
     ConfigKey<List<Notification>> senderMessage();
 
     ConfigKey<List<Notification>> targetMessage();

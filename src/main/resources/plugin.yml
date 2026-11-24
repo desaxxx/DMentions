@@ -9,3 +9,7 @@ softdepend: [LuckPerms]
 permissions:
   dmentions.cooldown.bypass:
     default: op
+  dmentions.restricted:
+    default: false
+  dmentions.restricted.bypass:
+    default: op

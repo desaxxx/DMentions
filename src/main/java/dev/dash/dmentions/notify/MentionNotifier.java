@@ -5,8 +5,8 @@ import dev.dash.dmentions.config.ConfigKeys;
 import dev.dash.dmentions.config.LangKeys;
 import dev.dash.dmentions.mention.MentionType;
 import dev.dash.dmentions.mention.PendingMention;
+import dev.dash.dmentions.mention.TargetFilter;
 import dev.dash.dmentions.message.MessageService;
-import dev.dash.dmentions.user.UserService;
 import dev.yoshi.xconfig.XConfig;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -20,13 +20,13 @@ public final class MentionNotifier {
     private final PlatformScheduler scheduler;
     private final MessageService messageService;
     private final XConfig config;
-    private final UserService userService;
+    private final TargetFilter targetFilter;
 
-    public MentionNotifier(PlatformScheduler scheduler, MessageService messageService, XConfig config, UserService userService) {
+    public MentionNotifier(PlatformScheduler scheduler, MessageService messageService, XConfig config, TargetFilter targetFilter) {
         this.scheduler = scheduler;
         this.messageService = messageService;
         this.config = config;
-        this.userService = userService;
+        this.targetFilter = targetFilter;
     }
 
     public void notify(Player sender, List<PendingMention> mentions) {
@@ -43,7 +43,7 @@ public final class MentionNotifier {
                 boolean reachedAny = false;
                 for (Player target : type.resolveTargets(sender, mention.candidate())) {
                     if (target.equals(sender)) continue;
-                    if (type.respectsToggle() && !userService.isMentionable(target.getUniqueId())) continue;
+                    if (!targetFilter.allows(sender, target, type)) continue;
                     if (!allowMultipleNotifications && !notified.add(target.getUniqueId())) continue;
 
                     reachedAny = true;

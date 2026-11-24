@@ -49,8 +49,6 @@ public final class PlayerMentionType implements MentionType {
     public List<MentionCandidate> candidates() {
         List<MentionCandidate> result = new ArrayList<>();
         for (Player target : Bukkit.getOnlinePlayers()) {
-            if (respectsToggle() && !userService.isMentionable(target.getUniqueId())) continue;
-
             String keyword = config.get(ConfigKeys.PLAYER_KEYWORD).replace("<player>", target.getName());
             MentionCandidate candidate = new MentionCandidate(keyword, this, target.getUniqueId().toString(), target.getName());
             result.add(candidate);
@@ -99,6 +97,16 @@ public final class PlayerMentionType implements MentionType {
         } catch (IllegalArgumentException ignored) {
         }
         return List.of();
+    }
+
+    @Override
+    public Optional<Player> singleTarget(MentionCandidate candidate) {
+        try {
+            UUID playerId = UUID.fromString(candidate.targetId());
+            return Optional.ofNullable(Bukkit.getPlayer(playerId));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 
     @Override

@@ -2,17 +2,16 @@ package dev.dash.dmentions.mention;
 
 import org.bukkit.entity.Player;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public final class MentionRegistry {
 
+    private final TargetFilter targetFilter;
     private final List<MentionType> types;
 
-    public MentionRegistry(MentionType... types) {
+    public MentionRegistry(TargetFilter targetFilter, MentionType... types) {
+        this.targetFilter = targetFilter;
         this.types = List.of(types);
     }
 
@@ -26,6 +25,9 @@ public final class MentionRegistry {
                 if (sender.getUniqueId().toString().equals(c.targetId())) continue;
                 String permission = type.permission(c);
                 if (!permission.isEmpty() && !sender.hasPermission(permission)) continue;
+                Optional<Player> target = type.singleTarget(c);
+                if (target.isPresent() && !targetFilter.allows(sender, target.get(), type)) continue;
+
                 candidates.putIfAbsent(c.keyword(), c);
             }
         }

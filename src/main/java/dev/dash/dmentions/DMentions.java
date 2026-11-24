@@ -17,6 +17,7 @@ import dev.dash.dmentions.listener.ChatListener;
 import dev.dash.dmentions.mention.CooldownTracker;
 import dev.dash.dmentions.mention.MentionRegistry;
 import dev.dash.dmentions.mention.PendingMentions;
+import dev.dash.dmentions.mention.TargetFilter;
 import dev.dash.dmentions.mention.type.EveryoneMentionType;
 import dev.dash.dmentions.mention.type.GroupMentionType;
 import dev.dash.dmentions.mention.type.NearbyMentionType;
@@ -82,8 +83,9 @@ public class DMentions extends JavaPlugin {
         CooldownTracker cooldownTracker = new CooldownTracker();
         PendingMentions pendingMentions = new PendingMentions();
         messageService = new MessageService(config, lang);
-        MentionNotifier mentionNotifier = new MentionNotifier(foliaLib.getScheduler(), messageService, config, userService);
-        mentionRegistry = new MentionRegistry(
+        TargetFilter targetFilter = new TargetFilter(userService);
+        MentionNotifier mentionNotifier = new MentionNotifier(foliaLib.getScheduler(), messageService, config, targetFilter);
+        mentionRegistry = new MentionRegistry(targetFilter,
                 new EveryoneMentionType(config),
                 new NearbyMentionType(config),
                 new GroupMentionType(config, groupProvider),
