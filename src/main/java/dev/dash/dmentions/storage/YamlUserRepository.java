@@ -68,8 +68,9 @@ public final class YamlUserRepository implements UserRepository {
             }
 
             boolean mentionable = usersSection.getBoolean(userIdStr + ".mentionable", true);
+            String customName = usersSection.getString(userIdStr + ".custom_name");
 
-            UserData user = new UserData(userId, mentionable);
+            UserData user = new UserData(userId, mentionable, customName);
             if (!user.isDefault()) {
                 userDataMap.put(userId, user);
             }
@@ -101,6 +102,7 @@ public final class YamlUserRepository implements UserRepository {
         YamlConfiguration config = new YamlConfiguration();
         for (UserData user : userDataMap.values()) {
             config.set("users." + user.id() + ".mentionable", user.mentionable());
+            config.set("users." + user.id() + ".custom_name", user.customName());
         }
 
         Path tmp = file.resolveSibling(file.getFileName() + ".tmp");

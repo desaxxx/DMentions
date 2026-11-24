@@ -26,10 +26,11 @@ public class MySqlUserRepository extends SqlUserRepository {
     @Override
     protected String upsertSql() {
         return """
-                INSERT INTO %s (id, mentionable)
-                VALUES (?, ?)
+                INSERT INTO %s (id, mentionable, custom_name)
+                VALUES (?,?,?)
                 ON DUPLICATE KEY UPDATE
-                mentionable = VALUES(mentionable)
+                mentionable = VALUES(mentionable),
+                custom_name = VALUES(custom_name)
                 """.formatted(table);
     }
 }

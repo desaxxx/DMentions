@@ -40,10 +40,11 @@ public class SqliteUserRepository extends SqlUserRepository {
     @Override
     protected String upsertSql() {
         return """
-                INSERT INTO %s (id, mentionable)
-                VALUES (?, ?)
+                INSERT INTO %s (id, mentionable, custom_name)
+                VALUES (?,?,?)
                 ON CONFLICT(id) DO UPDATE SET
-                mentionable = excluded.mentionable
+                mentionable = excluded.mentionable,
+                custom_name = excluded.custom_name
                 """.formatted(table);
     }
 }

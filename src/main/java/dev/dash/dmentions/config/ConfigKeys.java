@@ -102,6 +102,11 @@ public final class ConfigKeys {
             .defaultValue("<#a9e871>@<player>")
             .build();
 
+    public static final ConfigKey<String> PLAYER_CUSTOM_DISPLAY = builder("player.custom_display", String.class)
+            .comment("Display of the mention if the player set a custom name (/dms customize).")
+            .defaultValue("<#eac773>@<custom_name>")
+            .build();
+
     public static final ConfigKey<String> PLAYER_SOUND = builder("player.sound", String.class)
             .defaultValue("minecraft:block.note_block.pling;1.0;1.0")
             .build();

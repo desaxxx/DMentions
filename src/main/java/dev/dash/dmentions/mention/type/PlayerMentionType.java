@@ -60,6 +60,14 @@ public final class PlayerMentionType implements MentionType {
 
     @Override
     public Component display(MentionCandidate candidate) {
+        try {
+            UUID userId = UUID.fromString(candidate.targetId());
+            Optional<String> customName = userService.customName(userId);
+            if (customName.isPresent()) {
+                return MINI_MESSAGE.deserialize(config.get(ConfigKeys.PLAYER_CUSTOM_DISPLAY), Placeholder.unparsed("custom_name", customName.get()));
+            }
+        } catch (IllegalArgumentException ignored) {
+        }
         return MINI_MESSAGE.deserialize(config.get(ConfigKeys.PLAYER_DISPLAY), Placeholder.unparsed("player", candidate.label()));
     }
 

@@ -1,6 +1,7 @@
 package dev.dash.dmentions.user;
 
 import dev.dash.dmentions.storage.UserRepository;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +41,19 @@ public final class UserService {
     public void setMentionable(UUID userId, boolean mentionable) {
         users.compute(userId, (id, data) -> {
             UserData updated = (data == null ? UserData.defaults(id) : data).withMentionable(mentionable);
+            submitSave(updated);
+            return updated;
+        });
+    }
+
+    public Optional<String> customName(UUID userId) {
+        UserData user = users.get(userId);
+        return user == null ? Optional.empty() : Optional.ofNullable(user.customName());
+    }
+
+    public void setCustomName(UUID userId, @Nullable String customName) {
+        users.compute(userId, (id, data) -> {
+            UserData updated = (data == null ? UserData.defaults(id) : data).withCustomName(customName);
             submitSave(updated);
             return updated;
         });

@@ -28,7 +28,7 @@ public abstract class SqlUserRepository implements UserRepository {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement stmt = connection.prepareStatement(
-                     "CREATE TABLE IF NOT EXISTS %s ( id VARCHAR(36) PRIMARY KEY, mentionable INTEGER DEFAULT 1 )"
+                     "CREATE TABLE IF NOT EXISTS %s ( id VARCHAR(36) PRIMARY KEY, mentionable INTEGER DEFAULT 1, custom_name VARCHAR(16) NULL )"
                              .formatted(table))
              ) {
             stmt.execute();
@@ -42,13 +42,15 @@ public abstract class SqlUserRepository implements UserRepository {
     public Optional<UserData> load(UUID userId) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement stmt = connection.prepareStatement(
-                     "SELECT mentionable FROM %s WHERE id = ?"
+                     "SELECT mentionable, custom_name FROM %s WHERE id = ?"
                              .formatted(table));
         ) {
             stmt.setString(1, userId.toString());
 
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? Optional.of(new UserData(userId, rs.getInt(1) != 0)) : Optional.empty();
+                return rs.next()
+                        ? Optional.of(new UserData(userId, rs.getInt(1) != 0, rs.getString(2)))
+                        : Optional.empty();
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -73,6 +75,7 @@ public abstract class SqlUserRepository implements UserRepository {
         ) {
             stmt.setString(1, userData.id().toString());
             stmt.setInt(2, userData.mentionable() ? 1 : 0);
+            stmt.setString(3, userData.customName());
             stmt.execute();
         } catch (SQLException e) {
             throw new RuntimeException(e);
