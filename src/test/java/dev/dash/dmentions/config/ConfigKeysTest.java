@@ -52,6 +52,9 @@ class ConfigKeysTest {
         assertEquals(2, config.get(ConfigKeys.MENTION_LIMIT));
         assertFalse(config.get(ConfigKeys.CASE_SENSITIVE));
         assertFalse(config.get(ConfigKeys.ALLOW_MULTIPLE_NOTIFICATIONS));
+        assertTrue(config.get(ConfigKeys.VANISH_RESPECT));
+        assertTrue(config.get(ConfigKeys.IGNORE_RESPECT));
+        assertFalse(config.get(ConfigKeys.AFK_RESPECT));
         assertTrue(config.get(ConfigKeys.PLAYER_ENABLED));
         assertEquals("<player>", config.get(ConfigKeys.PLAYER_KEYWORD));
         assertEquals("<#a9e871>@<player>", config.get(ConfigKeys.PLAYER_DISPLAY));

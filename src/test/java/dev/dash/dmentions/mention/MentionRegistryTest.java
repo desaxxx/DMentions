@@ -1,6 +1,11 @@
 package dev.dash.dmentions.mention;
 
+import dev.dash.dmentions.config.ConfigKeys;
 import dev.dash.dmentions.message.Notification;
+import dev.dash.dmentions.status.NoPlayerStatusProvider;
+import dev.yoshi.xconfig.XConfig;
+import org.junit.jupiter.api.io.TempDir;
+import java.nio.file.Path;
 import dev.dash.dmentions.storage.UserRepository;
 import dev.dash.dmentions.user.UserData;
 import dev.dash.dmentions.user.UserService;
@@ -140,13 +145,18 @@ class MentionRegistryTest {
     private UserService userService;
     private TargetFilter filter;
 
+    @TempDir
+    Path dir;
+
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
         server = MockBukkit.mock();
         plugin = MockBukkit.createMockPlugin();
         alex = server.addPlayer("Alex");
         userService = new UserService(NO_STORAGE, Logger.getLogger("MentionRegistryTest"));
-        filter = new TargetFilter(userService);
+        XConfig config = XConfig.builder(dir.resolve("config.yml")).keys(ConfigKeys.class)
+                .logger(Logger.getLogger("MentionRegistryTest")).build();
+        filter = new TargetFilter(config, userService, new NoPlayerStatusProvider());
     }
 
     @AfterEach

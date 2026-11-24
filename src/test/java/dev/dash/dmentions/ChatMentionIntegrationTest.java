@@ -1436,4 +1436,124 @@ class ChatMentionIntegrationTest {
         chat(alex, "@everyone");
         assertEquals(1, soundsHeard(steve));
     }
+
+    // ---- vanish / ignore / AFK ----
+
+    private static void setVanished(PlayerMock player, boolean vanished) {
+        // owned by a separate plugin, like a real vanish plugin, so restarting DMentions does not clear it
+        player.setMetadata("vanished", new org.bukkit.metadata.FixedMetadataValue(MockBukkit.createMockPlugin(), vanished));
+    }
+
+    @Test
+    void vanishedPlayerCannotBeMentionedEvenWithEveryone() throws InterruptedException {
+        setVanished(steve, true);
+        allowEveryone(alex);
+
+        AsyncChatEvent event = chat(alex, "hi Steve");
+        assertEquals("hi Steve", plain(event.message()));
+        assertNull(alex.nextActionBar());
+
+        chat(alex, "@everyone");
+        assertEquals(0, soundsHeard(steve));
+    }
+
+    @Test
+    void playerWhoLeftVanishCanBeMentionedAgain() throws InterruptedException {
+        setVanished(steve, false); // Essentials writes false when vanish is turned off
+
+        chat(alex, "hi Steve");
+
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void vanishRespectCanBeTurnedOff() throws Exception {
+        restartWith("vanish_respect: false");
+        setVanished(steve, true);
+
+        chat(alex, "hi Steve");
+
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    /** Stands in for Essentials: AFK players and ignore lists are set by hand. */
+    static final class FakeStatus implements dev.dash.dmentions.status.PlayerStatusProvider {
+        final Set<UUID> afk = new HashSet<>();
+        final java.util.Map<UUID, Set<UUID>> ignores = new java.util.HashMap<>();
+
+        FakeStatus afk(PlayerMock player) {
+            afk.add(player.getUniqueId());
+            return this;
+        }
+
+        FakeStatus ignore(PlayerMock player, PlayerMock ignored) {
+            ignores.computeIfAbsent(player.getUniqueId(), id -> new HashSet<>()).add(ignored.getUniqueId());
+            return this;
+        }
+
+        @Override
+        public boolean isAFK(org.bukkit.entity.Player player) {
+            return afk.contains(player.getUniqueId());
+        }
+
+        @Override
+        public boolean isIgnoring(org.bukkit.entity.Player player, org.bukkit.entity.Player other) {
+            return ignores.getOrDefault(player.getUniqueId(), Set.of()).contains(other.getUniqueId());
+        }
+    }
+
+    /** Registers the fake provider the way another plugin would, then restarts so onEnable picks it up. */
+    private void useStatus(FakeStatus status, String configYaml) throws IOException {
+        server.getServicesManager().register(dev.dash.dmentions.status.PlayerStatusProvider.class, status,
+                MockBukkit.createMockPlugin(), org.bukkit.plugin.ServicePriority.Normal);
+        restartWith(configYaml);
+    }
+
+    @Test
+    void playerWhoIgnoresTheSenderGetsNoMentionEvenWithEveryone() throws Exception {
+        PlayerMock bob = addPlayer("Bob");
+        useStatus(new FakeStatus().ignore(steve, alex), "");
+        allowEveryone(alex);
+
+        AsyncChatEvent event = chat(alex, "hi Steve");
+        assertEquals("hi Steve", plain(event.message()));
+
+        chat(alex, "@everyone");
+        assertEquals(0, soundsHeard(steve));
+        assertEquals(1, soundsHeard(bob));
+
+        chat(bob, "hi Steve");
+        assertEquals(1, soundsHeard(steve), "only the ignored sender is blocked");
+    }
+
+    @Test
+    void ignoreRespectCanBeTurnedOff() throws Exception {
+        useStatus(new FakeStatus().ignore(steve, alex), "ignore_respect: false");
+
+        chat(alex, "hi Steve");
+
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void afkPlayerMissesPlayerMentionsButStillGetsEveryone() throws Exception {
+        useStatus(new FakeStatus().afk(steve), "afk_respect: true");
+        allowEveryone(alex);
+
+        AsyncChatEvent event = chat(alex, "hi Steve");
+        assertEquals("hi Steve", plain(event.message()));
+        assertEquals(0, soundsHeard(steve));
+
+        chat(alex, "@everyone");
+        assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void afkPlayersCanBeMentionedByDefault() throws Exception {
+        useStatus(new FakeStatus().afk(steve), "");
+
+        chat(alex, "hi Steve");
+
+        assertEquals(1, soundsHeard(steve));
+    }
 }
