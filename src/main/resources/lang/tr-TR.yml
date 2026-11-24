@@ -53,10 +53,14 @@ command:
       - "CHAT=<#ffd16d>/dms send <keyword> <gray>- Etiket gönderir"
     reload:
       - "CHAT=<#ffd16d>/dms reload <gray>- Config ve dil dosyalarını yeniden yükler"
+    user:
+      - "CHAT=<#ffd16d>/dms user <player> mentionable <true|false> <gray>- Bir oyuncunun etiketlenip etiketlenemeyeceğini ayarlar"
     version:
       - "CHAT=<#ffd16d>/dms version <gray>- Eklenti sürümünü gösterir"
   must_be_player:
     - "CHAT=<prefix> <red>Bu komutu kullanmak için oyuncu olmalısın."
+  player_not_found:
+    - "CHAT=<prefix> <red>Oyuncu bulunamadı: <white><player>"
   version:
     - "CHAT=<prefix> <gray>DMentions <white><version><gray> sürümü çalışıyor"
   toggle:
@@ -64,6 +68,12 @@ command:
       - "CHAT=<prefix> <green>Artık etiketlenebilirsin."
     disabled:
       - "CHAT=<prefix> <yellow>Artık etiketlenmeyeceksin."
+  user:
+    mentionable:
+      enabled:
+        - "CHAT=<prefix> <white><target> <green>artık etiketlenebilir."
+      disabled:
+        - "CHAT=<prefix> <white><target> <yellow>artık etiketlenemez."
   send:
     invalid_keyword:
       - "CHAT=<prefix> <red>Geçersiz anahtar kelime: <white><keyword>"
