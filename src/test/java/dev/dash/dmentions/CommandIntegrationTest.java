@@ -39,6 +39,7 @@ class CommandIntegrationTest {
     private static final String HEADER = PREFIX + "Commands:";
     private static final String VERSION_LINE = "/dms version - Show the plugin version";
     private static final String TOGGLE_LINE = "/dms toggle - Turn being mentioned on or off";
+    private static final String USER_LINE = "/dms user <player> mentionable <true|false> - Set whether a player can be mentioned";
     private static final String SEND_LINE = "/dms send <keyword> - Send a mention";
     private static final String RELOAD_LINE = "/dms reload - Reload the config and language files";
     private static final String RELOADED = PREFIX + "Reloaded the config and language files.";
@@ -195,13 +196,13 @@ class CommandIntegrationTest {
         alex.setOp(true);
 
         alex.performCommand("dms");
-        assertEquals(List.of(HEADER, TOGGLE_LINE, SEND_LINE, RELOAD_LINE, VERSION_LINE), received(alex));
-        assertEquals(List.of("help", "reload", "send", "toggle", "version"), clientSubCommands(alex, "dms"));
+        assertEquals(List.of(HEADER, TOGGLE_LINE, USER_LINE, SEND_LINE, RELOAD_LINE, VERSION_LINE), received(alex));
+        assertEquals(List.of("help", "reload", "send", "toggle", "user", "version"), clientSubCommands(alex, "dms"));
     }
 
     @Test
-    void sendAndReloadPermissionsDefaultToOp() {
-        for (String node : List.of("dmentions.command.send", "dmentions.command.reload")) {
+    void adminCommandPermissionsDefaultToOp() {
+        for (String node : List.of("dmentions.command.send", "dmentions.command.reload", "dmentions.command.user")) {
             Permission permission = server.getPluginManager().getPermission(node);
             assertNotNull(permission, node);
             assertEquals(PermissionDefault.OP, permission.getDefault(), node);
@@ -412,5 +413,78 @@ class CommandIntegrationTest {
         assertEquals(List.of(PREFIX + "Artık etiketlenmeyeceksin."), received(alex));
         alex.performCommand("dms toggle");
         assertEquals(List.of(PREFIX + "Artık etiketlenebilirsin."), received(alex));
+    }
+
+    // ---- user ----
+
+    @Test
+    void userSetsWhetherAnotherPlayerCanBeMentioned() {
+        PlayerMock steve = server.addPlayer("Steve");
+        alex.setOp(true);
+
+        alex.performCommand("dms user Steve mentionable false");
+        assertEquals(List.of(PREFIX + "Steve can no longer be mentioned."), received(alex));
+        performAndDeliver(alex, "dms send Steve");
+        assertEquals(List.of(PREFIX + "Invalid keyword: Steve"), received(alex));
+
+        alex.performCommand("dms user Steve mentionable true");
+        assertEquals(List.of(PREFIX + "Steve can now be mentioned."), received(alex));
+        performAndDeliver(alex, "dms send Steve");
+        assertEquals(1, steve.getHeardSounds().size());
+        assertTrue(received(steve).isEmpty(), "the target is not told about the change");
+    }
+
+    @Test
+    void userWorksFromTheConsole() {
+        server.addPlayer("Steve");
+        ConsoleCommandSenderMock console = (ConsoleCommandSenderMock) server.getConsoleSender();
+
+        server.dispatchCommand(console, "dms user Steve mentionable false");
+
+        assertEquals(PREFIX + "Steve can no longer be mentioned.", PLAIN.serialize(console.nextComponentMessage()));
+    }
+
+    @Test
+    void userWithoutAValueShowsItsUsage() {
+        server.addPlayer("Steve");
+        alex.setOp(true);
+
+        for (String command : List.of("dms user", "dms user Steve", "dms user Steve mentionable")) {
+            alex.performCommand(command);
+            assertEquals(List.of(USER_LINE), received(alex), command);
+        }
+    }
+
+    @Test
+    void userWithAnOfflinePlayerReportsPlayerNotFound() {
+        alex.setOp(true);
+
+        alex.performCommand("dms user Nobody mentionable false");
+
+        assertEquals(List.of(PREFIX + "Player not found: Nobody"), received(alex));
+    }
+
+    @Test
+    void userMatchesThePlayerNameIgnoringCase() {
+        server.addPlayer("Steve");
+        alex.setOp(true);
+
+        alex.performCommand("dms user steve mentionable false");
+
+        assertEquals(List.of(PREFIX + "Steve can no longer be mentioned."), received(alex));
+    }
+
+    @Test
+    void userSuggestsOnlinePlayerNames() throws Exception {
+        server.addPlayer("Steve");
+        server.addPlayer("Stella");
+        alex.setOp(true);
+        server.dispatchCommand(server.getConsoleSender(), "dmentions help");
+        CommandDispatcher<CommandSourceStack> dispatcher = PaperCommandsMock.INSTANCE.getDispatcherInternal();
+        CommandSourceStack source = CommandSourceStackMock.from(alex);
+
+        var suggestions = dispatcher.getCompletionSuggestions(dispatcher.parse("dms user st", source)).get();
+
+        assertEquals(List.of("Stella", "Steve"), suggestions.getList().stream().map(s -> s.getText()).toList());
     }
 }
