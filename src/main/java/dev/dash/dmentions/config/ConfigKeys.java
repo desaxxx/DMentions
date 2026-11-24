@@ -49,11 +49,14 @@ public final class ConfigKeys {
             .build();
 
     public static final ConfigKey<StorageType> STORAGE_TYPE = builder("storage.type", StorageType.class)
-            .comment("The type of storage to store user data.")
+            .comment(
+                    "The type of storage to store user data: YAML, SQLITE or MYSQL.",
+                    "Changing it requires a server restart, /dms reload does not apply it.")
             .defaultValue(StorageType.YAML)
             .build();
 
     public static final ConfigKey<String> STORAGE_HOST = builder("storage.host", String.class)
+            .comment("host, port, name, username, password and use_ssl are only used when type is MYSQL.")
             .defaultValue("localhost")
             .build();
 
@@ -78,7 +81,7 @@ public final class ConfigKeys {
             .build();
 
     public static final ConfigKey<String> STORAGE_PREFIX = builder("storage.prefix", String.class)
-            .comment("The prefix of the database table.")
+            .comment("The prefix of the database table. Used by SQLITE and MYSQL.")
             .defaultValue("dmentions_")
             .build();
 

@@ -19,7 +19,7 @@ public abstract class SqlUserRepository implements UserRepository {
 
     protected SqlUserRepository(String tablePrefix) {
         Preconditions.checkArgument(tablePrefix.matches("[A-Za-z0-9_]*"), "storage prefix must be alphanumeric or underscore");
-        this.table = tablePrefix + "users"; // letter, number, _ check
+        this.table = tablePrefix + "users";
     }
 
     @Override

@@ -22,9 +22,7 @@ import dev.dash.dmentions.mention.type.PlayerMentionType;
 import dev.dash.dmentions.message.MessageService;
 import dev.dash.dmentions.notify.MentionNotifier;
 import dev.dash.dmentions.permission.PermissionRegistrar;
-import dev.dash.dmentions.storage.SqliteUserRepository;
-import dev.dash.dmentions.storage.UserRepository;
-import dev.dash.dmentions.storage.YamlUserRepository;
+import dev.dash.dmentions.storage.*;
 import dev.dash.dmentions.user.UserListener;
 import dev.dash.dmentions.user.UserService;
 import dev.yoshi.xconfig.XConfig;
@@ -163,7 +161,7 @@ public class DMentions extends JavaPlugin {
             UserRepository repository = switch (config.get(ConfigKeys.STORAGE_TYPE)) {
                 case YAML -> new YamlUserRepository(getDataPath().resolve("data/users.yml"), getLogger());
                 case SQLITE -> new SqliteUserRepository(getDataPath().resolve("data/users.db"), sqlTablePrefix);
-                case MYSQL -> throw new UnsupportedOperationException("MySQL storage is not supported yet.");
+                case MYSQL -> new MySqlUserRepository(settings(config), sqlTablePrefix);
             };
             repository.init();
 
@@ -173,6 +171,17 @@ public class DMentions extends JavaPlugin {
             Bukkit.getPluginManager().disablePlugin(this);
             return null;
         }
+    }
+
+    private MySqlSettings settings(XConfig config) {
+        return new MySqlSettings(
+                config.get(ConfigKeys.STORAGE_HOST),
+                config.get(ConfigKeys.STORAGE_PORT),
+                config.get(ConfigKeys.STORAGE_NAME),
+                config.get(ConfigKeys.STORAGE_USERNAME),
+                config.get(ConfigKeys.STORAGE_PASSWORD),
+                config.get(ConfigKeys.STORAGE_USE_SSL)
+        );
     }
 
     private GroupProvider fetchGroupProvider(XConfig config) {

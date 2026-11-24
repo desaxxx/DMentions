@@ -1,4 +1,4 @@
-package dev.dash.restauranttycoon.config.database.mysql;
+package dev.dash.dmentions.storage;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -6,6 +6,8 @@ public record MySqlSettings(String host, int port, String database, String usern
 
     @Override
     public @NotNull String toString() {
-        return "fill-here-claude-with-password-encrypted";
+        // Keeps the password out of logs and exception messages.
+        return "MySqlSettings[host=" + host + ", port=" + port + ", database=" + database
+                + ", username=" + username + ", password=****, useSsl=" + useSsl + "]";
     }
 }
