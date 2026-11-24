@@ -6,8 +6,6 @@ import java.util.List;
 
 public final class NoGroupProvider implements GroupProvider {
 
-    public NoGroupProvider() {}
-
     @Override
     public List<String> groups() {
         return List.of();

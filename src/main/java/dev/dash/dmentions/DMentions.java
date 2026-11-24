@@ -25,6 +25,9 @@ import dev.dash.dmentions.mention.type.PlayerMentionType;
 import dev.dash.dmentions.message.MessageService;
 import dev.dash.dmentions.notify.MentionNotifier;
 import dev.dash.dmentions.permission.PermissionRegistrar;
+import dev.dash.dmentions.status.EssentialsStatusProvider;
+import dev.dash.dmentions.status.NoPlayerStatusProvider;
+import dev.dash.dmentions.status.PlayerStatusProvider;
 import dev.dash.dmentions.storage.*;
 import dev.dash.dmentions.user.UserListener;
 import dev.dash.dmentions.user.UserService;
@@ -79,11 +82,12 @@ public class DMentions extends JavaPlugin {
         foliaLib = new FoliaLib(this);
 
         GroupProvider groupProvider = fetchGroupProvider(config);
+        PlayerStatusProvider statusProvider = fetchStatusProvider(config);
 
         CooldownTracker cooldownTracker = new CooldownTracker();
         PendingMentions pendingMentions = new PendingMentions();
         messageService = new MessageService(config, lang);
-        TargetFilter targetFilter = new TargetFilter(userService);
+        TargetFilter targetFilter = new TargetFilter(config, userService, statusProvider);
         MentionNotifier mentionNotifier = new MentionNotifier(foliaLib.getScheduler(), messageService, config, targetFilter);
         mentionRegistry = new MentionRegistry(targetFilter,
                 new EveryoneMentionType(config),
@@ -209,6 +213,26 @@ public class DMentions extends JavaPlugin {
             }
         }
 
+        return provider;
+    }
+
+    private PlayerStatusProvider fetchStatusProvider(XConfig config) {
+        PlayerStatusProvider provider = getServer().getServicesManager().load(PlayerStatusProvider.class);
+        if (provider == null && getServer().getPluginManager().isPluginEnabled("Essentials")) {
+            try {
+                provider = new EssentialsStatusProvider();
+            } catch (Exception e) {
+                getLogger().log(Level.WARNING, "Essentials found but failed to setup.", e);
+            }
+        }
+
+        if (provider == null) {
+            provider = new NoPlayerStatusProvider();
+            // ignore_respect is on by default, so only the opt-in afk_respect is worth a warning
+            if (config.get(ConfigKeys.AFK_RESPECT)) {
+                getLogger().warning("afk_respect is enabled but Essentials was not found; AFK players can still be mentioned.");
+            }
+        }
         return provider;
     }
 

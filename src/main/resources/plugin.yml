@@ -5,7 +5,7 @@ api-version: '1.21'
 load: POSTWORLD
 authors: [ desaxx ]
 folia-supported: true
-softdepend: [LuckPerms]
+softdepend: [ LuckPerms, Essentials ]
 permissions:
   dmentions.cooldown.bypass:
     default: op

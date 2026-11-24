@@ -36,10 +36,25 @@ public final class ConfigKeys {
             .build();
 
     public static final ConfigKey<Boolean> ALLOW_MULTIPLE_NOTIFICATIONS = builder("allow_multiple_notifications", Boolean.class)
-            .comment(
-                    "If true, a player mentioned more than once in the same message",
+            .comment("If true, a player mentioned more than once in the same message",
                     "(e.g. \"@everyone Steve\") gets a notification for each mention.",
                     "If false, only the first one.")
+            .defaultValue(false)
+            .build();
+
+    public static final ConfigKey<Boolean> VANISH_RESPECT = builder("vanish_respect", Boolean.class)
+            .comment("Prevents mentioning vanished players, even with @everyone.",
+                    "Works with any vanish plugin that marks players as vanished (Essentials, Staff++, SuperVanish, ...).")
+            .defaultValue(true)
+            .build();
+
+    public static final ConfigKey<Boolean> IGNORE_RESPECT = builder("ignore_respect", Boolean.class)
+            .comment("Prevents mentioning players who ignore the sender, even with @everyone. Requires Essentials.")
+            .defaultValue(true)
+            .build();
+
+    public static final ConfigKey<Boolean> AFK_RESPECT = builder("afk_respect", Boolean.class)
+            .comment("Prevents mentioning AFK players. @everyone still reaches them. Requires Essentials.")
             .defaultValue(false)
             .build();
 
