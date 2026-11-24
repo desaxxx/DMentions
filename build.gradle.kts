@@ -8,11 +8,15 @@ repositories {
     mavenLocal()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.tcoded.com/releases")
+    maven("https://repo.essentialsx.net/releases/")
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
     compileOnly("net.luckperms:api:5.4")
+    compileOnly("net.essentialsx:EssentialsX:2.21.2") {
+        isTransitive = false
+    }
     implementation("org.bstats:bstats-bukkit:3.2.1")
     implementation("com.tcoded:FoliaLib:0.5.1")
     implementation("com.zaxxer:HikariCP:7.1.0") {
