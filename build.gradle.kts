@@ -24,7 +24,7 @@ dependencies {
     }
 
     implementation("dev.dash:loom:0.3.0")
-    implementation("dev.yoshi:xconfig:0.6.0")
+    implementation("dev.yoshi:xconfig:0.7.0")
 
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.116.3")
@@ -50,6 +50,9 @@ tasks.shadowJar {
     relocate("com.zaxxer.hikari", "dev.dash.dmentions.lib.hikari")
 
     relocate("dev.dash.loom", "dev.dash.dmentions.lib.loom")
+    // loom's own dependencies, so another plugin's copy cannot clash with ours
+    relocate("dev.dash.itemstack", "dev.dash.dmentions.lib.itemstack")
+    relocate("dev.dash.common", "dev.dash.dmentions.lib.common")
     relocate("dev.yoshi.xconfig", "dev.dash.dmentions.lib.xconfig")
 }
 
