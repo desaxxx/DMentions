@@ -78,6 +78,15 @@ No required dependence. Optionally:
 **Contact**: Found a bug or have a suggestion? Contact me on Discord: **desaxx** or open an [issue](https://github.com/desaxxx/DMentions/issues).\
 **Discord**: Join [Discord Server](https://discord.gg/dN6RUzZGgJ) to get support configuring the plugin.
 
+## License
+Copyright (c) 2024-2026 Desa
+
+DMentions 2.0.0 and later is licensed under the [GNU Lesser General Public License v3.0](COPYING.LESSER), which builds on the [GNU General Public License v3.0](COPYING).
+- Forks and modified versions of DMentions that are shared must keep their source code open under the same license.
+- Plugins that only use DMentions' API do not have to be open source and can use any license.
+
+Versions 1.8.4 and earlier were released under the MIT License.
+
 ## Images
 ![](https://i.imgur.com/820NYD9.png)
 ![](https://i.imgur.com/Mfs5lTp.png)
