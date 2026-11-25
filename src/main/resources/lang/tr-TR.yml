@@ -54,6 +54,8 @@ command:
       - "CHAT=<#ffd16d>/dms toggle <gray>- Etiketlenmeyi açar veya kapatır"
     send:
       - "CHAT=<#ffd16d>/dms send <keyword> <gray>- Etiket gönderir"
+    config:
+      - "CHAT=<#ffd16d>/dms config <gray>- Ayar menüsünü açar"
     reload:
       - "CHAT=<#ffd16d>/dms reload <gray>- Config ve dil dosyalarını yeniden yükler"
     customize:
