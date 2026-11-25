@@ -129,7 +129,7 @@ public class DMentions extends JavaPlugin {
         permissionRegistrar.register(mentionRegistry.types());
 
         Loom.install(this);
-        configMenus = new ConfigMenus(new ConfigEditor(config, this::reload, getLogger()), groupProvider,
+        configMenus = new ConfigMenus(new ConfigEditor(config, this::applyConfig, getLogger()), groupProvider,
                 getDataPath().resolve("lang"), this::reload);
 
         command = new DMentionsCommand(List.of(
@@ -195,10 +195,21 @@ public class DMentions extends JavaPlugin {
         if (!isEnabled()) return false;
         try {
             config.update();
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Could not reload the configuration.", e);
+            return false;
+        }
+        return applyConfig();
+    }
+
+    // applies what depends on the loaded config; the menus call only this, since config.set already loaded the change
+    public boolean applyConfig() {
+        if (!isEnabled()) return false;
+        try {
             saveBundledLanguages();
             messageService.setLang(loadLang());
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Could not reload the configuration.", e);
+            getLogger().log(Level.SEVERE, "Could not reload the language file.", e);
             return false;
         }
 

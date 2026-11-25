@@ -42,7 +42,7 @@ class ConfigEditorTest {
     void setUp() {
         config = XConfig.builder(dir.resolve("config.yml")).keys(ConfigKeys.class).logger(SILENT).buildWritable();
         editor = new ConfigEditor(config, () -> {
-            config.update(); // what /dms reload does with the config
+            // the plugin's applier no longer re-reads the file, so get() must already see the change
             applied++;
             return true;
         }, SILENT);
