@@ -69,6 +69,14 @@ tasks {
         systemProperty("bstats.relocatecheck", "false")
     }
 
+    // the license travels inside every jar, so a jar shared on its own still carries it
+    withType<Jar>().configureEach {
+        from(layout.projectDirectory) {
+            include("COPYING", "COPYING.LESSER")
+            into("META-INF")
+        }
+    }
+
     processResources {
         val props = mapOf("version" to version)
         filesMatching("plugin.yml") {
