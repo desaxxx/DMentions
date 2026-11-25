@@ -5,7 +5,7 @@ plugins {
 
 repositories {
     mavenCentral()
-    mavenLocal()
+    maven("https://desaxxx.github.io/maven/") // loom and xconfig
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.tcoded.com/releases")
     maven("https://repo.essentialsx.net/releases/")
