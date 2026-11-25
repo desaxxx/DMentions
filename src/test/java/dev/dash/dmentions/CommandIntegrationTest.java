@@ -43,6 +43,7 @@ class CommandIntegrationTest {
     private static final String USER_LINE = "/dms user <player> mentionable <true|false> - Set whether a player can be mentioned";
     private static final String USER_CUSTOM_NAME_LINE = "/dms user <player> custom_name <name> - Set the name shown when a player is mentioned";
     private static final String SEND_LINE = "/dms send <keyword> - Send a mention";
+    private static final String CONFIG_LINE = "/dms config - Open the settings menu";
     private static final String RELOAD_LINE = "/dms reload - Reload the config and language files";
     private static final String RELOADED = PREFIX + "Reloaded the config and language files.";
 
@@ -198,13 +199,13 @@ class CommandIntegrationTest {
         alex.setOp(true);
 
         alex.performCommand("dms");
-        assertEquals(List.of(HEADER, TOGGLE_LINE, CUSTOMIZE_LINE, USER_LINE, USER_CUSTOM_NAME_LINE, SEND_LINE, RELOAD_LINE, VERSION_LINE), received(alex));
-        assertEquals(List.of("customize", "help", "reload", "send", "toggle", "user", "version"), clientSubCommands(alex, "dms"));
+        assertEquals(List.of(HEADER, TOGGLE_LINE, CUSTOMIZE_LINE, USER_LINE, USER_CUSTOM_NAME_LINE, SEND_LINE, CONFIG_LINE, RELOAD_LINE, VERSION_LINE), received(alex));
+        assertEquals(List.of("config", "customize", "help", "reload", "send", "toggle", "user", "version"), clientSubCommands(alex, "dms"));
     }
 
     @Test
     void adminCommandPermissionsDefaultToOp() {
-        for (String node : List.of("dmentions.command.send", "dmentions.command.reload", "dmentions.command.user", "dmentions.command.customize")) {
+        for (String node : List.of("dmentions.command.send", "dmentions.command.reload", "dmentions.command.user", "dmentions.command.customize", "dmentions.command.config")) {
             Permission permission = server.getPluginManager().getPermission(node);
             assertNotNull(permission, node);
             assertEquals(PermissionDefault.OP, permission.getDefault(), node);
