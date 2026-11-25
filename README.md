@@ -87,6 +87,9 @@ DMentions 2.0.0 and later is licensed under version 3 only of the [GNU Lesser Ge
 
 Versions 1.8.4 and earlier were released under the MIT License.
 
+## Contributing
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first: every pull request needs agreement to the [Contributor License Agreement](CLA.md).
+
 ## Images
 ![](https://i.imgur.com/820NYD9.png)
 ![](https://i.imgur.com/Mfs5lTp.png)
