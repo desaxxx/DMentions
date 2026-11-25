@@ -81,7 +81,7 @@ No required dependence. Optionally:
 ## License
 Copyright (c) 2024-2026 Desa
 
-DMentions 2.0.0 and later is licensed under the [GNU Lesser General Public License v3.0](COPYING.LESSER), which builds on the [GNU General Public License v3.0](COPYING).
+DMentions 2.0.0 and later is licensed under version 3 only of the [GNU Lesser General Public License](COPYING.LESSER) (`LGPL-3.0-only`), which builds on the [GNU General Public License v3.0](COPYING).
 - Forks and modified versions of DMentions that are shared must keep their source code open under the same license.
 - Plugins that only use DMentions' API do not have to be open source and can use any license.
 
