@@ -2,6 +2,7 @@ package dev.dash.dmentions;
 
 import com.tcoded.folialib.FoliaLib;
 import dev.dash.dmentions.command.DMentionsCommand;
+import dev.dash.dmentions.command.sub.ConfigSubCommand;
 import dev.dash.dmentions.command.sub.CustomizeSubCommand;
 import dev.dash.dmentions.command.sub.ReloadSubCommand;
 import dev.dash.dmentions.command.sub.SendSubCommand;
@@ -31,8 +32,12 @@ import dev.dash.dmentions.status.PlayerStatusProvider;
 import dev.dash.dmentions.storage.*;
 import dev.dash.dmentions.user.UserListener;
 import dev.dash.dmentions.user.UserService;
+import dev.yoshi.xconfig.WritableXConfig;
 import dev.yoshi.xconfig.XConfig;
+import dev.dash.dmentions.menu.ConfigEditor;
+import dev.dash.dmentions.menu.ConfigMenus;
 import dev.dash.dmentions.metrics.LanguageMetric;
+import dev.dash.loom.Loom;
 import dev.dash.dmentions.update.UpdateChecker;
 import dev.dash.dmentions.update.UpdateNotifyListener;
 import org.bstats.bukkit.Metrics;
@@ -55,11 +60,12 @@ public class DMentions extends JavaPlugin {
     private FoliaLib foliaLib;
     private UserService userService;
 
-    private XConfig config;
+    private WritableXConfig config;
     private MessageService messageService;
     private MentionRegistry mentionRegistry;
     private DMentionsCommand command;
 
+    private ConfigMenus configMenus;
     private Metrics metrics;
     private volatile Set<String> bundledLanguages = Set.of(DEFAULT_LANGUAGE);
     private volatile String loadedLanguage;
@@ -70,7 +76,7 @@ public class DMentions extends JavaPlugin {
     public void onEnable() {
 
         try {
-            config = XConfig.builder(getDataPath().resolve("config.yml")).keys(ConfigKeys.class).logger(getLogger()).build();
+            config = XConfig.builder(getDataPath().resolve("config.yml")).keys(ConfigKeys.class).logger(getLogger()).buildWritable();
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Could not load config.yml, disabling the plugin.", e);
             Bukkit.getPluginManager().disablePlugin(this);
@@ -122,11 +128,16 @@ public class DMentions extends JavaPlugin {
         permissionRegistrar = new PermissionRegistrar(getServer().getPluginManager());
         permissionRegistrar.register(mentionRegistry.types());
 
+        Loom.install(this);
+        configMenus = new ConfigMenus(new ConfigEditor(config, this::reload, getLogger()), groupProvider,
+                getDataPath().resolve("lang"), this::reload);
+
         command = new DMentionsCommand(List.of(
                 new ToggleSubCommand(messageService, userService),
                 new CustomizeSubCommand(messageService, userService),
                 new UserSubCommand(messageService, userService),
                 new SendSubCommand(config, messageService, mentionRegistry),
+                new ConfigSubCommand(messageService, configMenus),
                 new ReloadSubCommand(messageService, this::reload),
                 new VersionSubCommand(messageService, getPluginMeta().getVersion())
         ), messageService);
@@ -155,6 +166,9 @@ public class DMentions extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // closes open menus first, while the config they show is still there
+        Loom.uninstall();
+        configMenus = null;
         if (userService != null) {
             userService.shutdown();
             userService = null;
@@ -191,6 +205,7 @@ public class DMentions extends JavaPlugin {
         permissionRegistrar.unregisterAll();
         permissionRegistrar.register(mentionRegistry.types());
         permissionRegistrar.registerCommands(command.subCommands());
+        configMenus.refresh();
         return true;
     }
 

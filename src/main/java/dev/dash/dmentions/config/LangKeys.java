@@ -86,6 +86,10 @@ public final class LangKeys {
             .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms send <keyword> <gray>- Send a mention", "")))
             .build();
 
+    public static final ConfigKey<List<Notification>> COMMAND_HELP_CONFIG = ConfigKey.elementList("command.help.config", Notification.class, NotificationAdapter.INSTANCE)
+            .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms config <gray>- Open the settings menu", "")))
+            .build();
+
     public static final ConfigKey<List<Notification>> COMMAND_HELP_RELOAD = ConfigKey.elementList("command.help.reload", Notification.class, NotificationAdapter.INSTANCE)
             .defaultValue(List.of(new Notification(Channel.CHAT, "<#ffd16d>/dms reload <gray>- Reload the config and language files", "")))
             .build();
