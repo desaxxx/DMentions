@@ -18,6 +18,12 @@ update_available:
 disabled_world_warn:
   - "ACTION_BAR=<prefix> <red>Bu dünyada oyuncu etiketleyemezsin."
 
+mention_restricted_warn:
+  - "ACTION_BAR=<prefix> <red>Bu oyuncuyu etiketlemek için yetkin yok."
+
+afk_warn:
+  - "ACTION_BAR=<prefix> <red>AFK oyuncuları etiketleyemezsin."
+
 player:
   sender_message:
     - "ACTION_BAR=<prefix> <#ddf7a6><target><#f4e4c0> adlı oyuncudan bahsettin."
