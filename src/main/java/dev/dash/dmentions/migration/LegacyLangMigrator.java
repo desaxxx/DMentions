@@ -54,6 +54,8 @@ public final class LegacyLangMigrator {
         Map<ConfigKey<List<Notification>>, List<String>> map = new LinkedHashMap<>();
         map.put(LangKeys.COOLDOWN_WARN, List.of("cooldown_warn"));
         map.put(LangKeys.DISABLED_WORLD_WARN, List.of("disabled_world_warn"));
+        map.put(LangKeys.MENTION_RESTRICTED_WARN, List.of("mention_restricted_warn"));
+        map.put(LangKeys.AFK_WARN, List.of("afk_warn"));
         map.put(LangKeys.PLAYER_SENDER_MESSAGE, List.of("player.sender_message"));
         map.put(LangKeys.PLAYER_TARGET_MESSAGE, List.of("player.target_message"));
         map.put(LangKeys.NEARBY_SENDER_MESSAGE, List.of("nearby.sender_message"));
