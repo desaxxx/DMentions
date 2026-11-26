@@ -14,9 +14,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class ChatListener implements Listener {
 
@@ -37,25 +35,37 @@ public final class ChatListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChat(AsyncChatEvent event) {
         Player sender = event.getPlayer();
-        Map<String, MentionCandidate> candidates = mentionRegistry.candidatesFor(sender);
-        if (candidates.isEmpty()) return;
+        Candidates candidates = mentionRegistry.candidatesFor(sender);
+        if (candidates.allowed().isEmpty() && candidates.blocked().isEmpty()) return;
 
         int limit = config.get(ConfigKeys.MENTION_LIMIT);
         boolean caseSensitive = config.get(ConfigKeys.CASE_SENSITIVE);
 
         StyledText styled = StyledText.of(event.message());
-        List<KeywordMatch> matches = KeywordFinder.find(styled.plain(), candidates.keySet(), caseSensitive, limit);
-        if (matches.isEmpty()) return;
+        List<KeywordMatch> matches = KeywordFinder.find(styled.plain(), candidates.allowed().keySet(), caseSensitive, limit);
+        List<KeywordMatch> blockedMatches = KeywordFinder.find(styled.plain(), candidates.blocked().keySet(), caseSensitive, Integer.MAX_VALUE);
+        if (matches.isEmpty() && blockedMatches.isEmpty()) return;
 
         if (config.get(ConfigKeys.DISABLED_WORLDS).contains(sender.getWorld().getName())) {
             mentionNotifier.disabledWorldWarn(sender, sender.getWorld().getName());
             return;
         }
 
+        Set<BlockReason> warned = new HashSet<>();
+        for (KeywordMatch bm : blockedMatches) {
+            BlockReason blockReason = candidates.blocked().get(bm.keyword());
+            if (!warned.add(blockReason)) continue;
+
+            switch (blockReason) {
+                case AFK -> mentionNotifier.afkWarn(sender);
+                case RESTRICTED -> mentionNotifier.restrictedWarn(sender);
+            }
+        }
+
         List<PendingMention> pending = new ArrayList<>();
         List<Replacement> replacements = new ArrayList<>();
         for (KeywordMatch m : matches) {
-            MentionCandidate candidate = candidates.get(m.keyword());
+            MentionCandidate candidate = candidates.allowed().get(m.keyword());
 
             long remainingCooldown = cooldownTracker.remaining(sender.getUniqueId(), candidate.type().id(), candidate.targetId(), System.currentTimeMillis());
             if (!sender.hasPermission("dmentions.cooldown.bypass") && remainingCooldown > 0) {

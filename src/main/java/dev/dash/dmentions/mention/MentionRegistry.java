@@ -15,8 +15,9 @@ public final class MentionRegistry {
         this.types = List.of(types);
     }
 
-    public Map<String, MentionCandidate> candidatesFor(Player sender) {
-        Map<String, MentionCandidate> candidates = new HashMap<>();
+    public Candidates candidatesFor(Player sender) {
+        Map<String, MentionCandidate> allowed = new HashMap<>();
+        Map<String, BlockReason> blocked = new HashMap<>();
 
         for (MentionType type : types) {
             if (!type.enabled()) continue;
@@ -26,13 +27,19 @@ public final class MentionRegistry {
                 String permission = type.permission(c);
                 if (!permission.isEmpty() && !sender.hasPermission(permission)) continue;
                 Optional<Player> target = type.singleTarget(c);
-                if (target.isPresent() && !targetFilter.allows(sender, target.get(), type)) continue;
+                if (target.isPresent()) {
+                    BlockReason blockReason = targetFilter.check(sender, target.get(), type).orElse(null);
+                    if (blockReason == BlockReason.AFK || blockReason == BlockReason.RESTRICTED) {
+                        blocked.putIfAbsent(c.keyword(), blockReason);
+                    }
+                    if (blockReason != null) continue;
+                }
 
-                candidates.putIfAbsent(c.keyword(), c);
+                allowed.putIfAbsent(c.keyword(), c);
             }
         }
 
-        return candidates;
+        return new Candidates(allowed, blocked);
     }
 
     public List<MentionType> types() {

@@ -10,6 +10,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.dash.dmentions.command.SubCommand;
 import dev.dash.dmentions.config.ConfigKeys;
 import dev.dash.dmentions.config.LangKeys;
+import dev.dash.dmentions.mention.Candidates;
 import dev.dash.dmentions.mention.MentionRegistry;
 import dev.dash.dmentions.message.MessageService;
 import dev.dash.dmentions.message.Notification;
@@ -21,10 +22,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class SendSubCommand implements SubCommand {
@@ -70,7 +68,11 @@ public class SendSubCommand implements SubCommand {
         }
 
         String input = StringArgumentType.getString(ctx, "keyword").trim();
-        Optional<String> keyword = findKeyword(mentionRegistry.candidatesFor(player).keySet(), input);
+
+        Candidates candidates = mentionRegistry.candidatesFor(player);
+        Set<String> keywords = new HashSet<>(candidates.allowed().keySet());
+        keywords.addAll(candidates.blocked().keySet());
+        Optional<String> keyword = findKeyword(keywords, input);
         if (keyword.isEmpty()) {
             messageService.send(sender, LangKeys.COMMAND_SEND_INVALID_KEYWORD, Placeholder.unparsed("keyword", input));
             return 0;
@@ -89,7 +91,13 @@ public class SendSubCommand implements SubCommand {
     private CompletableFuture<Suggestions> suggestKeywords(CommandContext<CommandSourceStack> ctx, SuggestionsBuilder builder) {
         if (ctx.getSource().getSender() instanceof Player player) {
             String typed = builder.getRemainingLowerCase();
-            mentionRegistry.candidatesFor(player).keySet().stream()
+
+            Candidates candidates = mentionRegistry.candidatesFor(player);
+            candidates.allowed().keySet().stream()
+                    .filter(k -> k.toLowerCase(Locale.ROOT).startsWith(typed))
+                    .sorted()
+                    .forEach(builder::suggest);
+            candidates.blocked().keySet().stream()
                     .filter(k -> k.toLowerCase(Locale.ROOT).startsWith(typed))
                     .sorted()
                     .forEach(builder::suggest);
