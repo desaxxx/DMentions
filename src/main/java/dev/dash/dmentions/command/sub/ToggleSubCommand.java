@@ -34,7 +34,7 @@ public class ToggleSubCommand implements SubCommand {
 
     @Override
     public PermissionDefault permissionDefault() {
-        return PermissionDefault.TRUE;
+        return PermissionDefault.OP;
     }
 
     @Override
