@@ -212,6 +212,17 @@ class CommandIntegrationTest {
         }
     }
 
+    // 1.8 servers gave their staff dmentions.admin
+    @Test
+    void adminPermissionGrantsEveryCommand() {
+        alex.addAttachment(plugin, "dmentions.admin", true);
+
+        for (String node : List.of("dmentions.command.toggle", "dmentions.command.send", "dmentions.command.reload",
+                "dmentions.command.user", "dmentions.command.customize", "dmentions.command.config", "dmentions.command.version")) {
+            assertTrue(alex.hasPermission(node), node);
+        }
+    }
+
     /** Runs the command, then lets the chat event it causes (fired async by MockBukkit) finish and deliver. */
     private void performAndDeliver(PlayerMock player, String command) {
         player.performCommand(command);
