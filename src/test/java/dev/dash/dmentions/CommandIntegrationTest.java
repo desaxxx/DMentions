@@ -81,14 +81,14 @@ class CommandIntegrationTest {
     void rootCommandShowsHelp() {
         alex.performCommand("dmentions");
 
-        assertEquals(List.of(HEADER, TOGGLE_LINE, VERSION_LINE), received(alex));
+        assertEquals(List.of(HEADER, VERSION_LINE), received(alex));
     }
 
     @Test
     void helpLiteralAndAliasesShowTheSameHelp() {
         for (String command : List.of("dmentions help", "dms", "dms help", "mentions", "mentions help")) {
             alex.performCommand(command);
-            assertEquals(List.of(HEADER, TOGGLE_LINE, VERSION_LINE), received(alex), command);
+            assertEquals(List.of(HEADER, VERSION_LINE), received(alex), command);
         }
     }
 
@@ -115,7 +115,7 @@ class CommandIntegrationTest {
         alex.addAttachment(plugin, "dmentions.command.version", false);
 
         alex.performCommand("dms");
-        assertEquals(List.of(HEADER, TOGGLE_LINE), received(alex));
+        assertEquals(List.of(HEADER), received(alex));
 
         alex.performCommand("dms version");
         assertTrue(received(alex).stream().noneMatch(line -> line.contains("Running DMentions")));
@@ -142,11 +142,11 @@ class CommandIntegrationTest {
     @Test
     void tabCompletionListsHelpAndPermittedSubCommands() {
         for (String label : List.of("dmentions", "dms", "mentions", "dmentions:dmentions")) {
-            assertEquals(List.of("help", "toggle", "version"), clientSubCommands(alex, label), label);
+            assertEquals(List.of("help", "version"), clientSubCommands(alex, label), label);
         }
 
         alex.addAttachment(plugin, "dmentions.command.version", false);
-        assertEquals(List.of("help", "toggle"), clientSubCommands(alex, "dms"));
+        assertEquals(List.of("help"), clientSubCommands(alex, "dms"));
     }
 
     @Test
@@ -186,7 +186,7 @@ class CommandIntegrationTest {
         restart();
 
         alex.performCommand("dms");
-        assertEquals(List.of(PREFIX + "Komutlar:", "/dms toggle - Etiketlenmeyi açar veya kapatır", "/dms version - Eklenti sürümünü gösterir"), received(alex));
+        assertEquals(List.of(PREFIX + "Komutlar:", "/dms version - Eklenti sürümünü gösterir"), received(alex));
 
         alex.performCommand("dms version");
         assertEquals(List.of(PREFIX + "DMentions " + version() + " sürümü çalışıyor"), received(alex));
@@ -205,7 +205,7 @@ class CommandIntegrationTest {
 
     @Test
     void adminCommandPermissionsDefaultToOp() {
-        for (String node : List.of("dmentions.command.send", "dmentions.command.reload", "dmentions.command.user", "dmentions.command.customize", "dmentions.command.config")) {
+        for (String node : List.of("dmentions.command.toggle", "dmentions.command.send", "dmentions.command.reload", "dmentions.command.user", "dmentions.command.customize", "dmentions.command.config")) {
             Permission permission = server.getPluginManager().getPermission(node);
             assertNotNull(permission, node);
             assertEquals(PermissionDefault.OP, permission.getDefault(), node);
@@ -354,6 +354,7 @@ class CommandIntegrationTest {
     @Test
     void toggleSwitchesBeingMentionedOffAndOn() {
         PlayerMock steve = server.addPlayer("Steve");
+        steve.addAttachment(plugin, "dmentions.command.toggle", true);
         alex.setOp(true);
 
         steve.performCommand("dms toggle");
@@ -369,13 +370,6 @@ class CommandIntegrationTest {
     }
 
     @Test
-    void togglePermissionDefaultsToEveryone() {
-        Permission permission = server.getPluginManager().getPermission("dmentions.command.toggle");
-        assertNotNull(permission);
-        assertEquals(PermissionDefault.TRUE, permission.getDefault());
-    }
-
-    @Test
     void toggleFromTheConsoleIsRefused() {
         ConsoleCommandSenderMock console = (ConsoleCommandSenderMock) server.getConsoleSender();
 
@@ -387,6 +381,7 @@ class CommandIntegrationTest {
     @Test
     void toggleIsSavedAndSurvivesARestart() throws IOException {
         PlayerMock steve = server.addPlayer("Steve");
+        steve.addAttachment(plugin, "dmentions.command.toggle", true);
         steve.performCommand("dms toggle");
         received(steve);
 
@@ -411,6 +406,7 @@ class CommandIntegrationTest {
             Files.copy(in, data.resolve("lang/tr-TR.yml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         }
         restart();
+        alex.addAttachment(plugin, "dmentions.command.toggle", true);
 
         alex.performCommand("dms toggle");
         assertEquals(List.of(PREFIX + "Artık etiketlenmeyeceksin."), received(alex));

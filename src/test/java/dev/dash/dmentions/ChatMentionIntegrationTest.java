@@ -1299,6 +1299,7 @@ class ChatMentionIntegrationTest {
 
     /** Turns mentions off through the command. Do it before any restart: MockBukkit keeps the first instance's commands. */
     private void toggleOff(PlayerMock player) {
+        player.addAttachment(plugin, "dmentions.command.toggle", true);
         player.performCommand("dms toggle");
         while (player.nextComponentMessage() != null) ;
     }
