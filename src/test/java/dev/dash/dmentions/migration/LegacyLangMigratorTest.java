@@ -80,6 +80,10 @@ class LegacyLangMigratorTest {
         assertEquals(List.of(new Notification(Channel.CHAT,
                         "<green>You changed your mention display from </green><red><old_value></red><green> to </green><yellow><value></yellow><green>.", "")),
                 lang.get(LangKeys.COMMAND_CUSTOMIZE_SUCCESS));
+        assertEquals(List.of(new Notification(Channel.ACTION_BAR, "<prefix> <red>You don't have permission to mention that player.", "")),
+                lang.get(LangKeys.MENTION_RESTRICTED_WARN));
+        assertEquals(List.of(new Notification(Channel.ACTION_BAR, "<prefix> <red>You can't mention an AFK player.", "")),
+                lang.get(LangKeys.AFK_WARN));
     }
 
     @Test
@@ -103,6 +107,7 @@ class LegacyLangMigratorTest {
         assertEquals(LangKeys.COMMAND_HELP_HEADER.defaultValue(), lang.get(LangKeys.COMMAND_HELP_HEADER));
         String file = Files.readString(langFolder.resolve("en-US.yml"));
         assertFalse(file.contains("vanish_notify"), "1.8 only messages are dropped");
+        assertFalse(file.contains("ignore_warn"), "1.8 only messages are dropped");
         assertFalse(file.contains("lang_version"), file);
         assertFalse(file.contains("{PREFIX}"), file);
     }
@@ -134,7 +139,7 @@ class LegacyLangMigratorTest {
     void theOld1Point8FileIsReplacedAndShippedOnesAreRestoredFirst() throws IOException {
         Path backupLang = shipped("tr-TR");
         Path langFolder = Files.createDirectories(dir.resolve("lang"));
-        Files.writeString(langFolder.resolve("tr-TR.yml"), "afk_warn: \"old\"\n");
+        Files.writeString(langFolder.resolve("tr-TR.yml"), "ignore_warn: \"old\"\n");
         List<String> restored = new ArrayList<>();
 
         LegacyLangMigrator.migrate(backupLang, langFolder, () -> {
@@ -143,7 +148,7 @@ class LegacyLangMigratorTest {
 
         assertEquals(List.of("removed"), restored, "the bundled copy must be written into an empty spot");
         String file = Files.readString(langFolder.resolve("tr-TR.yml"));
-        assertFalse(file.contains("afk_warn"), file);
+        assertFalse(file.contains("ignore_warn"), file);
     }
 
     @Test
