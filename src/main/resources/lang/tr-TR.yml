@@ -98,3 +98,6 @@ command:
       - "CHAT=<prefix> <green>Config ve dil dosyaları yeniden yüklendi."
     failed:
       - "CHAT=<prefix> <red>Yeniden yükleme başarısız oldu. Ayrıntılar için konsola bak."
+
+# Configuration version - do not edit.
+config-version: 1

@@ -10,6 +10,7 @@ import dev.dash.dmentions.command.sub.ToggleSubCommand;
 import dev.dash.dmentions.command.sub.UserSubCommand;
 import dev.dash.dmentions.command.sub.VersionSubCommand;
 import dev.dash.dmentions.config.ConfigKeys;
+import dev.dash.dmentions.config.LangConfigFactory;
 import dev.dash.dmentions.config.LangKeys;
 import dev.dash.dmentions.group.GroupProvider;
 import dev.dash.dmentions.group.LuckPermsGroupProvider;
@@ -76,7 +77,7 @@ public class DMentions extends JavaPlugin {
     public void onEnable() {
 
         try {
-            config = XConfig.builder(getDataPath().resolve("config.yml")).keys(ConfigKeys.class).logger(getLogger()).buildWritable();
+            config = XConfig.builder(getDataPath().resolve("config.yml")).keys(ConfigKeys.class).logger(getLogger()).version(1).buildWritable();
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Could not load config.yml, disabling the plugin.", e);
             Bukkit.getPluginManager().disablePlugin(this);
@@ -226,7 +227,7 @@ public class DMentions extends JavaPlugin {
             getLogger().warning("Could not find language file '%s', using default 'en-US'.".formatted(langFile));
             langFile = "en-US";
         }
-        XConfig lang = XConfig.builder(getDataPath().resolve("lang/" + langFile + ".yml")).keys(LangKeys.class).logger(getLogger()).build();
+        XConfig lang = LangConfigFactory.create(getDataPath().resolve("lang/" + langFile + ".yml")).logger(getLogger()).build();
         loadedLanguage = langFile;
         return lang;
     }
