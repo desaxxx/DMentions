@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -77,6 +78,32 @@ public abstract class SqlUserRepository implements UserRepository {
             stmt.setInt(2, userData.mentionable() ? 1 : 0);
             stmt.setString(3, userData.customName());
             stmt.execute();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void saveAll(Collection<UserData> users) {
+        if (users.isEmpty()) return;
+        try (Connection connection = dataSource.getConnection()) {
+            boolean autoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            try (PreparedStatement stmt = connection.prepareStatement(upsertSql())) {
+                for (UserData user : users) {
+                    stmt.setString(1, user.id().toString());
+                    stmt.setInt(2, user.mentionable() ? 1 : 0);
+                    stmt.setString(3, user.customName());
+                    stmt.addBatch();
+                }
+                stmt.executeBatch();
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(autoCommit);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -11,6 +11,7 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -87,15 +88,29 @@ public final class YamlUserRepository implements UserRepository {
      */
     @Override
     public synchronized void save(UserData userData) {
+        if (apply(userData)) {
+            writeFile();
+        }
+    }
+
+    @Override
+    public synchronized void saveAll(Collection<UserData> users) {
+        boolean dirty = false;
+        for (UserData user : users) {
+            dirty |= apply(user);
+        }
+        if (dirty) {
+            writeFile();
+        }
+    }
+
+    private boolean apply(UserData userData) {
         UserData previous = userData.isDefault()
                 ? userDataMap.remove(userData.id())
                 : userDataMap.put(userData.id(), userData);
 
         // a default user that was not stored, or the same values again: the file would not change
-        boolean dirty = userData.isDefault() ? previous != null : !Objects.equals(previous, userData);
-        if (dirty) {
-            writeFile();
-        }
+        return userData.isDefault() ? previous != null : !Objects.equals(previous, userData);
     }
 
     private void writeFile() {
