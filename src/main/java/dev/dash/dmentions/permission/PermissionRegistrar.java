@@ -3,6 +3,7 @@ package dev.dash.dmentions.permission;
 import dev.dash.dmentions.command.SubCommand;
 import dev.dash.dmentions.mention.MentionType;
 import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 
 import java.util.Collection;
@@ -31,14 +32,27 @@ public final class PermissionRegistrar {
     }
 
     public void registerCommands(Collection<SubCommand> subCommands) {
+        if (subCommands.isEmpty()) return;
+
+        Permission adminPermission = pluginManager.getPermission("dmentions.admin");
+        boolean adminPermissionExists = adminPermission != null;
         for (SubCommand sub : subCommands) {
             String perm = sub.permission();
             if (perm.isEmpty()) continue;
             Permission permission = pluginManager.getPermission(perm);
-            if (permission != null) continue;
+            if (permission == null) {
+                permission = new Permission(perm, "Command permission for " + sub.name(), sub.permissionDefault());
+                pluginManager.addPermission(permission);
+                registeredPermissions.add(perm);
+            }
 
-            pluginManager.addPermission(new Permission(perm, "Command permission for " + sub.name(), sub.permissionDefault()));
-            registeredPermissions.add(perm);
+            if (adminPermissionExists) {
+                adminPermission.getChildren().put(perm, true);
+            }
+        }
+
+        if (adminPermissionExists) {
+            adminPermission.recalculatePermissibles();
         }
     }
 
