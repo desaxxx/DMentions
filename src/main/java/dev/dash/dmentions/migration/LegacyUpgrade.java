@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 public final class LegacyUpgrade {
 
-    public static final String BACKUP_FOLDER = "backup-1.8.4";
+    public static final String BACKUP_FOLDER = "backup-1.8";
     // stays in the backup until every step succeeded, so a migration cut short runs again on the next start
     static final String PENDING_MARKER = ".pending";
     // only a 1.8 config.yml has this key; 2.0 (and 2.0-beta) files never do
