@@ -1,17 +1,19 @@
 # DMentions
 DMentions is a versatile chat plugin that allows you to mention players effortlessly\
-Compatible with various chat plugins, it enhances your in-game communication with ease.\
-[![](https://img.shields.io/badge/Powered_with-DAPI-5B9AB5?style=flat&labelColor=345869)](https://github.com/desaxxx/DAPI/)
+Compatible with various chat plugins, it enhances your in-game communication with ease, even when they colour every letter of the message.
 
 ## Download Links
-- [Spigot](https://www.spigotmc.org/resources/dmentions-%E2%9C%A8-advanced-player-mention.121452/)
-- [BuiltByBit](https://builtbybit.com/resources/dmentions.57545/)
 - [Modrinth](https://modrinth.com/plugin/dmentions)
+- [BuiltByBit](https://builtbybit.com/resources/dmentions.57545/)
+- [Spigot](https://www.spigotmc.org/resources/dmentions-%E2%9C%A8-advanced-player-mention.121452/) *(legacy: 1.8.x only, 2.0+ requires Paper)*
+
+## Requirements
+- [Paper](https://papermc.io/) 1.21+ or a fork of it. [Folia](https://papermc.io/software/folia) is supported.
+- Java 21+
 
 ## Supported Languages
 - English
 - Turkish
-- Chinese (Simplified)
 
 > [!NOTE]
 > You can create your own language file in `DMentions/lang/` folder. You can also share it with me!
@@ -20,12 +22,15 @@ Compatible with various chat plugins, it enhances your in-game communication wit
 - **Toggle System**: Enable or disable mentions quickly.
 - **Permissions**: Manage who can use mention commands.
 - **Notification Sounds**: Play sounds for mentions.
-- **Custom Keywords & Display Texts**: Personalize your mentions.
+- **Custom Keywords & Display Texts**: Personalize your mentions with [MiniMessage](https://docs.papermc.io/adventure/minimessage/format).
+- **Custom Names**: Players can choose the name shown when they are mentioned.
 - **Mention Limits**: Control the number of mentions.
 - **Restrict Player Mentions**: Restrict who can be mentioned.
 - **Cooldowns**: Prevent spam with cooldown settings.
-- **Notification Messages**: Informative messages for both sender and target (action bar or title).
+- **Notification Messages**: Informative messages for both sender and target (chat, action bar or title).
 - **Disabled Worlds**: Stop mentioning at specified worlds.
+- **Vanish, AFK & Ignore**: Respect vanished players, AFK players and ignore lists.
+- **Storage**: Keep player data in YAML, SQLite or MySQL/MariaDB.
 - **In-Game Configuring**: Configure settings directly in-game.
 
 ## Mention Types
@@ -37,41 +42,43 @@ Compatible with various chat plugins, it enhances your in-game communication wit
 ## Commands
 - **/dms toggle** - Toggle mentionable mode
 - **/dms send <keyword>** - Send a mention via command
-- **/dms reload** - Reloads the config file
+- **/dms reload** - Reloads the config and language files
 - **/dms config** - Opens configuring menu
-- **/dms customize <display>** - Personalizes your mention display
+- **/dms customize <name>** - Personalizes your mention display
+- **/dms user <player> (...)** - User management for admins
+- **/dms version** - Shows the plugin version
 - **/dms help** - Command list of plugin
-- **/dms user (...)** - User management for admins
 
 ## Permissions
-- **dmentions.toggle** - Toggle mentionable mode
-- **dmentions.send** - Send command permission
-- **dmentions.admin** - Has all the permissions
-- **dmentions.reload** - Reload config file
-- **dmentions.configure** - Open config menu
-- **dmentions.customize** - Customize command permission
-- **dmentions.help** - Help command permission\
+- **dmentions.command.<command>** - Use a command, e.g. `dmentions.command.toggle`
+- **dmentions.admin** - Use every command\
 ~
-- **dmentions.mention.restricted** - Restrict your mentions
-- **dmentions.mention.restricted.bypass** - Mention restricted players\
+- **dmentions.restricted** - Restrict your mentions
+- **dmentions.restricted.bypass** - Mention restricted players
+- **dmentions.cooldown.bypass** - Ignore mention cooldowns
+- **dmentions.update.notify** - Get notified about new versions\
 ~
 - **dmentions.mention.player** - Mention a player
 - **dmentions.mention.nearby** - Mention nearby players
 - **dmentions.mention.everyone** - Mention everyone
-- **dmentions.mention.group.%group%** - Mention groups\
+- **dmentions.mention.group.<group>** - Mention groups\
 *(!) Mention permissions are editable in config file.*
 
 ## Plugin Dependence
 No required dependence. Optionally:
 - [LuckPerms](https://luckperms.net/) for group mentioning.
-- [EssentialsX](https://essentialsx.net/) to support configuration options to respect vanished players, ignored players and/or AFK players.
-- [Staff++](https://www.spigotmc.org/resources/staff.83562/) to support configuration options to respect vanished players.
+- [EssentialsX](https://essentialsx.net/) to respect AFK players and ignore lists.
+
+Vanished players are detected automatically with EssentialsX, Staff++ and other vanish plugins.
 
 ## Installation
-1- **Download** the <ins>latest</ins> version of the plugin from [Spigot](https://www.spigotmc.org/resources/dmentions-%E2%9C%A8-advanced-player-mention.121452/).\
+1- **Download** the <ins>latest</ins> version of the plugin from one of the links above.\
 2- **Place** the plugin in the plugins folder of your server.\
 3- **Restart** your server.\
 4- **Enjoy** the enhanced chat experience! :>
+
+> [!TIP]
+> Upgrading from 1.8.x? Your config, language files and player data are converted on the first start. The old files are kept in `DMentions/backup-1.8/`. Coming from an older version? Update to 1.8.5 first.
 
 ## Documentation & Contact
 **Wiki**: Check out the [Wiki](https://github.com/desaxxx/DMentions/wiki) for help configuring the plugin.\
