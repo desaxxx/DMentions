@@ -167,7 +167,7 @@ class MentionRegistryTest {
 
     @Test
     void emptyRegistryHasNoCandidates() {
-        assertTrue(new MentionRegistry(filter).candidatesFor(alex).isEmpty());
+        assertTrue(new MentionRegistry(filter).candidatesFor(alex).allowed().isEmpty());
     }
 
     @Test
@@ -175,7 +175,7 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", true, "@everyone");
         FakeType player = new FakeType("player", true, "Alex", "Steve");
 
-        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex);
+        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex).allowed();
 
         assertEquals(3, candidates.size());
         assertSame(everyone, candidates.get("@everyone").type());
@@ -188,7 +188,7 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", false, "@everyone");
         FakeType player = new FakeType("player", true, "Alex");
 
-        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex);
+        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex).allowed();
 
         assertEquals(List.of("Alex"), List.copyOf(candidates.keySet()));
     }
@@ -198,7 +198,7 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", true, "@everyone");
         FakeType player = new FakeType("player", true, "@everyone", "@Alex");
 
-        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex);
+        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex).allowed();
 
         assertSame(everyone, candidates.get("@everyone").type());
         assertEquals("everyone:@everyone", candidates.get("@everyone").targetId());
@@ -210,7 +210,7 @@ class MentionRegistryTest {
         FakeType everyone = new FakeType("everyone", false, "@everyone");
         FakeType player = new FakeType("player", true, "@everyone");
 
-        assertSame(player, new MentionRegistry(filter, everyone, player).candidatesFor(alex).get("@everyone").type());
+        assertSame(player, new MentionRegistry(filter, everyone, player).candidatesFor(alex).allowed().get("@everyone").type());
     }
 
     @Test
@@ -219,8 +219,8 @@ class MentionRegistryTest {
         FakeType player = new FakeType("player", true, "Alex");
         MentionRegistry registry = new MentionRegistry(filter, player);
 
-        registry.candidatesFor(alex);
-        registry.candidatesFor(alex);
+        registry.candidatesFor(alex).allowed();
+        registry.candidatesFor(alex).allowed();
 
         assertEquals(2, player.candidateCalls);
     }
@@ -240,7 +240,7 @@ class MentionRegistryTest {
         FakeType player = new FakeType("player", true, "Alex", "Steve")
                 .withTarget("Alex", alex.getUniqueId().toString());
 
-        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, player).candidatesFor(alex);
+        Map<String, MentionCandidate> candidates = new MentionRegistry(filter, player).candidatesFor(alex).allowed();
 
         assertEquals(List.of("Steve"), List.copyOf(candidates.keySet()));
     }
@@ -251,7 +251,7 @@ class MentionRegistryTest {
         FakeType player = new FakeType("player", true, "Alex")
                 .withTarget("Alex", alex.getUniqueId().toString());
 
-        assertTrue(new MentionRegistry(filter, player).candidatesFor(steve).containsKey("Alex"));
+        assertTrue(new MentionRegistry(filter, player).candidatesFor(steve).allowed().containsKey("Alex"));
     }
 
     @Nested
@@ -262,7 +262,7 @@ class MentionRegistryTest {
             FakeType everyone = new FakeType("everyone", true, "@everyone").withPermission("test.everyone");
             FakeType player = new FakeType("player", true, "Steve");
 
-            Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex);
+            Map<String, MentionCandidate> candidates = new MentionRegistry(filter, everyone, player).candidatesFor(alex).allowed();
 
             assertEquals(List.of("Steve"), List.copyOf(candidates.keySet()));
         }
@@ -272,7 +272,7 @@ class MentionRegistryTest {
             PerCandidatePermissionType groups = new PerCandidatePermissionType("vip", "staff");
             alex.addAttachment(plugin, "test.group.vip", true);
 
-            Map<String, MentionCandidate> candidates = new MentionRegistry(filter, groups).candidatesFor(alex);
+            Map<String, MentionCandidate> candidates = new MentionRegistry(filter, groups).candidatesFor(alex).allowed();
 
             assertEquals(List.of("@vip"), List.copyOf(candidates.keySet()));
         }
@@ -282,7 +282,7 @@ class MentionRegistryTest {
             FakeType everyone = new FakeType("everyone", true, "@everyone").withPermission("test.everyone");
             alex.addAttachment(plugin, "test.everyone", true);
 
-            assertTrue(new MentionRegistry(filter, everyone).candidatesFor(alex).containsKey("@everyone"));
+            assertTrue(new MentionRegistry(filter, everyone).candidatesFor(alex).allowed().containsKey("@everyone"));
         }
 
         @Test
@@ -291,7 +291,7 @@ class MentionRegistryTest {
             alex.setOp(true);
             alex.addAttachment(plugin, "test.player", false);
 
-            assertTrue(new MentionRegistry(filter, player).candidatesFor(alex).isEmpty());
+            assertTrue(new MentionRegistry(filter, player).candidatesFor(alex).allowed().isEmpty());
         }
 
         @Test
@@ -299,7 +299,7 @@ class MentionRegistryTest {
             FakeType everyone = new FakeType("everyone", true, "@everyone").withPermission("test.everyone");
             FakeType player = new FakeType("player", true, "@everyone");
 
-            assertSame(player, new MentionRegistry(filter, everyone, player).candidatesFor(alex).get("@everyone").type());
+            assertSame(player, new MentionRegistry(filter, everyone, player).candidatesFor(alex).allowed().get("@everyone").type());
         }
     }
 
@@ -311,7 +311,7 @@ class MentionRegistryTest {
         FakeType player = new FakeType("player", true, "Steve").withSingleTarget("Steve", steve);
         userService.setMentionable(steve.getUniqueId(), false);
 
-        assertTrue(new MentionRegistry(filter, player).candidatesFor(alex).isEmpty());
+        assertTrue(new MentionRegistry(filter, player).candidatesFor(alex).allowed().isEmpty());
     }
 
     @Test
@@ -320,10 +320,10 @@ class MentionRegistryTest {
         steve.addAttachment(plugin, TargetFilter.RESTRICTED, true);
         MentionRegistry registry = new MentionRegistry(filter, new FakeType("player", true, "Steve").withSingleTarget("Steve", steve));
 
-        assertTrue(registry.candidatesFor(alex).isEmpty());
+        assertTrue(registry.candidatesFor(alex).allowed().isEmpty());
 
         alex.addAttachment(plugin, TargetFilter.RESTRICTED_BYPASS, true);
-        assertTrue(registry.candidatesFor(alex).containsKey("Steve"));
+        assertTrue(registry.candidatesFor(alex).allowed().containsKey("Steve"));
     }
 
     @Test
@@ -333,6 +333,43 @@ class MentionRegistryTest {
         userService.setMentionable(steve.getUniqueId(), false);
         FakeType type = new FakeType("player", true, "Steve").withSingleTarget("Steve", steve).ignoringToggle();
 
-        assertTrue(new MentionRegistry(filter, type).candidatesFor(alex).containsKey("Steve"));
+        assertTrue(new MentionRegistry(filter, type).candidatesFor(alex).allowed().containsKey("Steve"));
+    }
+
+    // ---- blocked targets: why a keyword is not a mention ----
+
+    @Test
+    void restrictedTargetIsReportedAsBlocked() {
+        PlayerMock steve = server.addPlayer("Steve");
+        steve.addAttachment(plugin, TargetFilter.RESTRICTED, true);
+        MentionRegistry registry = new MentionRegistry(filter, new FakeType("player", true, "Steve").withSingleTarget("Steve", steve));
+
+        Candidates candidates = registry.candidatesFor(alex);
+
+        assertTrue(candidates.allowed().isEmpty());
+        assertEquals(Map.of("Steve", BlockReason.RESTRICTED), candidates.blocked());
+    }
+
+    @Test
+    void targetWhoTurnedMentionsOffIsNotReported() {
+        PlayerMock steve = server.addPlayer("Steve");
+        userService.setMentionable(steve.getUniqueId(), false);
+        MentionRegistry registry = new MentionRegistry(filter, new FakeType("player", true, "Steve").withSingleTarget("Steve", steve));
+
+        Candidates candidates = registry.candidatesFor(alex);
+
+        assertTrue(candidates.allowed().isEmpty());
+        assertTrue(candidates.blocked().isEmpty(), "turning mentions off stays silent");
+    }
+
+    @Test
+    void reachableTargetIsAllowedAndNotBlocked() {
+        PlayerMock steve = server.addPlayer("Steve");
+        MentionRegistry registry = new MentionRegistry(filter, new FakeType("player", true, "Steve").withSingleTarget("Steve", steve));
+
+        Candidates candidates = registry.candidatesFor(alex);
+
+        assertTrue(candidates.allowed().containsKey("Steve"));
+        assertTrue(candidates.blocked().isEmpty());
     }
 }

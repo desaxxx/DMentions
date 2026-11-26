@@ -231,6 +231,19 @@ class CommandIntegrationTest {
     }
 
     @Test
+    void sendingARestrictedPlayerWarnsInsteadOfCallingTheKeywordInvalid() {
+        PlayerMock steve = server.addPlayer("Steve");
+        steve.addAttachment(plugin, "dmentions.restricted", true);
+        alex.addAttachment(plugin, "dmentions.command.send", true);
+
+        performAndDeliver(alex, "dms send Steve");
+
+        assertEquals(List.of(), received(alex));
+        assertEquals(PREFIX + "You don't have permission to mention that player.", PLAIN.serialize(alex.nextActionBar()));
+        assertEquals(0, steve.getHeardSounds().size());
+    }
+
+    @Test
     void sendMentionsThroughTheChatPipeline() {
         PlayerMock steve = server.addPlayer("Steve");
         alex.setOp(true);

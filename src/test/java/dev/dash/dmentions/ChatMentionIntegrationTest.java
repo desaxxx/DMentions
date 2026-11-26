@@ -1386,6 +1386,10 @@ class ChatMentionIntegrationTest {
 
     // ---- restricted ----
 
+    private static final String RESTRICTED_WARN = PREFIX + "You don't have permission to mention that player.";
+    private static final String AFK_WARN = PREFIX + "You can't mention an AFK player.";
+    private static final String DISABLED_WORLD_WARN = PREFIX + "You can't mention a player in this world.";
+
     private void restrict(PlayerMock player) {
         player.addAttachment(plugin, "dmentions.restricted", true);
     }
@@ -1411,7 +1415,8 @@ class ChatMentionIntegrationTest {
 
         assertEquals("hi Steve", plain(event.message()));
         assertEquals(0, soundsHeard(steve));
-        assertNull(alex.nextActionBar(), "no confirmation, like a player who turned mentions off");
+        assertEquals(RESTRICTED_WARN, plain(alex.nextActionBar()));
+        assertNull(alex.nextActionBar(), "a warning, but no confirmation");
     }
 
     @Test
@@ -1523,6 +1528,7 @@ class ChatMentionIntegrationTest {
 
         AsyncChatEvent event = chat(alex, "hi Steve");
         assertEquals("hi Steve", plain(event.message()));
+        assertNull(alex.nextActionBar(), "a warning would tell who ignores the sender");
 
         chat(alex, "@everyone");
         assertEquals(0, soundsHeard(steve));
@@ -1549,9 +1555,89 @@ class ChatMentionIntegrationTest {
         AsyncChatEvent event = chat(alex, "hi Steve");
         assertEquals("hi Steve", plain(event.message()));
         assertEquals(0, soundsHeard(steve));
+        assertEquals(AFK_WARN, plain(alex.nextActionBar()));
+        assertNull(alex.nextActionBar());
 
         chat(alex, "@everyone");
         assertEquals(1, soundsHeard(steve));
+    }
+
+    @Test
+    void oneWarningPerReasonAndMessage() throws Exception {
+        PlayerMock bob = addPlayer("Bob");
+        PlayerMock carl = addPlayer("Carl");
+        useStatus(new FakeStatus().afk(steve).afk(bob), "afk_respect: true");
+        restrict(carl);
+
+        chat(alex, "Steve Bob Carl");
+
+        List<String> bars = new java.util.ArrayList<>();
+        Component bar;
+        while ((bar = alex.nextActionBar()) != null) bars.add(plain(bar));
+        assertEquals(2, bars.size(), bars.toString());
+        assertTrue(bars.containsAll(List.of(AFK_WARN, RESTRICTED_WARN)), bars.toString());
+    }
+
+    @Test
+    void blockedNameNextToARealMentionWarnsAndMentions() throws Exception {
+        PlayerMock bob = addPlayer("Bob");
+        useStatus(new FakeStatus().afk(steve), "afk_respect: true");
+
+        AsyncChatEvent event = chat(alex, "Steve Bob");
+
+        assertEquals("Steve @Bob", plain(event.message()));
+        assertEquals(1, soundsHeard(bob));
+        assertEquals(AFK_WARN, plain(alex.nextActionBar()));
+    }
+
+    @Test
+    void blockedNamesDoNotUseUpTheMentionLimit() throws Exception {
+        PlayerMock bob = addPlayer("Bob");
+        useStatus(new FakeStatus().afk(steve), "afk_respect: true\nmention_limit: 1");
+
+        AsyncChatEvent event = chat(alex, "Steve Bob");
+
+        assertEquals("Steve @Bob", plain(event.message()));
+        assertEquals(1, soundsHeard(bob));
+    }
+
+    @Test
+    void nearbyDoesNotWarnAboutAfkPlayers() throws Exception {
+        PlayerMock other = addPlayer("Other");
+        useStatus(new FakeStatus().afk(steve), "afk_respect: true");
+        placeAt(alex, 0, 0);
+        placeAt(steve, 5, 0);
+        placeAt(other, 5, 0);
+        allowNearby(alex);
+
+        chat(alex, "@nearby");
+
+        assertEquals(0, soundsHeard(steve));
+        assertEquals(1, soundsHeard(other));
+        assertTrue(plain(alex.nextActionBar()).contains("nearby"), "only the nearby confirmation");
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void inADisabledWorldABlockedNameOnlyGetsTheWorldWarning() throws Exception {
+        useStatus(new FakeStatus().afk(steve), "afk_respect: true\ndisabled_worlds:\n  - nomention\n");
+        alex.teleport(server.addSimpleWorld("nomention").getSpawnLocation());
+
+        chat(alex, "hi Steve");
+
+        assertEquals(DISABLED_WORLD_WARN, plain(alex.nextActionBar()));
+        assertNull(alex.nextActionBar());
+    }
+
+    @Test
+    void inADisabledWorldAMessageWithoutNamesGetsNoWarning() throws Exception {
+        useStatus(new FakeStatus().afk(steve), "afk_respect: true\ndisabled_worlds:\n  - nomention\n");
+        alex.teleport(server.addSimpleWorld("nomention").getSpawnLocation());
+
+        chat(alex, "hello everybody");
+
+        assertNull(alex.nextActionBar(), "an AFK player online must not make every message a mention attempt");
+        assertNull(alex.nextComponentMessage());
     }
 
     @Test
