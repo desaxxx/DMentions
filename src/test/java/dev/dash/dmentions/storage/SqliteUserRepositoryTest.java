@@ -81,6 +81,17 @@ class SqliteUserRepositoryTest {
     }
 
     @Test
+    void saveAllInsertsAndUpdatesInOneGo() {
+        SqliteUserRepository repository = open();
+        repository.save(new UserData(STEVE, true, null));
+
+        repository.saveAll(List.of(new UserData(STEVE, false, "Stevie"), new UserData(ALEX, false, null)));
+
+        assertEquals(Optional.of(new UserData(STEVE, false, "Stevie")), repository.load(STEVE));
+        assertEquals(Optional.of(new UserData(ALEX, false, null)), repository.load(ALEX));
+    }
+
+    @Test
     void differentPrefixesUseSeparateTables() {
         SqliteUserRepository first = open("first_");
         first.save(new UserData(STEVE, false, null));

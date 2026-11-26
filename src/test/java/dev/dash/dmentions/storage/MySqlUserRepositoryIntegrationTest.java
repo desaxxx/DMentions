@@ -90,6 +90,18 @@ class MySqlUserRepositoryIntegrationTest {
 
     @ParameterizedTest(name = "{0}", autoCloseArguments = false)
     @MethodSource("databases")
+    void saveAllInsertsAndUpdatesInOneGo(String name, JdbcDatabaseContainer<?> db) {
+        MySqlUserRepository repository = open(db, newPrefix());
+        repository.save(new UserData(STEVE, true, null));
+
+        repository.saveAll(java.util.List.of(new UserData(STEVE, false, "Stevie"), new UserData(ALEX, false, null)));
+
+        assertEquals(Optional.of(new UserData(STEVE, false, "Stevie")), repository.load(STEVE));
+        assertEquals(Optional.of(new UserData(ALEX, false, null)), repository.load(ALEX));
+    }
+
+    @ParameterizedTest(name = "{0}", autoCloseArguments = false)
+    @MethodSource("databases")
     void dataSurvivesReopening(String name, JdbcDatabaseContainer<?> db) {
         String prefix = newPrefix();
         MySqlUserRepository repository = open(db, prefix);

@@ -80,6 +80,15 @@ class YamlUserRepositoryTest {
     }
 
     @Test
+    void saveAllStoresEveryUserAndSkipsDefaults() {
+        open().saveAll(java.util.List.of(new UserData(STEVE, false, "Stevie"), UserData.defaults(ALEX)));
+
+        YamlUserRepository reopened = open();
+        assertEquals(Optional.of(new UserData(STEVE, false, "Stevie")), reopened.load(STEVE));
+        assertEquals(Optional.empty(), reopened.load(ALEX));
+    }
+
+    @Test
     void defaultUserThatWasNeverStoredDoesNotCreateTheFile() {
         open().save(UserData.defaults(STEVE));
 
