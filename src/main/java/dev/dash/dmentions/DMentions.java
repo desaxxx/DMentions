@@ -25,6 +25,7 @@ import dev.dash.dmentions.mention.type.GroupMentionType;
 import dev.dash.dmentions.mention.type.NearbyMentionType;
 import dev.dash.dmentions.mention.type.PlayerMentionType;
 import dev.dash.dmentions.message.MessageService;
+import dev.dash.dmentions.migration.LegacyUpgrade;
 import dev.dash.dmentions.notify.MentionNotifier;
 import dev.dash.dmentions.permission.PermissionRegistrar;
 import dev.dash.dmentions.status.EssentialsStatusProvider;
@@ -76,6 +77,18 @@ public class DMentions extends JavaPlugin {
     @Override
     public void onEnable() {
 
+        // a 1.8 folder: back it up before 2.0 touches any of its files
+        LegacyUpgrade upgrade = LegacyUpgrade.detect(getDataPath(), getLogger()).orElse(null);
+        if (upgrade != null) {
+            try {
+                upgrade.prepare();
+            } catch (IOException e) {
+                getLogger().log(Level.SEVERE, "Could not back up the DMentions 1.8 files, disabling the plugin so they are not overwritten.", e);
+                Bukkit.getPluginManager().disablePlugin(this);
+                return;
+            }
+        }
+
         try {
             config = XConfig.builder(getDataPath().resolve("config.yml")).keys(ConfigKeys.class).logger(getLogger()).version(1).buildWritable();
         } catch (Exception e) {
@@ -84,6 +97,10 @@ public class DMentions extends JavaPlugin {
             return;
         }
 
+        if (upgrade != null) {
+            upgrade.migrateConfig(config);
+            upgrade.migrateLang(getDataPath().resolve("lang"), this::saveBundledLanguages);
+        }
         saveBundledLanguages();
 
         XConfig lang;
@@ -97,6 +114,10 @@ public class DMentions extends JavaPlugin {
 
         UserRepository repository = prepareUserRepository(config);
         if (repository == null) return; // Disabled the plugin
+        if (upgrade != null) {
+            upgrade.migrateUsers(repository, id -> getServer().getOfflinePlayer(id).getName());
+            upgrade.finish();
+        }
         userService = new UserService(repository, getLogger());
 
         foliaLib = new FoliaLib(this);
