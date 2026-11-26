@@ -1,0 +1,87 @@
+# (!) Three types of text channels are supported: CHAT, ACTION_BAR, TITLE.
+#     Usage: "CHANNEL_TYPE=Any message"
+#     Examples:
+#       - "ACTION_BAR=&cThat's no good."
+#       - "TITLE=&#4bbdbcMention||&fYou have been mentioned by a player."
+#       - "CHAT={PREFIX} &7This is a prefixed message which you configured at config.yml"
+#     For the TITLE case, use || as a delimiter to separate the main title from the subtitle.
+# (!) Supports hex color support &#RRGGBB since v1.8.3.
+# (!) Supports gradient colors <&#RRGGBB>content</&#RRGGBB> since v1.8.3.
+#
+cooldown_warn: "ACTION_BAR=&cYou must wait {remained} before mentioning."
+mention_restricted_warn: "ACTION_BAR={PREFIX} &cYou don't have permission to mention that player."
+disabled_world_warn: "ACTION_BAR={PREFIX} &cYou can't mention a player in this world."
+afk_warn: "ACTION_BAR={PREFIX} &cYou can't mention an AFK player."
+ignore_warn: "ACTION_BAR={PREFIX} &cYou can't mention a player that ignores you."
+vanish_notify:
+  true: "CHAT={PREFIX} &cYou won't be mentioned now."
+  false: "CHAT={PREFIX} &aYou will be mentioned now."
+#
+player:
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0You mentioned player &e{target}&#f4e4c0."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0Player &#ddf7a6{sender}&#f4e4c0 mentioned you in chat."
+    - "TITLE={PREFIX}||&#f4e4c0You have been mentioned in chat."
+#
+nearby:
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0You mentioned nearby players."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0Player &#ddf7a6{sender}&#f4e4c0 mentioned nearby players."
+    - "TITLE={PREFIX}||&#f4e4c0You have been mentioned in chat."
+#
+everyone:
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0You mentioned everyone."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0Player &#ddf7a6{sender}&#f4e4c0 mentioned everyone."
+    - "TITLE={PREFIX}||&#f4e4c0You have been mentioned in chat."
+#
+group:
+  default:
+    sender_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0You mentioned &#ddf7a6{group}&#f4e4c0 members."
+    target_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0Player &#ddf7a6{sender}&#f4e4c0 mentioned your group members."
+      - "TITLE={PREFIX}||&#f4e4c0You have been mentioned in chat."
+  __OTHER__:
+    sender_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0You mentioned &#ddf7a6{group}&#f4e4c0 members."
+    target_message:
+      - "ACTION_BAR={PREFIX} &#f4e4c0Player &#ddf7a6{sender}&#f4e4c0 mentioned your group members."
+      - "TITLE={PREFIX}||&#f4e4c0You have been mentioned in chat."
+
+# Commands
+command:
+  must_be_player: "&cYou must be a player to use this command!"
+  player_not_found: "&cPlayer not found."
+  user_not_found: "&cUser not found."
+  unknown: "&cUnknown command."
+  toggle:
+    no_longer_mentioned: "&eYou will no longer be mentioned."
+    will_now_mentioned: "&eYou will now be mentioned."
+  send:
+    invalid_keyword: "&cInvalid keyword."
+  reload:
+    success: "&aReloaded configuration."
+  user:
+    unknown: "&cUnknown argument."
+    mentions:
+      success: "&eMention mode of &f{target}&e set to {value}."
+    display:
+      invalid_display: "&cInvalid display. It must match a Minecraft nickname expression."
+      success: "&eMention display of &f{target}&e set to {value}."
+  help:
+    description: "&6Here is the command list:"
+    list: "&7{commands}"
+  config:
+    already_configuring: "&cThere is an admin who is already configuring."
+    reset_changes: "&cReset changes."
+    save_changes: "&aUpdated configuration keys."
+  customize:
+    invalid_display: "&cInvalid display. It must match a Minecraft nickname expression."
+    success: "&aYou changed your mention display from &c{old_value}&a to &e{value}&a."
+#
+
+lang_version: "1.8.4" #DO NOT CHANGE.

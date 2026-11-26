@@ -1,0 +1,87 @@
+# (!) Kullanılabilir mesaj türleri: CHAT, ACTION_BAR, TITLE.
+#     Kullanım: "KANAL_TÜRÜ=Herhangi bir mesaj"
+#     Örnekler:
+#       - "ACTION_BAR=&cBu hoş değil."
+#       - "TITLE=&#4bbdbcEtiket||&fBir oyuncu tarafından etiketlendin."
+#       - "CHAT={PREFIX} &7Bu mesaj config.yml'den düzenlediğin önekli bir mesaj."
+#       TITLE durumunda mesaj içinde || kullanarak başlık ve alt başlığı ayırabilirsin.
+# (!) v1.8.3 itibariyle hex formatı &#RRGGBB destekleniyor.
+# (!) v1.8.3 itibariyle gradient renk formatı <&#RRGGBB>içerik</&#RRGGBB> destekleniyor.
+#
+cooldown_warn: "ACTION_BAR=&cTekrar etiketlemek için {REMAINED} beklemelisin."
+mention_restricted_warn: "ACTION_BAR={PREFIX} &cBu oyuncuyu etiketlemek için yetkin yok."
+disabled_world_warn: "ACTION_BAR={PREFIX} &cBu dünyada oyuncu etiketleyemezsin."
+afk_warn: "ACTION_BAR={PREFIX} &cAFK oyuncuları etiketleyemezsin."
+ignore_warn: "ACTION_BAR={PREFIX} &cSeni engellemiş oyuncuları etiketleyemezsin."
+vanish_notify:
+  true: "CHAT={PREFIX} &cArtık etiketlenmeyeceksin."
+  false: "CHAT={PREFIX} &aArtık etiketleneceksin."
+#
+player:
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#ddf7a6{p}&#f4e4c0 adlı oyuncudan bahsettin."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#ddf7a6{p}&#f4e4c0 adlı oyuncu sohbette senden bahsetti."
+    - "TITLE={PREFIX}||&#f4e4c0Sohbette biri senden bahsetti."
+#
+nearby:
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0Yakındaki oyunculardan bahsettin."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#ddf7a6{p}&#f4e4c0 adlı oyuncu yakındaki oyunculardan bahsetti."
+    - "TITLE={PREFIX}||&#f4e4c0Sohbette biri senden bahsetti."
+#
+everyone:
+  sender_message:
+    - "ACTION_BAR={PREFIX} &#f4e4c0Herkesten bahsettin."
+  target_message:
+    - "ACTION_BAR={PREFIX} &#ddf7a6{p}&#f4e4c0 adlı oyuncu herkesten bahsetti."
+    - "TITLE={PREFIX}||&#f4e4c0Sohbette biri senden bahsetti."
+#
+group:
+  default:
+    sender_message:
+      - "ACTION_BAR={PREFIX} &#ddf7a6{group}&#f4e4c0 üyelerinden bahsettin."
+    target_message:
+      - "ACTION_BAR={PREFIX} &#ddf7a6{p}&#f4e4c0 adlı oyuncu grup üyelerinden bahsetti."
+      - "TITLE={PREFIX}||&#f4e4c0Sohbette biri senden bahsetti."
+  __OTHER__:
+    sender_message:
+      - "ACTION_BAR={PREFIX} &#ddf7a6{group}&#f4e4c0 üyelerinden bahsettin."
+    target_message:
+      - "ACTION_BAR={PREFIX} &#ddf7a6{p}&#f4e4c0 adlı oyuncu grup üyelerinden bahsetti."
+      - "TITLE={PREFIX}||&#f4e4c0Sohbette biri senden bahsetti."
+
+# Komutlar
+command:
+  must_be_player: "&cBu komudu kullanmak için oyuncu olmalısın!"
+  player_not_found: "&cOyuncu bulunamadı."
+  user_not_found: "&cKullanıcı bulunamadı."
+  unknown: "&cBilinmeyen komut."
+  toggle:
+    no_longer_mentioned: "&eArtık etiketlenmeyeceksin."
+    will_now_mentioned: "&eArtık etiketleneceksin."
+  send:
+    invalid_keyword: "&cGeçersiz anahtar kelime."
+  reload:
+    success: "&aKonfigurasyon yenilendi."
+  user:
+    unknown: "&cBilinmeyen arguman."
+    mentions:
+      success: "&f{p}&e adlı oyuncu için etiket modu {value} olarak ayarlandı."
+    display:
+      invalid_display: "&cGeçersiz görüntü. Bir Minecraft kullanıcı adı ifadesiyle eşleşmeli."
+      success: "&f{p}&e adlı oyuncu için etiket görüntüsü {value} olarak ayarlandı."
+  help:
+    description: "&6Komut listesi:"
+    list: "&7{commands}"
+  config:
+    already_configuring: "&cBir yetkili zaten yapılandırma yapıyor."
+    reset_changes: "&cDeğişiklikler sıfırlandı."
+    save_changes: "&aYapılandırmalar kaydedildi."
+  customize:
+    invalid_display: "&cGeçersiz görüntü. Bir Minecraft kullanıcı adı ifadesiyle eşleşmeli."
+    success: "&aEtiket görüntünü &c{old_value}&a'dan &e{value}&a olarak değiştirdin."
+#
+
+lang_version: "1.8.4" #DEĞİŞTİRMEYİN.
