@@ -78,7 +78,7 @@ Vanished players are detected automatically with EssentialsX, Staff++ and other 
 4- **Enjoy** the enhanced chat experience! :>
 
 > [!TIP]
-> Upgrading from 1.8.x? Your config, language files and player data are converted on the first start. The old files are kept in `DMentions/backup-1.8/`. Coming from an older version? Update to 1.8.5 first.
+> Upgrading from 1.8.4 or 1.8.5? Your config, language files and player data are converted on the first start. The old files are kept in `DMentions/backup-1.8/`. Coming from an older version? Update to 1.8.5 first.
 
 ## Documentation & Contact
 **Wiki**: Check out the [Wiki](https://github.com/desaxxx/DMentions/wiki) for help configuring the plugin.\
