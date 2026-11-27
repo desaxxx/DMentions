@@ -8,7 +8,7 @@ Compatible with various chat plugins, it enhances your in-game communication wit
 - [Spigot](https://www.spigotmc.org/resources/dmentions-%E2%9C%A8-advanced-player-mention.121452/) *(legacy: 1.8.x only, 2.0+ requires Paper)*
 
 ## Requirements
-- [Paper](https://papermc.io/) 1.21+ or a fork of it. [Folia](https://papermc.io/software/folia) is supported.
+- [Paper](https://papermc.io/) 1.21.4+ or a fork of it. [Folia](https://papermc.io/software/folia) is supported.
 - Java 21+
 
 ## Supported Languages
