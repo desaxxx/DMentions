@@ -23,8 +23,8 @@ dependencies {
         exclude("org.slf4j") // use Papers
     }
 
-    implementation("dev.dash:loom:0.3.0")
-    implementation("dev.yoshi:xconfig:0.7.0")
+    implementation("dev.dash:loom:0.3.1")
+    implementation("dev.yoshi:xconfig:0.7.1")
 
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.116.3")
